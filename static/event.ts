@@ -1,8 +1,9 @@
 /// <reference path="ssuser.ts" />
+/// <reference path="ssclass.ts" />
 
 class SSEvent {
   name: string;
-  cls: string;
+  cls: SSClass;
   startTime: Date;
   endTime: Date;
   owner: SSUser;
