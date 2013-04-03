@@ -23,4 +23,13 @@ class SSEvent {
   addAttendee(user: SSUser) {
     this.attendees.push(user);
   } 
+  
+  removeAttendee(user: SSUser) {
+    for (var i = 0; i < this.attendees.length; i++) {
+      if (user.equals(this.attendees[i])) {
+        this.attendees.splice(i, 1);
+        return;
+      }
+    }
+  }
 }
