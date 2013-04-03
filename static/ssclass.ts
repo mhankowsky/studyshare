@@ -12,4 +12,12 @@ class SSClass {
     this.deptNum = deptNum;
     this.classNum = classNum;
   }
+  
+  equals(cls: SSClass) {
+    if(this.deptNum === cls.deptNum && this.classNum === cls.classNum) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
