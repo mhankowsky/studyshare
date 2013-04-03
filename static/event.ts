@@ -1,10 +1,12 @@
+/// <reference path="ssuser.ts" />
+
 class SSEvent {
   name: string;
   cls: string;
   startTime: Date;
   endTime: Date;
-  owner: string;
-  attendees: string;
+  owner: SSUser;
+  attendees: SSUser[];
   
   constructor(name, cls, startTime, endTime, owner, attendees) {
     this.name = name;
