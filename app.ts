@@ -2,11 +2,23 @@
 
 // RESTful Express server.
 
+// Declares require function to make TSC happy when compiling
+declare function require(name:string);
+
 var express = require("express"); // imports express
 var app = express();        // create a new instance of express
 
 // imports the fs module (reading and writing to a text file)
 var fs = require("fs");
+
+// imports the database module
+var mongo = require('mongodb');
+var host = 'localhost';
+var port = mongo.Connection.DEFAULT_PORT;
+
+// allows database writes
+var optionsWithEnableWriteAccess = { w: 1 };
+var dbName = 'studyshareDb';
 
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
@@ -103,6 +115,67 @@ app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/static/login.html');
 });
+
+//******************Database Code**********************//
+var client = new mongo.Db(
+    dbName,
+    new mongo.Server(host, port),
+    optionsWithEnableWriteAccess
+);
+
+// Simple function to open the database
+function openDb(onOpen){
+    client.open(onDbReady);
+
+  function onDbReady(error){
+    if (error) {
+      throw error;
+    }
+    
+    client.collection('usersCollection', onUsersCollectionReady);
+    client.collection('locationsCollection', onLocationsCollectionReady);
+    client.collection('classesCollection', onClassesCollectionReady);
+    client.collection('eventsCollection', onEventsCollectionReady);
+  }
+
+  function onUsersCollectionReady(error, usersCollection) {
+    if (error) {
+      throw error;
+    }
+
+    onOpen(usersCollection);
+  }
+    
+  function onLocationsCollectionReady(error, locationsCollection) {
+    if (error) {
+      throw error;
+    }
+
+    onOpen(locationsCollection);
+  }
+    
+  function onClassesCollectionReady(error, classesCollection) {
+    if (error) {
+      throw error;
+    }
+
+    onOpen(classesCollection);
+  }
+    
+  function onEventsCollectionReady(error, eventsCollection) {
+    if (error) {
+      throw error;
+    }
+    
+    onOpen(eventsCollection);  
+  }
+}
+
+// Simple function to close access to the database
+function closeDb(){
+    client.close();
+}
+//*****************************************************//
 
 // This is for serving files in the static directory
 app.get("/static/:staticFilename", function (request, response) {

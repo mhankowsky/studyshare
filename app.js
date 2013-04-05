@@ -1,6 +1,13 @@
 var express = require("express");
 var app = express();
 var fs = require("fs");
+var mongo = require('mongodb');
+var host = 'localhost';
+var port = mongo.Connection.DEFAULT_PORT;
+var optionsWithEnableWriteAccess = {
+    w: 1
+};
+var dbName = 'studyshareDb';
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 var FACEBOOK_APP_ID = "585448871465575";
@@ -44,6 +51,46 @@ app.get('/logout', function (req, res) {
     req.logout();
     res.redirect('/static/login.html');
 });
+var client = new mongo.Db(dbName, new mongo.Server(host, port), optionsWithEnableWriteAccess);
+function openDb(onOpen) {
+    client.open(onDbReady);
+    function onDbReady(error) {
+        if(error) {
+            throw error;
+        }
+        client.collection('usersCollection', onUsersCollectionReady);
+        client.collection('locationsCollection', onLocationsCollectionReady);
+        client.collection('classesCollection', onClassesCollectionReady);
+        client.collection('eventsCollection', onEventsCollectionReady);
+    }
+    function onUsersCollectionReady(error, usersCollection) {
+        if(error) {
+            throw error;
+        }
+        onOpen(usersCollection);
+    }
+    function onLocationsCollectionReady(error, locationsCollection) {
+        if(error) {
+            throw error;
+        }
+        onOpen(locationsCollection);
+    }
+    function onClassesCollectionReady(error, classesCollection) {
+        if(error) {
+            throw error;
+        }
+        onOpen(classesCollection);
+    }
+    function onEventsCollectionReady(error, eventsCollection) {
+        if(error) {
+            throw error;
+        }
+        onOpen(eventsCollection);
+    }
+}
+function closeDb() {
+    client.close();
+}
 app.get("/static/:staticFilename", function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
 });
