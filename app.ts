@@ -163,7 +163,7 @@ function getClasses(query) {
 
 // get all classes
 app.get("/classes", function(request, response) {
-  var classesArray = getClasses();
+  var classesArray = getClasses({});
   
   response.send({
     classes: classesArray,

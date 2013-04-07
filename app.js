@@ -52,45 +52,40 @@ app.get('/logout', function (req, res) {
     res.redirect('/static/login.html');
 });
 var client = new mongo.Db(dbName, new mongo.Server(host, port), optionsWithEnableWriteAccess);
-function openDb(onOpen) {
+function openDb(collection, onOpen) {
     client.open(onDbReady);
     function onDbReady(error) {
         if(error) {
             throw error;
         }
-        client.collection('usersCollection', onUsersCollectionReady);
-        client.collection('locationsCollection', onLocationsCollectionReady);
-        client.collection('classesCollection', onClassesCollectionReady);
-        client.collection('eventsCollection', onEventsCollectionReady);
+        client.collection(collection, onCollectionReady);
     }
-    function onUsersCollectionReady(error, usersCollection) {
+    function onCollectionReady(error, collection) {
         if(error) {
             throw error;
         }
-        onOpen(usersCollection);
-    }
-    function onLocationsCollectionReady(error, locationsCollection) {
-        if(error) {
-            throw error;
-        }
-        onOpen(locationsCollection);
-    }
-    function onClassesCollectionReady(error, classesCollection) {
-        if(error) {
-            throw error;
-        }
-        onOpen(classesCollection);
-    }
-    function onEventsCollectionReady(error, eventsCollection) {
-        if(error) {
-            throw error;
-        }
-        onOpen(eventsCollection);
+        onOpen(collection);
     }
 }
 function closeDb() {
     client.close();
 }
+function getClasses(query) {
+    var classesArray;
+    openDb("classesCollection", findClasses);
+    function findClasses(collection) {
+        classesArray = collection.find(query).toArray();
+    }
+    return classesArray;
+}
+app.get("/classes", function (request, response) {
+    var classesArray = getClasses({
+    });
+    response.send({
+        classes: classesArray,
+        success: true
+    });
+});
 app.get("/static/:staticFilename", function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
 });
