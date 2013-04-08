@@ -19,6 +19,7 @@ var port = mongo.Connection.DEFAULT_PORT;
 // allows database writes
 var optionsWithEnableWriteAccess = { w: 1 };
 var dbName = 'studyshareDb';
+var userCollection = 'users';
 
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
@@ -26,11 +27,13 @@ var FacebookStrategy = require('passport-facebook').Strategy;
 var FACEBOOK_APP_ID = "585448871465575";
 var FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
 
+var users = {};
+
 // the bodyParser middleware allows us to parse the
 // body of a request
 app.use(express.bodyParser());
 app.use(passport.initialize());
-//app.use(passport.session());
+app.use(passport.session());
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
@@ -54,9 +57,24 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new FacebookStrategy({
     clientID: FACEBOOK_APP_ID,
     clientSecret: FACEBOOK_APP_SECRET,
-    callbackURL: "http://localhost:8889/auth/facebook/callback"
+    callbackURL: "http://localhost:8889/auth/facebook/callback",
+    passReqToCallback: true
   },
-  function(accessToken, refreshToken, profile, done) {
+  function(req, accessToken, refreshToken, profile, done) {
+    console.log(req.user);
+    if(!req.user) {
+      console.log(1);
+      var user = {id : undefined, name : undefined, displayName : undefined};
+      user.id = profile.id;
+      user.name = profile.name;
+      user.displayName = profile.displayName;
+      insert(userCollection, user);
+      return done(null, profile);
+    } else {
+      console.log(2);
+      return done(null, profile);
+    }
+/*
     // asynchronous verification, for effect...
     process.nextTick(function () {
       
@@ -64,8 +82,15 @@ passport.use(new FacebookStrategy({
       // represent the logged-in user.  In a typical application, you would want
       // to associate the Facebook account with a user record in your database,
       // and return that user instead.
+      //return done(null, profile);
+      if(!users[profile.username]) {
+        users[profile.username] = 1;
+      } else {
+        console.log("hi");
+      }
+      console.log(JSON.stringify(users));
       return done(null, profile);
-    });
+    });*/
   }
 ));
 
@@ -129,6 +154,7 @@ function openDb(collection : string, onOpen){
 
   function onDbReady(error){
     if (error) {
+      console.log("error...");
       throw error;
     }
     
@@ -137,6 +163,7 @@ function openDb(collection : string, onOpen){
 
   function onCollectionReady(error, collection) {
     if (error) {
+      console.log("error...");
       throw error;
     }
 
@@ -148,6 +175,23 @@ function openDb(collection : string, onOpen){
 function closeDb(){
   client.close();
 }
+
+function insert(dbName, document) {
+  function onDbOpen(collection) {
+    collection.insert(document, onInsert);
+  }
+  openDb(dbName, onDbOpen);
+}
+
+function onInsert(err){
+  if (err) {
+    console.log("error...");
+    throw err;
+  }
+  console.log('documents inserted!');
+  closeDb();
+}
+
 //*****************************************************//
 
 function getClasses(query) {
