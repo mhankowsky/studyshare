@@ -9,5 +9,13 @@ var SSEvent = (function () {
     SSEvent.prototype.addAttendee = function (user) {
         this.attendees.push(user);
     };
+    SSEvent.prototype.removeAttendee = function (user) {
+        for(var i = 0; i < this.attendees.length; i++) {
+            if(user.equals(this.attendees[i])) {
+                this.attendees.splice(i, 1);
+                return;
+            }
+        }
+    };
     return SSEvent;
 })();

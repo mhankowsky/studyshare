@@ -1,6 +1,13 @@
 var express = require("express");
 var app = express();
 var fs = require("fs");
+var mongo = require('mongodb');
+var host = 'localhost';
+var port = mongo.Connection.DEFAULT_PORT;
+var optionsWithEnableWriteAccess = {
+    w: 1
+};
+var dbName = 'studyshareDb';
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 var FACEBOOK_APP_ID = "585448871465575";
@@ -43,6 +50,41 @@ function ensureAuthenticated(req, res, next) {
 app.get('/logout', function (req, res) {
     req.logout();
     res.redirect('/static/login.html');
+});
+var client = new mongo.Db(dbName, new mongo.Server(host, port), optionsWithEnableWriteAccess);
+function openDb(collection, onOpen) {
+    client.open(onDbReady);
+    function onDbReady(error) {
+        if(error) {
+            throw error;
+        }
+        client.collection(collection, onCollectionReady);
+    }
+    function onCollectionReady(error, collection) {
+        if(error) {
+            throw error;
+        }
+        onOpen(collection);
+    }
+}
+function closeDb() {
+    client.close();
+}
+function getClasses(query) {
+    var classesArray;
+    openDb("classesCollection", findClasses);
+    function findClasses(collection) {
+        classesArray = collection.find(query).toArray();
+    }
+    return classesArray;
+}
+app.get("/classes", function (request, response) {
+    var classesArray = getClasses({
+    });
+    response.send({
+        classes: classesArray,
+        success: true
+    });
 });
 app.get("/static/:staticFilename", function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
