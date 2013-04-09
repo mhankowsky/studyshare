@@ -135,12 +135,12 @@ function openDb(collection : string, onOpen){
     client.collection(collection, onCollectionReady)
   }
 
-  function onCollectionReady(error, collection) {
+  function onCollectionReady(error, sscollection) {
     if (error) {
       throw error;
     }
 
-    onOpen(collection);
+    onOpen(sscollection);
   }
 }
 
@@ -155,7 +155,16 @@ function getClasses(query) {
   openDb("classesCollection", findClasses);
   
   function findClasses(collection) {
-    classesArray = collection.find(query).toArray();
+    classesArray = collection.find({}).toArray(callback);
+    
+    function callback(error, doc) {
+      if (error) {
+        throw error;
+      }
+      
+      console.log(doc);
+      closeDb();
+    }
   }
   
   return classesArray;
