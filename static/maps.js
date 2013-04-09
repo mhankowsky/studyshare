@@ -1,3 +1,4 @@
+//api key: AIzaSyD6W9Xvy_LP3F0_p0F0lZOjM0LZAqc5cCM
 $(function() {
   if(!navigator.geolocation) {
     alert("No geolocation detected.");
