@@ -11,6 +11,13 @@ var app = express();        // create a new instance of express
 // imports the fs module (reading and writing to a text file)
 var fs = require("fs");
 
+var passport = require('passport');
+var FacebookStrategy = require('passport-facebook').Strategy;
+
+var FACEBOOK_APP_ID = "585448871465575";
+var FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
+
+//TODO switch to using mongoose
 // imports the database module
 var mongo = require('mongodb');
 var host = 'localhost';
@@ -19,21 +26,39 @@ var port = mongo.Connection.DEFAULT_PORT;
 // allows database writes
 var optionsWithEnableWriteAccess = { w: 1 };
 var dbName = 'studyshareDb';
-var userCollection = 'users';
 
-var passport = require('passport');
-var FacebookStrategy = require('passport-facebook').Strategy;
+var mongoose = require('mongoose/'),
+    db = mongoose.connect('mongodb://localhost/studyshareDb');
+    //userCollection = mongoose.noSchema('users',db); // collection name
 
-var FACEBOOK_APP_ID = "585448871465575";
-var FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
+var Schema = mongoose.Schema;
+var ObjectId = Schema.ObjectId;
+var UserSchema = new Schema({
+  id: ObjectId,
+  facebookId: String,
+  facebookAccessToken: String,
+  facebookRefreshToken: String,
+  fullName: String,
+  name: {
+          familyName : String,
+          givenName : String,
+          middleName : String
+        }
+  });
 
-var users = {};
+mongoose.model('User', UserSchema);
+var User = mongoose.model('User');
+
 
 // the bodyParser middleware allows us to parse the
 // body of a request
+app.use(express.cookieParser());
 app.use(express.bodyParser());
+app.use(express.session({ secret: 'keyboard cat' }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(app.router);
+app.use(express.static(__dirname));
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
@@ -46,8 +71,10 @@ passport.serializeUser(function(user, done) {
   done(null, user);
 });
 
-passport.deserializeUser(function(obj, done) {
-  done(null, obj);
+passport.deserializeUser(function(user, done) {
+  User.findOne({_id: user._id}, function (err, user) {
+    done(err, user);
+  });
 });
 
 // Use the FacebookStrategy within Passport.
@@ -61,36 +88,26 @@ passport.use(new FacebookStrategy({
     passReqToCallback: true
   },
   function(req, accessToken, refreshToken, profile, done) {
-    console.log(req.user);
-    if(!req.user) {
-      console.log(1);
-      var user = {id : undefined, name : undefined, displayName : undefined};
-      user.id = profile.id;
-      user.name = profile.name;
-      user.displayName = profile.displayName;
-      insert(userCollection, user);
-      return done(null, profile);
-    } else {
-      console.log(2);
-      return done(null, profile);
-    }
-/*
-    // asynchronous verification, for effect...
-    process.nextTick(function () {
-      
-      // To keep the example simple, the user's Facebook profile is returned to
-      // represent the logged-in user.  In a typical application, you would want
-      // to associate the Facebook account with a user record in your database,
-      // and return that user instead.
-      //return done(null, profile);
-      if(!users[profile.username]) {
-        users[profile.username] = 1;
+    User.findOne({_id : profile.id}, function(err, user) {
+      if(err) {
+        var user = new User();
+        user.facebookId = profile.id;
+        user.fullName = profile.displayName;
+        user.name = profile.name;
+        user.facebookAccessToken = accessToken;
+        user.facebookRefreshToken = refreshToken;
+        user.save(function(err) {
+          if(err) {
+            throw err; 
+          }
+          done(null, user);
+        });
       } else {
-        console.log("hi");
+        user.facebookAccessToken = accessToken;
+        user.facebookRefreshToken = refreshToken;
+        done(null, user);
       }
-      console.log(JSON.stringify(users));
-      return done(null, profile);
-    });*/
+    });
   }
 ));
 
@@ -106,12 +123,8 @@ app.get('/account', ensureAuthenticated, function(req, res){
 //   request.  The first step in Facebook authentication will involve
 //   redirecting the user to facebook.com.  After authorization, Facebook will
 //   redirect the user back to this application at /auth/facebook/callback
-app.get('/auth/facebook',
-  passport.authenticate('facebook'),
-  function(request, response){
-    // The request will be redirected to Facebook for authentication, so this
-    // function will not be called.
-  });
+app.get('/auth/facebook', passport.authorize('facebook', { scope: [] }));
+
 
 // GET /auth/facebook/callback
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -126,14 +139,17 @@ app.get('/auth/facebook/callback',
     response.redirect('/static/index.html');
   });
 
+
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
 //   the request is authenticated (typically via a persistent login session),
 //   the request will proceed.  Otherwise, the user will be redirected to the
 //   login page.
 function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect('/static/login.html')
+  if (req.isAuthenticated()) { 
+    return next(); 
+  }
+  res.redirect('/static/login.html');
 }
 
 app.get('/logout', function(req, res){
@@ -142,6 +158,8 @@ app.get('/logout', function(req, res){
 });
 
 //******************Database Code**********************//
+//TODO SWTICH TO MONGOOSE
+
 var client = new mongo.Db(
     dbName,
     new mongo.Server(host, port),
@@ -154,7 +172,6 @@ function openDb(collection : string, onOpen){
 
   function onDbReady(error){
     if (error) {
-      console.log("error...");
       throw error;
     }
     
@@ -163,7 +180,6 @@ function openDb(collection : string, onOpen){
 
   function onCollectionReady(error, collection) {
     if (error) {
-      console.log("error...");
       throw error;
     }
 
@@ -185,13 +201,11 @@ function insert(dbName, document) {
 
 function onInsert(err){
   if (err) {
-    console.log("error...");
     throw err;
   }
   console.log('documents inserted!');
   closeDb();
 }
-
 //*****************************************************//
 
 function getClasses(query) {
