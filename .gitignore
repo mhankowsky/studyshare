@@ -1,2 +1,3 @@
 *.ts~
 *.swp
+.DS_Store
