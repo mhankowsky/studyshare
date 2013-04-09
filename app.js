@@ -45,7 +45,6 @@ passport.deserializeUser(function (user, done) {
     User.findOne({
         _id: user._id
     }, function (err, user) {
-        console.log(JSON.stringify(user));
         done(err, user);
     });
 });
@@ -106,14 +105,12 @@ function openDb(collection, onOpen) {
     client.open(onDbReady);
     function onDbReady(error) {
         if(error) {
-            console.log("error...");
             throw error;
         }
         client.collection(collection, onCollectionReady);
     }
     function onCollectionReady(error, sscollection) {
         if(error) {
-            console.log("error...");
             throw error;
         }
         onOpen(sscollection);
@@ -130,7 +127,6 @@ function insert(dbName, document) {
 }
 function onInsert(err) {
     if(err) {
-        console.log("error...");
         throw err;
     }
     console.log('documents inserted!');
