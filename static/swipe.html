@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!-- Hammer swipe example -->
+<html>
+  <head>
+    <title>Studyshare - Hammer.js Swipe Demo</title>
+     
+    <script src="hammer.js"></script>
+    <script src="jquery-1.9.0.js"></script>
+    <script src="jquery.hammer.js"></script>
+  </head>
+  <body style="position: fixed">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="HandheldFriendly" content="true">
+    
+    <script>
+        Hammer.HAS_POINTEREVENTS = false;
+        Hammer.HAS_TOUCHEVENTS = true;
+    </script>
+    
+    <div id="toucharea" style="width:400px;height:400px;">
+      <p id="display">Swipe to the right!</p>
+    </div>
+   
+    <script src="swipe.js"></script>
+  </body>
+</html>
