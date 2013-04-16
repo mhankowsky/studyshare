@@ -121,12 +121,26 @@ passport.use(new FacebookStrategy({
 app.get('/account', ensureAuthenticated, function (req, res) {
     var user = req.user;
     var classIDs = req.user.classIDs;
-    var classes = [];
     Class.find({
     }).where('_id').in(classIDs).exec(function (err, records) {
         user.set("classes", records);
         res.send({
             user: user
+        });
+    });
+});
+app.get('/user/:id', ensureAuthenticated, function (req, res) {
+    User.findOne({
+        _id: new ObjectId(req.body.id)
+    }, function (err, rec) {
+        if(err) {
+        }
+        res.send({
+            fullName: rec.fullName,
+            facebookID: rec.facebookID,
+            classIDs: rec.classIDs,
+            classNames: rec.classNames,
+            classNums: rec.classNums
         });
     });
 });
