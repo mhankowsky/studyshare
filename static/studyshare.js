@@ -54,7 +54,6 @@ function updateFriendsListDom() {
 function queryNewsFeed() {
 }
 function updateNewsFeedDom() {
-    console.log("updatingnewsfeed");
     $(".news_feed").html("loading...");
     var containerDiv = $("<div>").addClass("content-box");
     var pictureImg = $("<img>").addClass("profile_thumb").attr("src", "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/369611_1338030563_1155334149_q.jpg");
