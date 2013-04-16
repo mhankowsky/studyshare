@@ -21,6 +21,7 @@ var UserSchema = new Schema({
     facebookAccessToken: String,
     facebookRefreshToken: String,
     fullName: String,
+    profilePicture: String,
     name: {
         familyName: String,
         givenName: String,
@@ -43,7 +44,7 @@ passport.serializeUser(function (user, done) {
 });
 passport.deserializeUser(function (user, done) {
     User.findOne({
-        _id: user._id
+        facebookId: user.facebookId
     }, function (err, user) {
         done(err, user);
     });
@@ -51,17 +52,26 @@ passport.deserializeUser(function (user, done) {
 passport.use(new FacebookStrategy({
     clientID: FACEBOOK_APP_ID,
     clientSecret: FACEBOOK_APP_SECRET,
+    profileFields: [
+        'photos', 
+        'id', 
+        'displayName', 
+        'name'
+    ],
     callbackURL: "http://localhost:8889/auth/facebook/callback",
     passReqToCallback: true
 }, function (req, accessToken, refreshToken, profile, done) {
     User.findOne({
-        _id: profile.id
+        facebookId: profile.id
     }, function (err, user) {
         if(err) {
+        }
+        if(user === null) {
             var user = new User();
             user.facebookId = profile.id;
             user.fullName = profile.displayName;
             user.name = profile.name;
+            user.profilePicture = profile.photos[0].value;
             user.facebookAccessToken = accessToken;
             user.facebookRefreshToken = refreshToken;
             user.save(function (err) {
