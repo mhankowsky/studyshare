@@ -218,3 +218,15 @@ a:active {
 	background-color: #716f6f;
 }
 
+/**************************8
+ * Shitty Tyler test styles 
+ * *************************/
+ 
+h {
+  font-family: arial;
+  font-size: 20px;
+  color: #ff00ff;
+  margin: 0 0 20px 0;
+  padding: 4px 0 4px 10px;  
+}
+
