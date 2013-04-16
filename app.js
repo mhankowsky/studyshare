@@ -60,8 +60,7 @@ var EventSchema = new Schema({
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
 var Event = mongoose.model('Event', EventSchema, 'events');
-mongoose.model('Class', ClassSchema);
-var Class = mongoose.model('Class');
+var Class = mongoose.model('Class', ClassSchema, 'classes');
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 app.use(express.session({
@@ -164,7 +163,7 @@ function ensureAuthenticated(req, res, next) {
     if(req.isAuthenticated()) {
         return next();
     }
-    res.redirect('/static/login.html');
+    res.redirect('auth/facebook');
 }
 app.get('/logout', function (req, res) {
     req.logout();
@@ -232,7 +231,7 @@ app.get("/classes", function (request, response) {
         success: true
     });
 });
-app.get("/static/:staticFilename", function (request, response) {
+app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
 });
 app.listen(8889);
