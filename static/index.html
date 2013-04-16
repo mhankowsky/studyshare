@@ -7,13 +7,16 @@
     <link href='http://fonts.googleapis.com/css?family=Lato:300,400,700|Gentium+Book+Basic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/fonts.css">
     <link rel="stylesheet" href="css/style.css">
-
+    <script src="jquery-1.9.0.js"></script>
+    <script src="studyshare.js"></script>
+    <script src="hammer.js"></script>
+    <script src="jquery.hammer.js"></script>
   </head>
 
-  <body>
+  <body class="toucharea">
     <div id="menu" style="display:none;">
-
-      <h3>Michael Hankowsky</h3>
+      <h3 id="userName"></h3>
+      <img class="profile_thumb" id="personal_picture"/>
       <ul>
         <li class="active"><a href="#home" class="contentLink">Search by:</a></li>
           <li><a href="#home" class="contentLink">Time</a></li>
@@ -27,9 +30,8 @@
     <div class="header"> 
       <ul class="menu"> 
         <li class="menu_item" id="logo">
-        <p id="logo_study">Study </p>
-        <p id="logo_share">Share</p>
-        
+          <p id="logo_study">Study </p>
+          <p id="logo_share">Share</p>
         </li>
         <li class="menu_item icon-user" id="friends"> </li>
         <li class="menu_item icon-books" id="classes"> </li>
@@ -37,7 +39,7 @@
       </ul>
     </div>
 
-    <div class="content"> 
+    <div class="content news_feed"> 
 
       <div class="content-box">
         <img class="profile_thumb fixie" />
@@ -49,8 +51,11 @@
         </div>
         <p class="info fixie"> </p>
       </div>
-
     </div>
+
+    <ul class="friends_list" style="display:none">
+
+    </ul>
   </div>
   <script type="text/javascript" src="fixie/fixie.js"></script>
   </body>
