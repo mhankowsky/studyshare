@@ -1,5 +1,6 @@
 var express = require("express");
 var app = express();
+var $ = require("jquery");
 var fs = require("fs");
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
@@ -19,7 +20,6 @@ var UserSchema = new Schema({
     id: ObjectId,
     facebookId: String,
     facebookAccessToken: String,
-    facebookRefreshToken: String,
     fullName: String,
     profilePicture: String,
     name: {
@@ -73,16 +73,14 @@ passport.use(new FacebookStrategy({
             user.name = profile.name;
             user.profilePicture = profile.photos[0].value;
             user.facebookAccessToken = accessToken;
-            user.facebookRefreshToken = refreshToken;
-            user.save(function (err) {
-                if(err) {
-                    throw err;
+            user.save(function (err1) {
+                if(err1) {
+                    throw err1;
                 }
                 done(null, user);
             });
         } else {
             user.facebookAccessToken = accessToken;
-            user.facebookRefreshToken = refreshToken;
             done(null, user);
         }
     });
@@ -90,6 +88,28 @@ passport.use(new FacebookStrategy({
 app.get('/account', ensureAuthenticated, function (req, res) {
     res.send({
         user: req.user
+    });
+});
+app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
+    var theUrl = "https://graph.facebook.com/" + req.user.facebookId + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+    $.ajax({
+        type: "get",
+        url: theUrl,
+        success: function (response) {
+            var idArray = $.map(response.data, function (val, i) {
+                return val.id;
+            });
+            User.find({
+            }, {
+                facebookAccessToken: 0
+            }).where("facebookId").in(idArray).exec(function (err, records) {
+                res.send(records);
+            });
+        },
+        error: function (response) {
+            console.log("error :(?");
+            res.send(response);
+        }
     });
 });
 app.get('/auth/facebook', passport.authorize('facebook', {

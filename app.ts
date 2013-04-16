@@ -8,6 +8,8 @@ declare function require(name:string);
 var express = require("express"); // imports express
 var app = express();        // create a new instance of express
 
+var $ = require("jquery");
+
 // imports the fs module (reading and writing to a text file)
 var fs = require("fs");
 
@@ -37,7 +39,6 @@ var UserSchema = new Schema({
   id: ObjectId,
   facebookId: String,
   facebookAccessToken: String,
-  facebookRefreshToken: String,
   fullName: String,
   profilePicture: String,
   name: {
@@ -45,7 +46,7 @@ var UserSchema = new Schema({
           givenName : String,
           middleName : String
         }
-  });
+});
 
 mongoose.model('User', UserSchema);
 var User = mongoose.model('User');
@@ -101,16 +102,14 @@ passport.use(new FacebookStrategy({
         user.name = profile.name;
         user.profilePicture = profile.photos[0].value;
         user.facebookAccessToken = accessToken;
-        user.facebookRefreshToken = refreshToken;
-        user.save(function(err) {
-          if(err) {
-            throw err; 
+        user.save(function(err1) {
+          if(err1) {
+            throw err1; 
           }
           done(null, user);
         });
       } else {
         user.facebookAccessToken = accessToken;
-        user.facebookRefreshToken = refreshToken;
         done(null, user);
       }
     });
@@ -121,6 +120,26 @@ passport.use(new FacebookStrategy({
 app.get('/account', ensureAuthenticated, function(req, res){
   res.send({ 
     user: req.user 
+  });
+});
+
+app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
+  var theUrl = "https://graph.facebook.com/" + req.user.facebookId + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+  $.ajax({
+    type: "get",
+    url: theUrl,
+    success: function(response) {
+      var idArray = $.map(response.data, function(val, i) {
+        return val.id;
+      });
+      User.find({}, {facebookAccessToken : 0}).where("facebookId").in(idArray).exec(function(err, records) {
+        res.send(records);
+      });
+    },
+    error: function(response) {
+      console.log("error :(?");
+      res.send(response);
+    }
   });
 });
 
