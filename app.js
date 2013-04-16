@@ -17,7 +17,6 @@ var mongoose = require('mongoose/'), db = mongoose.connect('mongodb://localhost/
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var UserSchema = new Schema({
-    id: ObjectId,
     facebookId: String,
     facebookAccessToken: String,
     fullName: String,
@@ -39,8 +38,34 @@ var UserSchema = new Schema({
         }
     ]
 });
-mongoose.model('User', UserSchema);
-var User = mongoose.model('User');
+var BuildingSchema = new Schema({
+    name: String,
+    lat: Number,
+    long: Number
+});
+var EventSchema = new Schema({
+    name: String,
+    cls: ObjectId,
+    building: ObjectId,
+    startTime: String,
+    endTime: String,
+    owner: ObjectId,
+    attendees: [
+        ObjectId
+    ]
+});
+var ClassSchema = new Schema({
+    name: String,
+    deptNum: Number,
+    classNum: Number,
+    owner: ObjectId,
+    students: [
+        ObjectId
+    ]
+});
+var User = mongoose.model('User', UserSchema, 'users');
+var Building = mongoose.model('Building', BuildingSchema, 'buildings');
+var Event = mongoose.model('Event', EventSchema, 'events');
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 app.use(express.session({
@@ -141,6 +166,12 @@ function ensureAuthenticated(req, res, next) {
 app.get('/logout', function (req, res) {
     req.logout();
     res.redirect('/static/login.html');
+});
+app.get('/buildings', function (req, res) {
+    Building.findOne({
+    }, function (err, building) {
+        res.send(building);
+    });
 });
 var client = new mongo.Db(dbName, new mongo.Server(host, port), optionsWithEnableWriteAccess);
 function openDb(collection, onOpen) {

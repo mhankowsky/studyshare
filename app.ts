@@ -36,7 +36,6 @@ var mongoose = require('mongoose/'),
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var UserSchema = new Schema({
-  id: ObjectId,
   facebookId: String,
   facebookAccessToken: String,
   fullName: String,
@@ -55,8 +54,33 @@ var UserSchema = new Schema({
   		   }]
 });
 
-mongoose.model('User', UserSchema);
-var User = mongoose.model('User');
+var BuildingSchema = new Schema({
+  name: String,
+  lat: Number,
+  long: Number,
+});
+
+var EventSchema = new Schema({
+  name: String,
+  cls: ObjectId,
+  building: ObjectId, //TODO change to location (drill down)
+  startTime: String,
+  endTime: String,
+  owner: ObjectId,
+  attendees: [ObjectId]
+});
+
+var ClassSchema = new Schema({
+  name: String,
+  deptNum: Number,
+  classNum: Number,
+  owner: ObjectId,
+  students: [ObjectId]
+});
+
+var User = mongoose.model('User', UserSchema, 'users');
+var Building = mongoose.model('Building', BuildingSchema, 'buildings');
+var Event = mongoose.model('Event', EventSchema, 'events');
 
 
 // the bodyParser middleware allows us to parse the
@@ -124,7 +148,6 @@ passport.use(new FacebookStrategy({
   }
 ));
 
-
 app.get('/account', ensureAuthenticated, function(req, res){
   res.send({ 
     user: req.user 
@@ -137,6 +160,7 @@ app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
     type: "get",
     url: theUrl,
     success: function(response) {
+      //TODO account for "paging" in the response
       var idArray = $.map(response.data, function(val, i) {
         return val.id;
       });
@@ -188,6 +212,12 @@ function ensureAuthenticated(req, res, next) {
 app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/static/login.html');
+});
+
+app.get('/buildings', function(req, res) {
+  Building.findOne({}, function(err, building) {
+    res.send(building);
+  });
 });
 
 //******************Database Code**********************//
