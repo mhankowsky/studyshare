@@ -63,7 +63,6 @@ function updateProfileDom() {
     var listClasses = $("<ul>");
     for(var i = 0; i < classes.length; i++) {
       var ssclass = $("<li>");
-      console.log(classes[i]);
       ssclass.append(classes[i].name);
       listClasses.append(ssclass);
     }
