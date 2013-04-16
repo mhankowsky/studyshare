@@ -1,12 +1,15 @@
 var fullName;
-var facebookId;
+var facebookID;
 var currentState;
-var classes;
-var SSClass = (function () {
-    function SSClass() { }
-    return SSClass;
+var classIDs;
+var classNames;
+var classNums;
+var userPageState;
+var curUserDisplay;
+var SSUser = (function () {
+    function SSUser() { }
+    return SSUser;
 })();
-;
 var State = (function () {
     function State(domObject, refreshDom) {
         this.domObject = domObject;
@@ -29,10 +32,12 @@ function updateProfileInformation() {
         type: "get",
         url: "/account",
         success: function (response) {
-            facebookId = response.user.facebookId;
+            facebookID = response.user.facebookID;
             fullName = response.user.fullName;
-            classes = response.user.classes;
-            $("#userName").text(fullName);
+            classIDs = response.user.classIDs;
+            classNames = response.user.classNames;
+            classNums = response.user.classNums;
+            $("#userName").text(response.user.fullName);
             $("#personal_picture").attr("src", response.user.profilePicture);
         },
         failure: function () {
@@ -71,13 +76,13 @@ function updateProfileDom() {
     $(".profile_page").html("");
     var classesDiv = $("<div id='classesList'>");
     classesDiv.append("<h>Classes</h>");
-    if(classes.length === 0) {
+    if(classNames.length === 0) {
         classesDiv.append("<p>Join Classes</p>");
     } else {
         var listClasses = $("<ul>");
-        for(var i = 0; i < classes.length; i++) {
+        for(var i = 0; i < classNames.length; i++) {
             var ssclass = $("<li>");
-            ssclass.append(classes[i].name);
+            ssclass.append(classNames[i]);
             listClasses.append(ssclass);
         }
         classesDiv.append(listClasses);
@@ -104,6 +109,19 @@ function updateProfileDom() {
         }
     });
 }
+function updateUserPageDom() {
+    $(".user_page").html("");
+    var classesDiv = $("<div id='classesList'>");
+    classesDiv.append("<h>Classes</h>");
+    var listClasses = $("<ul>");
+    for(var i = 0; i < curUserDisplay.classNames.length; i++) {
+        var ssclass = $("<li>");
+        ssclass.append(curUserDisplay.classNames[i]);
+        listClasses.append(ssclass);
+    }
+    classesDiv.append(listClasses);
+    $(".profile_page").append(classesDiv);
+}
 function queryNewsFeed() {
 }
 function updateNewsFeedDom() {
@@ -118,7 +136,7 @@ function updateNewsFeedDom() {
                 var containerDiv = $("<div>").addClass("content-box");
                 var pictureImg = $("<img>").addClass("profile_thumb").attr("src", "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/369611_1338030563_1155334149_q.jpg");
                 var eventDiv = $("<div>").addClass("name_class");
-                var nameAnchor = $("<a>").addClass("name").attr("href", "#").text("Someone");
+                var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text("Someone");
                 var textSpan = $("<span>").text(" is studying ");
                 var classAnchor = $("<a>").addClass("current_class").attr("href", "#").text(response[i].cls);
                 var textSpan2 = $("<span>").text(" in ");
@@ -136,6 +154,27 @@ function updateNewsFeedDom() {
                 containerDiv.append(infoP);
                 $(".news_feed").append(containerDiv);
             }
+            $(".name").click(function () {
+                var id = $(this).attr("id");
+                var myUrl = "/user/" + id + "";
+                console.log(id);
+                $.ajax({
+                    type: "get",
+                    url: myUrl,
+                    data: {
+                        id: id
+                    },
+                    success: function (response) {
+                        curUserDisplay = new SSUser();
+                        curUserDisplay.fullName = response.fullName;
+                        curUserDisplay.facebookID = response.facebookID;
+                        curUserDisplay.classIDs = response.classIDs;
+                        curUserDisplay.classNames = response.classNames;
+                        curUserDisplay.classNums = response.classNums;
+                        State.switchState(userPageState);
+                    }
+                });
+            });
         }
     });
 }
@@ -147,6 +186,7 @@ $(function () {
     var newsFeedState = new State($(".news_feed"), updateNewsFeedDom);
     var profilePageState = new State($(".profile_page"), updateProfileDom);
     var addEventState = new State($(".event_creation"), updateEventDom);
+    userPageState = new State($(".user_page"), updateUserPageDom);
     currentState = newsFeedState;
     newsFeedState.refreshDom();
     $("#friends").click(function () {

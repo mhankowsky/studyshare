@@ -154,7 +154,23 @@ passport.use(new FacebookStrategy({
 ));
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  res.send(req.user);
+  res.send({user : req.user});
+});
+
+app.get('/user/:id', ensureAuthenticated, function(req, res) {
+  User.findOne({_id: new ObjectId(req.body.id)}, function(err, rec) {
+    if (err) {
+     //TODO do something useful here...
+    }
+    
+    res.send({
+      fullName : rec.fullName,
+      facebookID : rec.facebookID,
+      classIDs : rec.classIDs,
+      classNames : rec.classNames,
+      classNums : rec.classNums
+    });
+  });
 });
 
 app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
