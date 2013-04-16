@@ -40,19 +40,24 @@ function updateProfileInformation() {
     });
 }
 function updateProfileDom() {
-    $(".profile_page").html("<h style='padding=5px'>Classes</h>");
+    $(".profile_page").html("");
+    var classesDiv = $("<div id='classesList'>");
+    classesDiv.append("<h>Classes</h>");
     if(classes.length === 0) {
-        $(".profile_page").append("<p>Join Classes</p>");
+        classesDiv.append("<p>Join Classes</p>");
     } else {
         var listClasses = $("<ul>");
         for(var i = 0; i < classes.length; i++) {
             var ssclass = $("<li>");
+            console.log(classes[i]);
             ssclass.append(classes[i].name);
             listClasses.append(ssclass);
         }
-        $(".profile_page").append(listClasses);
+        classesDiv.append(listClasses);
+        $(".profile_page").append(classesDiv);
     }
-    $(".profile_page").append("<h 'padding=5px'>Friends</h>");
+    var friendsDiv = $("<div id='friendsList'>");
+    friendsDiv.append("<h>Friends</h>");
     $.ajax({
         type: "get",
         url: "/facebook_friends",
@@ -67,7 +72,8 @@ function updateProfileDom() {
                 friend.append(picture);
                 listFriends.append(friend);
             }
-            $(".profile_page").append(listFriends);
+            friendsDiv.append(listFriends);
+            $(".profile_page").append(friendsDiv);
         }
     });
 }

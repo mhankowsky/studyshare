@@ -35,6 +35,7 @@ var mongoose = require('mongoose/'),
 
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
+
 var UserSchema = new Schema({
   facebookId: String,
   facebookAccessToken: String,
@@ -45,13 +46,15 @@ var UserSchema = new Schema({
           givenName : String,
           middleName : String
         },
-  classes: [{
-              name : String,
-              deptNum : Number,
-              classNum : Number,
-              owner : String,
-              students : [String]
-  		   }]
+  classIDs: [ObjectId]
+}, {strict: false});
+
+var ClassSchema = new Schema({
+  name: String,
+  deptNum: Number,
+  classNum: Number,
+  owner: ObjectId,
+  studentIDs: [ObjectId]
 });
 
 var BuildingSchema = new Schema({
@@ -81,6 +84,9 @@ var ClassSchema = new Schema({
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
 var Event = mongoose.model('Event', EventSchema, 'events');
+
+mongoose.model('Class', ClassSchema);
+var Class = mongoose.model('Class');
 
 
 // the bodyParser middleware allows us to parse the
@@ -149,8 +155,16 @@ passport.use(new FacebookStrategy({
 ));
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  res.send({ 
-    user: req.user 
+  var user = req.user;
+  
+  var classIDs = req.user.classIDs;
+  var classes = [];
+  
+  Class.find({}).where('_id').in(classIDs).exec(function(err, records) {
+    user.set("classes", records);
+    res.send({ 
+      user: user
+    });
   });
 });
 

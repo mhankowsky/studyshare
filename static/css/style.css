@@ -223,10 +223,17 @@ a:active {
  * *************************/
  
 h {
-  font-family: arial;
   font-size: 20px;
-  color: #ff00ff;
+  color: #0000ff;
+  padding: 4px 0 10px 0px;  
+}
+
+#classesList, #friendsList {
+  font-family: arial;
   margin: 0 0 20px 0;
-  padding: 4px 0 4px 10px;  
+  padding: 4px 0 4px 10px; 
+
+  border-style : solid;
+  border-width : 5px;
 }
 

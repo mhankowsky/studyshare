@@ -26,18 +26,22 @@ var UserSchema = new Schema({
         givenName: String,
         middleName: String
     },
-    classes: [
-        {
-            name: String,
-            deptNum: Number,
-            classNum: Number,
-            owner: String,
-            students: [
-                String
-            ]
-        }
+    classIDs: [
+        ObjectId
+    ]
+}, {
+    strict: false
+});
+var ClassSchema = new Schema({
+    name: String,
+    deptNum: Number,
+    classNum: Number,
+    owner: ObjectId,
+    studentIDs: [
+        ObjectId
     ]
 });
+<<<<<<< HEAD
 var BuildingSchema = new Schema({
     name: String,
     lat: Number,
@@ -66,6 +70,12 @@ var ClassSchema = new Schema({
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
 var Event = mongoose.model('Event', EventSchema, 'events');
+=======
+mongoose.model('User', UserSchema);
+var User = mongoose.model('User');
+mongoose.model('Class', ClassSchema);
+var Class = mongoose.model('Class');
+>>>>>>> Fuck Git
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 app.use(express.session({
@@ -123,8 +133,15 @@ passport.use(new FacebookStrategy({
     });
 }));
 app.get('/account', ensureAuthenticated, function (req, res) {
-    res.send({
-        user: req.user
+    var user = req.user;
+    var classIDs = req.user.classIDs;
+    var classes = [];
+    Class.find({
+    }).where('_id').in(classIDs).exec(function (err, records) {
+        user.set("classes", records);
+        res.send({
+            user: user
+        });
     });
 });
 app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
