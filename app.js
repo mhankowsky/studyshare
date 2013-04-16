@@ -26,16 +26,20 @@ var UserSchema = new Schema({
         givenName: String,
         middleName: String
     },
-    classes: [
-        {
-            name: String,
-            deptNum: Number,
-            classNum: Number,
-            owner: String,
-            students: [
-                String
-            ]
-        }
+    classIDs: [
+        ObjectId
+    ]
+}, {
+    strict: false
+});
+var ClassSchema = new Schema({
+    name: String,
+    num: Number,
+    deptNum: Number,
+    classNum: Number,
+    owner: ObjectId,
+    studentIDs: [
+        ObjectId
     ]
 });
 var BuildingSchema = new Schema({
@@ -51,16 +55,6 @@ var EventSchema = new Schema({
     endTime: String,
     owner: ObjectId,
     attendees: [
-        ObjectId
-    ]
-});
-var ClassSchema = new Schema({
-    name: String,
-    num: Number,
-    deptNum: Number,
-    classNum: Number,
-    owner: ObjectId,
-    students: [
         ObjectId
     ]
 });
@@ -125,8 +119,15 @@ passport.use(new FacebookStrategy({
     });
 }));
 app.get('/account', ensureAuthenticated, function (req, res) {
-    res.send({
-        user: req.user
+    var user = req.user;
+    var classIDs = req.user.classIDs;
+    var classes = [];
+    Class.find({
+    }).where('_id').in(classIDs).exec(function (err, records) {
+        user.set("classes", records);
+        res.send({
+            user: user
+        });
     });
 });
 app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
@@ -163,7 +164,7 @@ function ensureAuthenticated(req, res, next) {
     if(req.isAuthenticated()) {
         return next();
     }
-    res.redirect('/static/login.html');
+    res.redirect('auth/facebook');
 }
 app.get('/logout', function (req, res) {
     req.logout();
@@ -214,7 +215,7 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
         });
     });
 });
-app.get("/static/:staticFilename", function (request, response) {
+app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
 });
 app.listen(8889);

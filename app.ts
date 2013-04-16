@@ -35,6 +35,7 @@ var mongoose = require('mongoose/'),
 
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
+
 var UserSchema = new Schema({
   facebookId: String,
   facebookAccessToken: String,
@@ -45,13 +46,16 @@ var UserSchema = new Schema({
           givenName : String,
           middleName : String
         },
-  classes: [{
-              name : String,
-              deptNum : Number,
-              classNum : Number,
-              owner : String,
-              students : [String]
-  		   }]
+  classIDs: [ObjectId]
+}, {strict: false});
+
+var ClassSchema = new Schema({
+  name: String,
+  num: Number,
+  deptNum: Number,
+  classNum: Number,
+  owner: ObjectId,
+  studentIDs: [ObjectId]
 });
 
 var BuildingSchema = new Schema({
@@ -70,14 +74,6 @@ var EventSchema = new Schema({
   attendees: [ObjectId]
 });
 
-var ClassSchema = new Schema({
-  name: String,
-  num: Number,
-  deptNum: Number,
-  classNum: Number,
-  owner: ObjectId,
-  students: [ObjectId]
-});
 
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
@@ -151,8 +147,16 @@ passport.use(new FacebookStrategy({
 ));
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  res.send({ 
-    user: req.user 
+  var user = req.user;
+  
+  var classIDs = req.user.classIDs;
+  var classes = [];
+  
+  Class.find({}).where('_id').in(classIDs).exec(function(err, records) {
+    user.set("classes", records);
+    res.send({ 
+      user: user
+    });
   });
 });
 
@@ -208,7 +212,7 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { 
     return next();
   }
-  res.redirect('/static/login.html');
+  res.redirect('auth/facebook');
 }
 
 app.get('/logout', function(req, res){
@@ -257,7 +261,7 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
 //*****************************************************//
 
 // This is for serving files in the static directory
-app.get("/static/:staticFilename", function (request, response) {
+app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {
   response.sendfile("static/" + request.params.staticFilename);
 });
 
