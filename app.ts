@@ -72,6 +72,7 @@ var EventSchema = new Schema({
 
 var ClassSchema = new Schema({
   name: String,
+  num: Number,
   deptNum: Number,
   classNum: Number,
   owner: ObjectId,
@@ -80,7 +81,8 @@ var ClassSchema = new Schema({
 
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
-var Event = mongoose.model('Event', EventSchema, 'events');
+var AnEvent = mongoose.model('Event', EventSchema, 'events');
+var Class = mongoose.model('Class', ClassSchema, 'classes');
 
 
 // the bodyParser middleware allows us to parse the
@@ -215,91 +217,44 @@ app.get('/logout', function(req, res){
 });
 
 app.get('/buildings', function(req, res) {
-  Building.findOne({}, function(err, building) {
-    res.send(building);
+  Building.find({}, function(err, buildings) {
+    res.send(buildings);
   });
 });
 
-//******************Database Code**********************//
-//TODO SWTICH TO MONGOOSE
+app.get('/classes', function(req, res) {
+  Class.find({}, {name : 1, num : 1}, function(err, classes) {
+    res.send(classes);
+  });
+});
 
-var client = new mongo.Db(
-    dbName,
-    new mongo.Server(host, port),
-    optionsWithEnableWriteAccess
-);
+app.get('/events', function(req, res) {
+  AnEvent.find({}, function(err, events) {
+    res.send(events);
+  });
+});
 
-// Simple function to open the database
-function openDb(collection : string, onOpen){
-    client.open(onDbReady);
+app.post("/submit_event", ensureAuthenticated, function(req, res) {
+  //TODO error checking
+  var theEvent = new AnEvent();
+  theEvent.name = "Placeholder name";
+  Building.findOne({name : req.body.building}, function(err, theBuilding) {
+    theEvent.building = theBuilding._id;
+    Class.findOne({name : req.body.class}, function(err, theClass) {
+      theEvent.cls = theClass._id;
+      theEvent.owner = req.user._id;
+      theEvent.save(function(err) {
+        if(err) {
+          throw err;
+        } else {
+          res.send({success: true});
+        }
+      });
+    });
+  });
+});
 
-  function onDbReady(error){
-    if (error) {
-      throw error;
-    }
-    
-    client.collection(collection, onCollectionReady)
-  }
-
-  function onCollectionReady(error, sscollection) {
-    if (error) {
-      throw error;
-    }
-
-    onOpen(sscollection);
-  }
-}
-
-// Simple function to close access to the database
-function closeDb(){
-  client.close();
-}
-
-function insert(dbName, document) {
-  function onDbOpen(collection) {
-    collection.insert(document, onInsert);
-  }
-  openDb(dbName, onDbOpen);
-}
-
-function onInsert(err){
-  if (err) {
-    throw err;
-  }
-  console.log('documents inserted!');
-  closeDb();
-}
 //*****************************************************//
-
-function getClasses(query) {
-  var classesArray;
-  openDb("classesCollection", findClasses);
-  
-  function findClasses(collection) {
-    classesArray = collection.find({}).toArray(callback);
-    
-    function callback(error, doc) {
-      if (error) {
-        throw error;
-      }
-      
-      console.log(doc);
-      closeDb();
-    }
-  }
-  
-  return classesArray;
-}
-
-// get all classes
-app.get("/classes", function(request, response) {
-  var classesArray = getClasses({});
-  
-  response.send({
-    classes: classesArray,
-    success: true
-  });
-});
 
 // This is for serving files in the static directory
 app.get("/static/:staticFilename", function (request, response) {

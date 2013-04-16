@@ -52,6 +52,36 @@ function updateProfileInformation() {
   });
 }
 
+function updateBuildingsClasses() {
+  $.ajax({
+    type: "get",
+    url: "/buildings",
+    success: function(response) {
+      var buildings = response;
+      var i;
+      $("#building").html("");
+      for(i = 0; i < buildings.length; i++) {
+        var option = $("<option>").attr("value", buildings[i].name).text(buildings[i].name);
+        $("#building").append(option);
+      }
+    }
+  });
+
+  $.ajax({
+    type: "get",
+    url: "/classes",
+    success: function(response) {
+      var classes = response;
+      var i;
+      $("#class").html("");
+      for(i = 0; i < classes.length; i++) {
+        var option = $("<option>").attr("value", classes[i].name).text(classes[i].name);// + " (" + classes[i].num + ")");
+        $("#class").append(option);
+      }
+    }
+  });
+}
+
 function updateProfileDom() {
   $(".profile_page").html("<h>Classes</h>");
   if (classes.length === 0) {
@@ -93,31 +123,51 @@ function queryNewsFeed() {
 function updateNewsFeedDom() {
   $(".news_feed").html("loading...");
 
-  var containerDiv = $("<div>").addClass("content-box");
-  var pictureImg = $("<img>").addClass("profile_thumb").attr("src", "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/369611_1338030563_1155334149_q.jpg");
-  var eventDiv = $("<div>").addClass("name_class");
-  var nameAnchor = $("<a>").addClass("name").attr("href", "#").text("Daniel Deutsch");
-  var textSpan = $("<span>").text(" is studying ");
-  var classAnchor = $("<a>").addClass("current_class").attr("href", "#").text(" 15-237");
-  var timeSpan = $("<span>").addClass("time").text(" Tuesday, Monday 14 at 4:28pm");
-  var infoP = $("<p>").addClass("info").text("Working on term project.  Come join me on the 7th floor!");
+  $.ajax({
+    type: "get",
+    url: "/events",
+    success: function(response) {
+      var i;
+      $(".news_feed").html("");
+      for(i = 0; i < response.length; i++) {
+        var containerDiv = $("<div>").addClass("content-box");
+        var pictureImg = $("<img>").addClass("profile_thumb").attr("src", "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/369611_1338030563_1155334149_q.jpg");
+        var eventDiv = $("<div>").addClass("name_class");
+        var nameAnchor = $("<a>").addClass("name").attr("href", "#").text("Someone");
+        var textSpan = $("<span>").text(" is studying ");
+        var classAnchor = $("<a>").addClass("current_class").attr("href", "#").text(response[i].cls);
+        var textSpan2 = $("<span>").text(" in ");
+        var buildingAnchor = $("<a>").attr("href", "#").text(response[i].building);
+        var timeSpan = $("<span>").addClass("time").text(" Some time");
+        var infoP = $("<p>").addClass("info").text("Something something");
 
-  containerDiv.append(pictureImg);
-  containerDiv.append(eventDiv);
-  eventDiv.append(nameAnchor);
-  eventDiv.append(textSpan);
-  eventDiv.append(classAnchor);
-  eventDiv.append(timeSpan);
-  containerDiv.append(infoP);
+        containerDiv.append(pictureImg);
+        containerDiv.append(eventDiv);
+        eventDiv.append(nameAnchor);
+        eventDiv.append(textSpan);
+        eventDiv.append(classAnchor);
+        eventDiv.append(textSpan2);
+        eventDiv.append(buildingAnchor);
+        eventDiv.append(timeSpan);
+        containerDiv.append(infoP);
 
-  $(".news_feed").html("");
-  $(".news_feed").append(containerDiv);
+        $(".news_feed").append(containerDiv);
+      }
+    }
+  });
+
+}
+
+function updateEventDom() {
+
 }
 
 $(function() {
   updateProfileInformation();
+  updateBuildingsClasses();
   var newsFeedState : State = new State($(".news_feed"), updateNewsFeedDom);
   var profilePageState : State = new State($(".profile_page"), updateProfileDom);
+  var addEventState : State = new State($(".event_creation"), updateEventDom);
   //var friendsListState : State = new State($(".friends_list"), updateFriendsListDom);
   currentState = newsFeedState;
   newsFeedState.refreshDom();
@@ -126,6 +176,23 @@ $(function() {
   });
   $("#logo").click(function() {
     State.switchState(newsFeedState);
+  });
+  $("#create_event").click(function() {
+    State.switchState(addEventState);
+  });
+
+  $("#submit_event").click(function() {
+    $.ajax({
+      type: "post",
+      url: "/submit_event",
+      data: {
+        class: $("#class").val(),
+        building: $("#building").val()
+      },
+      success: function(response) {
+        State.switchState(newsFeedState);
+      }
+    });
   });
 
   var hammertime = new Hammer($(".toucharea"));
