@@ -65,13 +65,11 @@ function updateFriendsListDom() {
 }
 
 function queryNewsFeed() {
-  
+
 }
 
 function updateNewsFeedDom() {
   $(".news_feed").html("loading...");
-
-
 
   var containerDiv = $("<div>").addClass("content-box");
   var pictureImg = $("<img>").addClass("profile_thumb").attr("src", "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/369611_1338030563_1155334149_q.jpg");
@@ -99,6 +97,7 @@ $(function() {
   var newsFeedState : State = new State($(".news_feed"), updateNewsFeedDom);
   var friendsListState : State = new State($(".friends_list"), updateFriendsListDom);
   currentState = newsFeedState;
+  newsFeedState.refreshDom();
   $("#friends").click(function() {
     State.switchState(friendsListState);
   });

@@ -51,7 +51,10 @@ function updateFriendsListDom() {
         }
     });
 }
+function queryNewsFeed() {
+}
 function updateNewsFeedDom() {
+    console.log("updatingnewsfeed");
     $(".news_feed").html("loading...");
     var containerDiv = $("<div>").addClass("content-box");
     var pictureImg = $("<img>").addClass("profile_thumb").attr("src", "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/369611_1338030563_1155334149_q.jpg");
@@ -76,6 +79,7 @@ $(function () {
     var newsFeedState = new State($(".news_feed"), updateNewsFeedDom);
     var friendsListState = new State($(".friends_list"), updateFriendsListDom);
     currentState = newsFeedState;
+    newsFeedState.refreshDom();
     $("#friends").click(function () {
         State.switchState(friendsListState);
     });
@@ -83,7 +87,7 @@ $(function () {
         State.switchState(newsFeedState);
     });
     var hammertime = new Hammer($(".toucharea"));
-    hammertime.on("swiperight swipeleft tap", function (ev) {
+    hammertime.on("swiperight swipeleft", function (ev) {
         if(ev.type === "swiperight") {
             $("#menu").show("slow");
         } else if(ev.type === "swipeleft") {

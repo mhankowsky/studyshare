@@ -172,7 +172,7 @@ app.get('/auth/facebook/callback',
 //   login page.
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { 
-    return next(); 
+    return next();
   }
   res.redirect('/static/login.html');
 }
