@@ -41,7 +41,6 @@ var ClassSchema = new Schema({
         ObjectId
     ]
 });
-<<<<<<< HEAD
 var BuildingSchema = new Schema({
     name: String,
     lat: Number,
@@ -58,24 +57,11 @@ var EventSchema = new Schema({
         ObjectId
     ]
 });
-var ClassSchema = new Schema({
-    name: String,
-    deptNum: Number,
-    classNum: Number,
-    owner: ObjectId,
-    students: [
-        ObjectId
-    ]
-});
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
 var Event = mongoose.model('Event', EventSchema, 'events');
-=======
-mongoose.model('User', UserSchema);
-var User = mongoose.model('User');
 mongoose.model('Class', ClassSchema);
 var Class = mongoose.model('Class');
->>>>>>> Fuck Git
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 app.use(express.session({

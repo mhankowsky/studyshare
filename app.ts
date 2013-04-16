@@ -73,14 +73,6 @@ var EventSchema = new Schema({
   attendees: [ObjectId]
 });
 
-var ClassSchema = new Schema({
-  name: String,
-  deptNum: Number,
-  classNum: Number,
-  owner: ObjectId,
-  students: [ObjectId]
-});
-
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
 var Event = mongoose.model('Event', EventSchema, 'events');
