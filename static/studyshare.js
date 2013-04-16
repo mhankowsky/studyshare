@@ -1,6 +1,12 @@
 var fullName;
 var facebookId;
 var currentState;
+var classes;
+var SSClass = (function () {
+    function SSClass() { }
+    return SSClass;
+})();
+;
 var State = (function () {
     function State(domObject, refreshDom) {
         this.domObject = domObject;
@@ -25,6 +31,7 @@ function updateProfileInformation() {
         success: function (response) {
             facebookId = response.user.facebookId;
             fullName = response.user.fullName;
+            classes = response.user.classes;
             $("#userName").text(fullName);
             $("#personal_picture").attr("src", response.user.profilePicture);
         },
@@ -32,22 +39,35 @@ function updateProfileInformation() {
         }
     });
 }
-function updateFriendsListDom() {
-    $(".friends_list").html("loading...");
+function updateProfileDom() {
+    $(".profile_page").html("<h style='padding=5px'>Classes</h>");
+    if(classes.length === 0) {
+        $(".profile_page").append("<p>Join Classes</p>");
+    } else {
+        var listClasses = $("<ul>");
+        for(var i = 0; i < classes.length; i++) {
+            var ssclass = $("<li>");
+            ssclass.append(classes[i].name);
+            listClasses.append(ssclass);
+        }
+        $(".profile_page").append(listClasses);
+    }
+    $(".profile_page").append("<h 'padding=5px'>Friends</h>");
     $.ajax({
         type: "get",
         url: "/facebook_friends",
         success: function (response) {
-            $(".friends_list").html("");
             var i;
+            var listFriends = $("<ul>");
             for(i = 0; i < response.length; i++) {
                 var friend = $("<li>");
                 var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
                 var friendName = $("<span>").html(response[i].fullName);
                 friend.append(friendName);
                 friend.append(picture);
-                $(".friends_list").append(friend);
+                listFriends.append(friend);
             }
+            $(".profile_page").append(listFriends);
         }
     });
 }
@@ -77,11 +97,11 @@ function updateNewsFeedDom() {
 $(function () {
     updateProfileInformation();
     var newsFeedState = new State($(".news_feed"), updateNewsFeedDom);
-    var friendsListState = new State($(".friends_list"), updateFriendsListDom);
+    var profilePageState = new State($(".profile_page"), updateProfileDom);
     currentState = newsFeedState;
     newsFeedState.refreshDom();
     $("#friends").click(function () {
-        State.switchState(friendsListState);
+        State.switchState(profilePageState);
     });
     $("#logo").click(function () {
         State.switchState(newsFeedState);

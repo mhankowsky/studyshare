@@ -45,7 +45,14 @@ var UserSchema = new Schema({
           familyName : String,
           givenName : String,
           middleName : String
-        }
+        },
+  classes: [{
+              name : String,
+              deptNum : Number,
+              classNum : Number,
+              owner : String,
+              students : [String]
+  		   }]
 });
 
 mongoose.model('User', UserSchema);
@@ -102,6 +109,7 @@ passport.use(new FacebookStrategy({
         user.name = profile.name;
         user.profilePicture = profile.photos[0].value;
         user.facebookAccessToken = accessToken;
+        user.classes = [];
         user.save(function(err1) {
           if(err1) {
             throw err1; 
