@@ -212,7 +212,7 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { 
     return next();
   }
-  res.redirect('auth/facebook');
+  res.redirect('/auth/facebook');
 }
 
 app.get('/logout', function(req, res){
