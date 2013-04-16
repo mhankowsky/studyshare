@@ -37,7 +37,7 @@ var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 
 var UserSchema = new Schema({
-  facebookId: String,
+  facebookID: String,
   facebookAccessToken: String,
   fullName: String,
   profilePicture: String,
@@ -46,6 +46,7 @@ var UserSchema = new Schema({
           givenName : String,
           middleName : String
         },
+  classNames: [String],
   classIDs: [ObjectId]
 }, {strict: false});
 
@@ -54,9 +55,11 @@ var ClassSchema = new Schema({
   num: Number,
   deptNum: Number,
   classNum: Number,
-  owner: ObjectId,
+  ownerName: String,
+  ownerID: ObjectId,
+  studentNames : [String],
   studentIDs: [ObjectId]
-});
+}, {strict: false});
 
 var BuildingSchema = new Schema({
   name: String,
@@ -66,20 +69,23 @@ var BuildingSchema = new Schema({
 
 var EventSchema = new Schema({
   name: String,
-  cls: ObjectId,
-  building: ObjectId, //TODO change to location (drill down)
-  startTime: String,
-  endTime: String,
-  owner: ObjectId,
-  attendees: [ObjectId]
+  clsName : String,
+  clsNum : Number,
+  clsID: ObjectId,
+  buildingName: String,
+  buildingID: ObjectId, //TODO change to location (drill down)
+  startTime: {type: Date, default: Date.now},
+  endTime: {type: Date, default: Date.now},
+  ownerName: String,
+  ownerID: ObjectId,
+  attendeesNames: [String],
+  attendeesIDs: [ObjectId]
 });
-
 
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
 var AnEvent = mongoose.model('Event', EventSchema, 'events');
 var Class = mongoose.model('Class', ClassSchema, 'classes');
-
 
 // the bodyParser middleware allows us to parse the
 // body of a request
@@ -103,7 +109,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(user, done) {
-  User.findOne({facebookId: user.facebookId}, function (err, user) {
+  User.findOne({facebookID: user.facebookID}, function (err, user) {
     done(err, user);
   });
 });
@@ -120,18 +126,19 @@ passport.use(new FacebookStrategy({
     passReqToCallback: true
   },
   function(req, accessToken, refreshToken, profile, done) {
-    User.findOne({facebookId : profile.id}, function(err, user) {
+    User.findOne({facebookID : profile.id}, function(err, user) {
       if(err) {
         //TODO do something useful here...
       }
       if(user === null) {
         var user = new User();
-        user.facebookId = profile.id;
+        user.facebookID = profile.id;
         user.fullName = profile.displayName;
         user.name = profile.name;
         user.profilePicture = profile.photos[0].value;
         user.facebookAccessToken = accessToken;
-        user.classes = [];
+        user.classNames = [];
+        user.classIDs = [];
         user.save(function(err1) {
           if(err1) {
             throw err1; 
@@ -147,21 +154,11 @@ passport.use(new FacebookStrategy({
 ));
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  var user = req.user;
-  
-  var classIDs = req.user.classIDs;
-  var classes = [];
-  
-  Class.find({}).where('_id').in(classIDs).exec(function(err, records) {
-    user.set("classes", records);
-    res.send({ 
-      user: user
-    });
-  });
+  res.send(req.user);
 });
 
 app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
-  var theUrl = "https://graph.facebook.com/" + req.user.facebookId + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+  var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
   $.ajax({
     type: "get",
     url: theUrl,
@@ -170,7 +167,7 @@ app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
       var idArray = $.map(response.data, function(val, i) {
         return val.id;
       });
-      User.find({}, {facebookAccessToken : 0}).where("facebookId").in(idArray).exec(function(err, records) {
+      User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
         res.send(records);
       });
     },
@@ -200,7 +197,8 @@ app.get('/auth/facebook/callback',
   }),
   function(request, response) {
     response.redirect('/static/index.html');
-  });
+  }
+);
 
 
 // Simple route middleware to ensure user is authenticated.
@@ -232,6 +230,27 @@ app.get('/classes', function(req, res) {
   });
 });
 
+/*function fillEventsAndSend(events, filledEvents, res) {
+  if(events.length === 0) {
+    res.send(filledEvents);
+  } else {
+    User.findOne({_id : events[0].owner}, function(err, user) {
+      console.log(user);
+      Class.findOne({_id : events[0].cls}, function(err, cls) {
+        Building.findOne({_id : events[0].building}, function(err, building) {
+          var theEvent = events[0];
+          theEvent.set("owner", user);
+          theEvent.set("cls", cls);
+          theEvent.set("building", building);
+          filledEvents.push(theEvent);
+          events.splice(0, 1);
+          return fillEventsAndSend(events, filledEvents, res);
+        });
+      });
+    });
+  }
+}*/
+
 app.get('/events', function(req, res) {
   AnEvent.find({}, function(err, events) {
     res.send(events);
@@ -243,10 +262,16 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
   var theEvent = new AnEvent();
   theEvent.name = "Placeholder name";
   Building.findOne({name : req.body.building}, function(err, theBuilding) {
-    theEvent.building = theBuilding._id;
+    theEvent.buildingName = theBuilding.name;
+    theEvent.buildingID = theBuilding._id;
     Class.findOne({name : req.body.class}, function(err, theClass) {
-      theEvent.cls = theClass._id;
-      theEvent.owner = req.user._id;
+      theEvent.clsName = theClass.name;
+      theEvent.clsNum = theClass.num;
+      theEvent.clsID = theClass._id;
+      theEvent.ownerName = req.user.fullName;
+      theEvent.ownerID = req.user._id;
+      theEvent.attendeesNames = [req.user.fullName];
+      theEvent.attendeesIDs = [req.user._id];
       theEvent.save(function(err) {
         if(err) {
           throw err;

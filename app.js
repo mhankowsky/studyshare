@@ -17,7 +17,7 @@ var mongoose = require('mongoose/'), db = mongoose.connect('mongodb://localhost/
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var UserSchema = new Schema({
-    facebookId: String,
+    facebookID: String,
     facebookAccessToken: String,
     fullName: String,
     profilePicture: String,
@@ -26,6 +26,9 @@ var UserSchema = new Schema({
         givenName: String,
         middleName: String
     },
+    classNames: [
+        String
+    ],
     classIDs: [
         ObjectId
     ]
@@ -37,10 +40,16 @@ var ClassSchema = new Schema({
     num: Number,
     deptNum: Number,
     classNum: Number,
-    owner: ObjectId,
+    ownerName: String,
+    ownerID: ObjectId,
+    studentNames: [
+        String
+    ],
     studentIDs: [
         ObjectId
     ]
+}, {
+    strict: false
 });
 var BuildingSchema = new Schema({
     name: String,
@@ -49,12 +58,25 @@ var BuildingSchema = new Schema({
 });
 var EventSchema = new Schema({
     name: String,
-    cls: ObjectId,
-    building: ObjectId,
-    startTime: String,
-    endTime: String,
-    owner: ObjectId,
-    attendees: [
+    clsName: String,
+    clsNum: Number,
+    clsID: ObjectId,
+    buildingName: String,
+    buildingID: ObjectId,
+    startTime: {
+        type: Date,
+        default: Date.now
+    },
+    endTime: {
+        type: Date,
+        default: Date.now
+    },
+    ownerName: String,
+    ownerID: ObjectId,
+    attendeesNames: [
+        String
+    ],
+    attendeesIDs: [
         ObjectId
     ]
 });
@@ -76,7 +98,7 @@ passport.serializeUser(function (user, done) {
 });
 passport.deserializeUser(function (user, done) {
     User.findOne({
-        facebookId: user.facebookId
+        facebookID: user.facebookID
     }, function (err, user) {
         done(err, user);
     });
@@ -94,18 +116,19 @@ passport.use(new FacebookStrategy({
     passReqToCallback: true
 }, function (req, accessToken, refreshToken, profile, done) {
     User.findOne({
-        facebookId: profile.id
+        facebookID: profile.id
     }, function (err, user) {
         if(err) {
         }
         if(user === null) {
             var user = new User();
-            user.facebookId = profile.id;
+            user.facebookID = profile.id;
             user.fullName = profile.displayName;
             user.name = profile.name;
             user.profilePicture = profile.photos[0].value;
             user.facebookAccessToken = accessToken;
-            user.classes = [];
+            user.classNames = [];
+            user.classIDs = [];
             user.save(function (err1) {
                 if(err1) {
                     throw err1;
@@ -119,19 +142,10 @@ passport.use(new FacebookStrategy({
     });
 }));
 app.get('/account', ensureAuthenticated, function (req, res) {
-    var user = req.user;
-    var classIDs = req.user.classIDs;
-    var classes = [];
-    Class.find({
-    }).where('_id').in(classIDs).exec(function (err, records) {
-        user.set("classes", records);
-        res.send({
-            user: user
-        });
-    });
+    res.send(req.user);
 });
 app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
-    var theUrl = "https://graph.facebook.com/" + req.user.facebookId + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+    var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
     $.ajax({
         type: "get",
         url: theUrl,
@@ -142,7 +156,7 @@ app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
             User.find({
             }, {
                 facebookAccessToken: 0
-            }).where("facebookId").in(idArray).exec(function (err, records) {
+            }).where("facebookID").in(idArray).exec(function (err, records) {
                 res.send(records);
             });
         },
@@ -197,12 +211,22 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
     Building.findOne({
         name: req.body.building
     }, function (err, theBuilding) {
-        theEvent.building = theBuilding._id;
+        theEvent.buildingName = theBuilding.name;
+        theEvent.buildingID = theBuilding._id;
         Class.findOne({
             name: req.body.class
         }, function (err, theClass) {
-            theEvent.cls = theClass._id;
-            theEvent.owner = req.user._id;
+            theEvent.clsName = theClass.name;
+            theEvent.clsNum = theClass.num;
+            theEvent.clsID = theClass._id;
+            theEvent.ownerName = req.user.fullName;
+            theEvent.ownerID = req.user._id;
+            theEvent.attendeesNames = [
+                req.user.fullName
+            ];
+            theEvent.attendeesIDs = [
+                req.user._id
+            ];
             theEvent.save(function (err) {
                 if(err) {
                     throw err;
