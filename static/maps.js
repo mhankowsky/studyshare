@@ -9,7 +9,7 @@ $(function() {
       $("#coordinates").html("longitude: " + position.coords.longitude + ", latitude: " + position.coords.latitude);
       var mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
       mapString = mapString + position.coords.latitude + "," + position.coords.longitude;
-      mapString += "&maptype=hybrid&zoom=14&size=400x400&sensor=true&markers=size:mid|color:red|40.443078,-79.942092";
+      mapString += "&maptype=hybrid&zoom=17&size=400x400&sensor=true&markers=size:mid|color:red|40.443078,-79.942092";
       mapString += "&markers=size:mid|color:blue|" + position.coords.latitude + "," + position.coords.longitude;
       $("#map").attr("src", mapString);
       //$("#distance").html(calculateDistance(position.coords.longitude, position.coords.latitude) + " km");

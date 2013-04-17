@@ -5,6 +5,8 @@ var classIDs;
 var classNames;
 var userPageState;
 var curUserDisplay;
+var currentLong;
+var currentLat;
 var SSUser = (function () {
     function SSUser() { }
     return SSUser;
@@ -157,7 +159,6 @@ function updateUserPageDom() {
     });
     $(".name").click(function () {
         var id = $(this).attr("id");
-        console.log(id);
         $.ajax({
             type: "get",
             url: "/user/" + id,
@@ -180,7 +181,6 @@ function setPicture(pictureElement, theEvent) {
         url: "/user/" + theEvent.ownerID.toString(),
         success: function (response) {
             pictureElement.attr("src") , response.profilePicture;
-            console.log("setting " + theEvent.ownerID.toString());
             $(".profile_thumb." + theEvent.ownerID.toString()).attr("src", response.profilePicture);
         }
     });
@@ -236,6 +236,21 @@ function updateNewsFeedDom() {
     });
 }
 function updateEventDom() {
+    if(!navigator.geolocation) {
+        return;
+    } else {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            currentLong = position.coords.longitude;
+            currentLat = position.coords.latitude;
+            var mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
+            mapString = mapString + currentLat + "," + currentLong;
+            mapString += "&maptype=hybrid&zoom=17&size=400x400&sensor=true&markers=size:mid|color:red|40.443078,-79.942092";
+            mapString += "&markers=size:mid|color:blue|" + currentLat + "," + currentLong;
+            $("#map").attr("src", mapString);
+            $("#map").show();
+            $("#loading_map").hide();
+        });
+    }
 }
 $(function () {
     updateProfileInformation();
