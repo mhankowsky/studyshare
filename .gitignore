@@ -1,3 +1,5 @@
 *.ts~
 *.swp
 .DS_Store
+*.gitignore~
+data/db

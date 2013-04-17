@@ -1,5 +1,6 @@
 var express = require("express");
 var app = express();
+var $ = require("jquery");
 var fs = require("fs");
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
@@ -16,20 +17,74 @@ var mongoose = require('mongoose/'), db = mongoose.connect('mongodb://localhost/
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var UserSchema = new Schema({
-    id: ObjectId,
-    facebookId: String,
+    facebookID: String,
     facebookAccessToken: String,
-    facebookRefreshToken: String,
     fullName: String,
     profilePicture: String,
     name: {
         familyName: String,
         givenName: String,
         middleName: String
-    }
+    },
+    classNames: [
+        String
+    ],
+    classIDs: [
+        ObjectId
+    ]
+}, {
+    strict: false
 });
-mongoose.model('User', UserSchema);
-var User = mongoose.model('User');
+var ClassSchema = new Schema({
+    name: String,
+    num: Number,
+    deptNum: Number,
+    classNum: Number,
+    ownerName: String,
+    ownerID: ObjectId,
+    studentNames: [
+        String
+    ],
+    studentIDs: [
+        ObjectId
+    ]
+}, {
+    strict: false
+});
+var BuildingSchema = new Schema({
+    name: String,
+    lat: Number,
+    long: Number
+});
+var EventSchema = new Schema({
+    name: String,
+    clsName: String,
+    clsNum: Number,
+    clsID: ObjectId,
+    buildingName: String,
+    buildingID: ObjectId,
+    startTime: {
+        type: Date,
+        default: Date.now
+    },
+    endTime: {
+        type: Date,
+        default: Date.now
+    },
+    ownerName: String,
+    ownerID: ObjectId,
+    info: String,
+    attendeesNames: [
+        String
+    ],
+    attendeesIDs: [
+        ObjectId
+    ]
+});
+var User = mongoose.model('User', UserSchema, 'users');
+var Building = mongoose.model('Building', BuildingSchema, 'buildings');
+var AnEvent = mongoose.model('Event', EventSchema, 'events');
+var Class = mongoose.model('Class', ClassSchema, 'classes');
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 app.use(express.session({
@@ -44,7 +99,7 @@ passport.serializeUser(function (user, done) {
 });
 passport.deserializeUser(function (user, done) {
     User.findOne({
-        facebookId: user.facebookId
+        facebookID: user.facebookID
     }, function (err, user) {
         done(err, user);
     });
@@ -62,27 +117,27 @@ passport.use(new FacebookStrategy({
     passReqToCallback: true
 }, function (req, accessToken, refreshToken, profile, done) {
     User.findOne({
-        facebookId: profile.id
+        facebookID: profile.id
     }, function (err, user) {
         if(err) {
         }
         if(user === null) {
             var user = new User();
-            user.facebookId = profile.id;
+            user.facebookID = profile.id;
             user.fullName = profile.displayName;
             user.name = profile.name;
             user.profilePicture = profile.photos[0].value;
             user.facebookAccessToken = accessToken;
-            user.facebookRefreshToken = refreshToken;
-            user.save(function (err) {
-                if(err) {
-                    throw err;
+            user.classNames = [];
+            user.classIDs = [];
+            user.save(function (err1) {
+                if(err1) {
+                    throw err1;
                 }
                 done(null, user);
             });
         } else {
             user.facebookAccessToken = accessToken;
-            user.facebookRefreshToken = refreshToken;
             done(null, user);
         }
     });
@@ -90,6 +145,66 @@ passport.use(new FacebookStrategy({
 app.get('/account', ensureAuthenticated, function (req, res) {
     res.send({
         user: req.user
+    });
+});
+app.get('/user/:id', ensureAuthenticated, function (req, res) {
+    User.findOne({
+        _id: req.params.id
+    }, function (err, rec) {
+        if(err) {
+        }
+        res.send({
+            fullName: rec.fullName,
+            profilePicture: rec.profilePicture,
+            facebookID: rec.facebookID,
+            classIDs: rec.classIDs,
+            classNames: rec.classNames,
+            classNums: rec.classNums
+        });
+    });
+});
+app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
+    var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+    $.ajax({
+        type: "get",
+        url: theUrl,
+        success: function (response) {
+            var idArray = $.map(response.data, function (val, i) {
+                return val.id;
+            });
+            User.find({
+            }, {
+                facebookAccessToken: 0
+            }).where("facebookID").in(idArray).exec(function (err, records) {
+                res.send(records);
+            });
+        },
+        error: function (response) {
+            console.log("error :(?");
+            res.send(response);
+        }
+    });
+});
+app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
+    var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+    $.ajax({
+        type: "get",
+        url: theUrl,
+        success: function (response) {
+            var idArray = $.map(response.data, function (val, i) {
+                return val.id;
+            });
+            User.find({
+            }, {
+                facebookAccessToken: 0
+            }).where("facebookID").in(idArray).exec(function (err, records) {
+                res.send(records);
+            });
+        },
+        error: function (response) {
+            console.log("error :(?");
+            res.send(response);
+        }
     });
 });
 app.get('/auth/facebook', passport.authorize('facebook', {
@@ -104,69 +219,69 @@ function ensureAuthenticated(req, res, next) {
     if(req.isAuthenticated()) {
         return next();
     }
-    res.redirect('/static/login.html');
+    res.redirect('/auth/facebook');
 }
 app.get('/logout', function (req, res) {
     req.logout();
     res.redirect('/static/login.html');
 });
-var client = new mongo.Db(dbName, new mongo.Server(host, port), optionsWithEnableWriteAccess);
-function openDb(collection, onOpen) {
-    client.open(onDbReady);
-    function onDbReady(error) {
-        if(error) {
-            throw error;
-        }
-        client.collection(collection, onCollectionReady);
-    }
-    function onCollectionReady(error, sscollection) {
-        if(error) {
-            throw error;
-        }
-        onOpen(sscollection);
-    }
-}
-function closeDb() {
-    client.close();
-}
-function insert(dbName, document) {
-    function onDbOpen(collection) {
-        collection.insert(document, onInsert);
-    }
-    openDb(dbName, onDbOpen);
-}
-function onInsert(err) {
-    if(err) {
-        throw err;
-    }
-    console.log('documents inserted!');
-    closeDb();
-}
-function getClasses(query) {
-    var classesArray;
-    openDb("classesCollection", findClasses);
-    function findClasses(collection) {
-        classesArray = collection.find({
-        }).toArray(callback);
-        function callback(error, doc) {
-            if(error) {
-                throw error;
-            }
-            console.log(doc);
-            closeDb();
-        }
-    }
-    return classesArray;
-}
-app.get("/classes", function (request, response) {
-    var classesArray = getClasses({
-    });
-    response.send({
-        classes: classesArray,
-        success: true
+app.get('/buildings', function (req, res) {
+    Building.find({
+    }, function (err, buildings) {
+        res.send(buildings);
     });
 });
-app.get("/static/:staticFilename", function (request, response) {
+app.get('/classes', function (req, res) {
+    Class.find({
+    }, {
+        name: 1,
+        num: 1
+    }, function (err, classes) {
+        res.send(classes);
+    });
+});
+app.get('/events', function (req, res) {
+    AnEvent.find({
+    }, function (err, events) {
+        res.send(events);
+    });
+});
+app.post("/submit_event", ensureAuthenticated, function (req, res) {
+    var theEvent = new AnEvent();
+    theEvent.name = "Placeholder name";
+    Building.findOne({
+        name: req.body.building
+    }, function (err, theBuilding) {
+        theEvent.buildingName = theBuilding.name;
+        theEvent.buildingID = theBuilding._id;
+        Class.findOne({
+            name: req.body.class
+        }, function (err, theClass) {
+            theEvent.clsName = theClass.name;
+            theEvent.clsNum = theClass.num;
+            theEvent.clsID = theClass._id;
+            theEvent.ownerName = req.user.fullName;
+            theEvent.ownerID = req.user._id;
+            theEvent.attendeesNames = [
+                req.user.fullName
+            ];
+            theEvent.attendeesIDs = [
+                req.user._id
+            ];
+            theEvent.info = req.body.info;
+            theEvent.save(function (err) {
+                if(err) {
+                    throw err;
+                } else {
+                    res.send({
+                        success: true
+                    });
+                }
+            });
+        });
+    });
+});
+app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
 });
 app.listen(8889);
