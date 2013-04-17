@@ -78,6 +78,7 @@ var EventSchema = new Schema({
   endTime: {type: Date, default: Date.now},
   ownerName: String,
   ownerID: ObjectId,
+  info: String,
   attendeesNames: [String],
   attendeesIDs: [ObjectId]
 });
@@ -288,6 +289,7 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
       theEvent.ownerID = req.user._id;
       theEvent.attendeesNames = [req.user.fullName];
       theEvent.attendeesIDs = [req.user._id];
+      theEvent.info = req.body.info;
       theEvent.save(function(err) {
         if(err) {
           throw err;

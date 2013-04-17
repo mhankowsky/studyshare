@@ -183,13 +183,13 @@ function updateNewsFeedDom() {
         var containerDiv = $("<div>").addClass("content-box");
         var pictureImg = $("<img>").addClass("profile_thumb").attr("src", "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/369611_1338030563_1155334149_q.jpg");
         var eventDiv = $("<div>").addClass("name_class");
-        var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text("Someone");
+        var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text(response[i].ownerName);
         var textSpan = $("<span>").text(" is studying ");
-        var classAnchor = $("<a>").addClass("current_class").attr("href", "#").text(response[i].cls);
+        var classAnchor = $("<a>").addClass("current_class").attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
         var textSpan2 = $("<span>").text(" in ");
-        var buildingAnchor = $("<a>").attr("href", "#").text(response[i].building);
-        var timeSpan = $("<span>").addClass("time").text(" Some time");
-        var infoP = $("<p>").addClass("info").text("Something something");
+        var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
+        var timeSpan = $("<span>").addClass("time").text(response[i].startTime);
+        var infoP = $("<p>").addClass("info").text(response[i].info);
 
         containerDiv.append(pictureImg);
         containerDiv.append(eventDiv);
@@ -261,7 +261,8 @@ $(function() {
       url: "/submit_event",
       data: {
         class: $("#class").val(),
-        building: $("#building").val()
+        building: $("#building").val(),
+        info: $("#info").val()
       },
       success: function(response) {
         State.switchState(newsFeedState);

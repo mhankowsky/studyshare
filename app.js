@@ -73,6 +73,7 @@ var EventSchema = new Schema({
     },
     ownerName: String,
     ownerID: ObjectId,
+    info: String,
     attendeesNames: [
         String
     ],
@@ -244,6 +245,7 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
             theEvent.attendeesIDs = [
                 req.user._id
             ];
+            theEvent.info = req.body.info;
             theEvent.save(function (err) {
                 if(err) {
                     throw err;
