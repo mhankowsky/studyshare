@@ -178,9 +178,6 @@ function updateNewsFeedDom() {
                 $.ajax({
                     type: "get",
                     url: "/user/" + id,
-                    data: {
-                        id: id
-                    },
                     success: function (response) {
                         curUserDisplay = new SSUser();
                         curUserDisplay.fullName = response.user.fullName;
