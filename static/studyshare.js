@@ -188,10 +188,10 @@ function updateNewsFeedDom() {
                     url: "/user/" + id,
                     success: function (response) {
                         curUserDisplay = new SSUser();
-                        curUserDisplay.fullName = response.user.fullName;
-                        curUserDisplay.facebookID = response.user.facebookID;
+                        curUserDisplay.fullName = response.fullName;
+                        curUserDisplay.facebookID = response.facebookID;
                         curUserDisplay.classIDs = response.classIDs;
-                        curUserDisplay.classNames = response.user.classNames;
+                        curUserDisplay.classNames = response.classNames;
                         State.switchState(userPageState);
                     }
                 });
