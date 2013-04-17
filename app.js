@@ -281,6 +281,40 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
         });
     });
 });
+app.put("/add_class", ensureAuthenticated, function (req, res) {
+    var newClassIDs;
+    var newClassNames;
+    Class.findOne({
+        name: req.body.class
+    }, function (err, theClass) {
+        User.findOne({
+            facebookID: req.user.facebookID
+        }, function (err, theUser) {
+            newClassIDs = theUser.classIDs;
+            if(newClassIDs.indexOf(theClass._id) === -1) {
+                newClassIDs.push(theClass._id);
+            }
+            newClassNames = theUser.classNames;
+            if(newClassNames.indexOf(theClass.name) === -1) {
+                newClassNames.push(theClass.name);
+            }
+            User.update({
+                facebookID: req.user.facebookID
+            }, {
+                $set: {
+                    classIDs: newClassIDs,
+                    classNames: newClassNames
+                }
+            }, function (err) {
+                if(err) {
+                }
+                res.send({
+                    success: true
+                });
+            });
+        });
+    });
+});
 app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
 });

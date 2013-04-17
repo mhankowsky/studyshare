@@ -69,6 +69,11 @@ function updateBuildingsClasses() {
                 var option = $("<option>").attr("value", classes[i].name).text(classes[i].name);
                 $("#class").append(option);
             }
+            $("#ACclass").html("");
+            for(i = 0; i < classes.length; i++) {
+                var option = $("<option>").attr("value", classes[i].name).text(classes[i].name);
+                $("#ACclass").append(option);
+            }
         }
     });
 }
@@ -258,12 +263,15 @@ function updateEventDom() {
         });
     }
 }
+function updateClassDom() {
+}
 $(function () {
     updateProfileInformation();
     updateBuildingsClasses();
     var newsFeedState = new State($(".news_feed"), updateNewsFeedDom);
     var profilePageState = new State($(".profile_page"), updateProfileDom);
     var addEventState = new State($(".event_creation"), updateEventDom);
+    var addClassState = new State($(".add_class"), updateClassDom);
     userPageState = new State($(".user_page"), updateUserPageDom);
     currentState = newsFeedState;
     newsFeedState.refreshDom();
@@ -276,6 +284,9 @@ $(function () {
     $("#create_event").click(function () {
         State.switchState(addEventState);
     });
+    $("#classes").click(function () {
+        State.switchState(addClassState);
+    });
     $("#submit_event").click(function () {
         $.ajax({
             type: "post",
@@ -287,6 +298,18 @@ $(function () {
             },
             success: function (response) {
                 State.switchState(newsFeedState);
+            }
+        });
+    });
+    $("#add_class").click(function () {
+        $.ajax({
+            type: "put",
+            url: "/add_class",
+            data: {
+                class: $("#ACclass").val()
+            },
+            success: function (response) {
+                updateProfileInformation();
             }
         });
     });
