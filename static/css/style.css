@@ -228,7 +228,7 @@ h {
   padding: 4px 0 10px 0px;  
 }
 
-#classesList, #friendsList {
+#nameTitle, #classesList, #friendsList {
   font-family: arial;
   margin: 0 0 20px 0;
   padding: 4px 0 4px 10px; 

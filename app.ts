@@ -197,7 +197,7 @@ app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/facebook_friends/:id', ensureAuthenticated, function(req, res) {
-  var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+  var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + req.user.facebookAccessToken;
   $.ajax({
     type: "get",
     url: theUrl,

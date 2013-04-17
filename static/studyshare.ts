@@ -93,6 +93,11 @@ function updateBuildingsClasses() {
 function updateProfileDom() {
   $(".profile_page").html("");
   
+  var nameDiv = $("<div id='nameTitle'>");
+  var nameTitle = $("<h>").text(fullName); 
+  nameDiv.append(nameTitle);
+  $(".profile_page").append(nameDiv); 
+  
   var classesDiv = $("<div id='classesList'>");
   classesDiv.append("<h>Classes</h>");
   if (classNames.length === 0) {
@@ -117,39 +122,42 @@ function updateProfileDom() {
       var i;
       var listFriends = $("<ul>");
       for(i = 0; i < response.length; i++) {
-        var friend = $("<li class='name'>");
+        var friend = $("<li>");
         var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
-        var friendName = $("<span>").html(response[i].fullName);
+        var friendName = $("<a>").addClass("name").attr("id", response[i]._id.toString()).attr("href", "#").text(response[i].fullName);
         friend.append(friendName);
         friend.append(picture);
         listFriends.append(friend);
       }
       friendsDiv.append(listFriends);
       $(".profile_page").append(friendsDiv);
-    }
-  });
-  
-  $(".name").click(function() {
-    var id : string = $(this).attr("id");
-    console.log(id);
+      $(".name").click(function() {
+      var id : string = $(this).attr("id");
         
-    $.ajax({
-      type: "get",
-      url: "/user/" + id,
-      success: function(response) {
-        curUserDisplay = new SSUser();
-        curUserDisplay.fullName = response.fullName;
-        curUserDisplay.facebookID = response.facebookID;
-        curUserDisplay.classIDs = response.classIDs
-        curUserDisplay.classNames = response.classNames;
-        State.switchState(userPageState);
-      }
-    });
+      $.ajax({
+        type: "get",
+        url: "/user/" + id,
+        success: function(response) {
+          curUserDisplay = new SSUser();
+          curUserDisplay.fullName = response.fullName;
+          curUserDisplay.facebookID = response.facebookID;
+          curUserDisplay.classIDs = response.classIDs
+          curUserDisplay.classNames = response.classNames;
+          State.switchState(userPageState);
+          }
+        });
+      });
+    }
   });
 }
 
 function updateUserPageDom() {
   $(".user_page").html("");
+  
+  var nameDiv = $("<div id='nameTitle'>");
+  var nameTitle = $("<h>").text(curUserDisplay.fullName);
+  nameDiv.append(nameTitle);
+  $(".user_page").append(nameDiv); 
   
   var classesDiv = $("<div id='classesList'>");
   classesDiv.append("<h>Classes</h>");
@@ -171,32 +179,33 @@ function updateUserPageDom() {
       var i;
       var listFriends = $("<ul>");
       for(i = 0; i < response.length; i++) {
-        var friend = $("<li class='name'>");
+        var friend = $("<li>");
         var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
-        var friendName = $("<span>").html(response[i].fullName);
+        var friendName = $("<a>").addClass("name").attr("id", response[i]._id.toString()).attr("href", "#").text(response[i].fullName);
         friend.append(friendName);
         friend.append(picture);
         listFriends.append(friend);
       }
       friendsDiv.append(listFriends);
       $(".user_page").append(friendsDiv);
+      
+      $(".name").click(function() {
+        var id : string = $(this).attr("id");
+        
+        $.ajax({
+          type: "get",
+          url: "/user/" + id,
+          success: function(response) {
+            curUserDisplay = new SSUser();
+            curUserDisplay.fullName = response.fullName;
+            curUserDisplay.facebookID = response.facebookID;
+            curUserDisplay.classIDs = response.classIDs
+            curUserDisplay.classNames = response.classNames;
+            State.switchState(userPageState);
+          }
+        });
+      });
     }
-  });
-  
-  $(".name").click(function() {
-    var id : string = $(this).attr("id");        
-    $.ajax({
-      type: "get",
-      url: "/user/" + id,
-      success: function(response) {
-        curUserDisplay = new SSUser();
-        curUserDisplay.fullName = response.fullName;
-        curUserDisplay.facebookID = response.facebookID;
-        curUserDisplay.classIDs = response.classIDs
-        curUserDisplay.classNames = response.classNames;
-        State.switchState(userPageState);
-      }
-    });
   });
 }
 
@@ -252,7 +261,6 @@ function updateNewsFeedDom() {
       
       $(".name").click(function() {
         var id : string = $(this).attr("id");
-        console.log(id);
         
         $.ajax({
           type: "get",
