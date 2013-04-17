@@ -167,6 +167,18 @@ function queryNewsFeed() {
 
 }
 
+function setPicture(pictureElement, theEvent) {
+  $.ajax({
+    type: "get",
+    url: "/user/" + theEvent.ownerID.toString(),
+    success: function(response) {
+      pictureElement.attr("src"), response.profilePicture;
+      console.log("setting " + theEvent.ownerID.toString());
+      $(".profile_thumb." + theEvent.ownerID.toString()).attr("src", response.profilePicture);
+    }
+  });
+}
+
 function updateNewsFeedDom() {
   $(".news_feed").html("loading...");
 
@@ -178,15 +190,8 @@ function updateNewsFeedDom() {
       $(".news_feed").html("");
       for(i = 0; i < response.length; i++) {
         var containerDiv = $("<div>").addClass("content-box");
-        var pictureImg = $("<img>").addClass("profile_thumb");
-        $.ajax({
-          type: "get",
-          url: "/user/" + response[i].ownerID.toString(),
-          success : function(response) {
-            console.log("setting source to " + response.profilePicture);
-            pictureImg.attr("src", response.profilePicture);
-          }
-        });
+        var pictureImg = $("<img>").addClass("profile_thumb").addClass(response[i].ownerID.toString());
+        setPicture(pictureImg, response[i]);
         var eventDiv = $("<div>").addClass("name_class");
         var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text(response[i].ownerName);
         var textSpan = $("<span>").text(" is studying ");
