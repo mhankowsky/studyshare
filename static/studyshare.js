@@ -152,7 +152,15 @@ function updateNewsFeedDom() {
             $(".news_feed").html("");
             for(i = 0; i < response.length; i++) {
                 var containerDiv = $("<div>").addClass("content-box");
-                var pictureImg = $("<img>").addClass("profile_thumb").attr("src", "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/369611_1338030563_1155334149_q.jpg");
+                var pictureImg = $("<img>").addClass("profile_thumb");
+                $.ajax({
+                    type: "get",
+                    url: "/user/" + response[i].ownerID.toString(),
+                    success: function (response) {
+                        console.log("setting source to " + response.profilePicture);
+                        pictureImg.attr("src", response.profilePicture);
+                    }
+                });
                 var eventDiv = $("<div>").addClass("name_class");
                 var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text(response[i].ownerName);
                 var textSpan = $("<span>").text(" is studying ");
@@ -178,9 +186,6 @@ function updateNewsFeedDom() {
                 $.ajax({
                     type: "get",
                     url: "/user/" + id,
-                    data: {
-                        id: id
-                    },
                     success: function (response) {
                         curUserDisplay = new SSUser();
                         curUserDisplay.fullName = response.user.fullName;

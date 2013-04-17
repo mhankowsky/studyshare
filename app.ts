@@ -165,7 +165,12 @@ app.get('/user/:id', ensureAuthenticated, function(req, res) {
     }
     
     res.send({
-      user : rec
+      fullName : rec.fullName,
+      profilePicture : rec.profilePicture,
+      facebookID : rec.facebookID,
+      classIDs : rec.classIDs,
+      classNames : rec.classNames,
+      classNums : rec.classNums
     });
   });
 });
@@ -263,27 +268,6 @@ app.get('/classes', function(req, res) {
     res.send(classes);
   });
 });
-
-/*function fillEventsAndSend(events, filledEvents, res) {
-  if(events.length === 0) {
-    res.send(filledEvents);
-  } else {
-    User.findOne({_id : events[0].owner}, function(err, user) {
-      console.log(user);
-      Class.findOne({_id : events[0].cls}, function(err, cls) {
-        Building.findOne({_id : events[0].building}, function(err, building) {
-          var theEvent = events[0];
-          theEvent.set("owner", user);
-          theEvent.set("cls", cls);
-          theEvent.set("building", building);
-          filledEvents.push(theEvent);
-          events.splice(0, 1);
-          return fillEventsAndSend(events, filledEvents, res);
-        });
-      });
-    });
-  }
-}*/
 
 app.get('/events', function(req, res) {
   AnEvent.find({}, function(err, events) {

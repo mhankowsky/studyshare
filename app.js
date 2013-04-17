@@ -154,7 +154,12 @@ app.get('/user/:id', ensureAuthenticated, function (req, res) {
         if(err) {
         }
         res.send({
-            user: rec
+            fullName: rec.fullName,
+            profilePicture: rec.profilePicture,
+            facebookID: rec.facebookID,
+            classIDs: rec.classIDs,
+            classNames: rec.classNames,
+            classNums: rec.classNums
         });
     });
 });
