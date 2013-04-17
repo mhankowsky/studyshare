@@ -114,7 +114,7 @@ function updateProfileDom() {
       var i;
       var listFriends = $("<ul>");
       for(i = 0; i < response.length; i++) {
-        var friend = $("<li>");
+        var friend = $("<li class='name'>");
         var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
         var friendName = $("<span>").html(response[i].fullName);
         friend.append(friendName);
@@ -124,6 +124,24 @@ function updateProfileDom() {
       friendsDiv.append(listFriends);
       $(".profile_page").append(friendsDiv);
     }
+  });
+  
+  $(".name").click(function() {
+    var id : string = $(this).attr("id");
+    console.log(id);
+        
+    $.ajax({
+      type: "get",
+      url: "/user/" + id,
+      success: function(response) {
+        curUserDisplay = new SSUser();
+        curUserDisplay.fullName = response.fullName;
+        curUserDisplay.facebookID = response.facebookID;
+        curUserDisplay.classIDs = response.classIDs
+        curUserDisplay.classNames = response.classNames;
+        State.switchState(userPageState);
+      }
+    });
   });
 }
 
@@ -150,7 +168,7 @@ function updateUserPageDom() {
       var i;
       var listFriends = $("<ul>");
       for(i = 0; i < response.length; i++) {
-        var friend = $("<li>");
+        var friend = $("<li class='name'>");
         var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
         var friendName = $("<span>").html(response[i].fullName);
         friend.append(friendName);
@@ -160,6 +178,24 @@ function updateUserPageDom() {
       friendsDiv.append(listFriends);
       $(".user_page").append(friendsDiv);
     }
+  });
+  
+  $(".name").click(function() {
+    var id : string = $(this).attr("id");
+    console.log(id);
+        
+    $.ajax({
+      type: "get",
+      url: "/user/" + id,
+      success: function(response) {
+        curUserDisplay = new SSUser();
+        curUserDisplay.fullName = response.fullName;
+        curUserDisplay.facebookID = response.facebookID;
+        curUserDisplay.classIDs = response.classIDs
+        curUserDisplay.classNames = response.classNames;
+        State.switchState(userPageState);
+      }
+    });
   });
 }
 
