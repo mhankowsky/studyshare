@@ -149,20 +149,38 @@ app.get('/account', ensureAuthenticated, function (req, res) {
 });
 app.get('/user/:id', ensureAuthenticated, function (req, res) {
     User.findOne({
-        _id: new ObjectId(req.body.id)
+        _id: req.params.id
     }, function (err, rec) {
         if(err) {
         }
         res.send({
-            fullName: rec.fullName,
-            facebookID: rec.facebookID,
-            classIDs: rec.classIDs,
-            classNames: rec.classNames,
-            classNums: rec.classNums
+            user: rec
         });
     });
 });
 app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
+    var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+    $.ajax({
+        type: "get",
+        url: theUrl,
+        success: function (response) {
+            var idArray = $.map(response.data, function (val, i) {
+                return val.id;
+            });
+            User.find({
+            }, {
+                facebookAccessToken: 0
+            }).where("facebookID").in(idArray).exec(function (err, records) {
+                res.send(records);
+            });
+        },
+        error: function (response) {
+            console.log("error :(?");
+            res.send(response);
+        }
+    });
+});
+app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
     var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
     $.ajax({
         type: "get",

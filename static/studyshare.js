@@ -3,7 +3,6 @@ var facebookID;
 var currentState;
 var classIDs;
 var classNames;
-var classNums;
 var userPageState;
 var curUserDisplay;
 var SSUser = (function () {
@@ -36,7 +35,6 @@ function updateProfileInformation() {
             fullName = response.user.fullName;
             classIDs = response.user.classIDs;
             classNames = response.user.classNames;
-            classNums = response.user.classNums;
             $("#userName").text(response.user.fullName);
             $("#personal_picture").attr("src", response.user.profilePicture);
         },
@@ -86,8 +84,8 @@ function updateProfileDom() {
             listClasses.append(ssclass);
         }
         classesDiv.append(listClasses);
-        $(".profile_page").append(classesDiv);
     }
+    $(".profile_page").append(classesDiv);
     var friendsDiv = $("<div id='friendsList'>");
     friendsDiv.append("<h>Friends</h>");
     $.ajax({
@@ -120,7 +118,27 @@ function updateUserPageDom() {
         listClasses.append(ssclass);
     }
     classesDiv.append(listClasses);
-    $(".profile_page").append(classesDiv);
+    $(".user_page").append(classesDiv);
+    var friendsDiv = $("<div id='friendsList'>");
+    friendsDiv.append("<h>Friends</h>");
+    $.ajax({
+        type: "get",
+        url: "/facebook_friends/" + curUserDisplay.facebookID,
+        success: function (response) {
+            var i;
+            var listFriends = $("<ul>");
+            for(i = 0; i < response.length; i++) {
+                var friend = $("<li>");
+                var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
+                var friendName = $("<span>").html(response[i].fullName);
+                friend.append(friendName);
+                friend.append(picture);
+                listFriends.append(friend);
+            }
+            friendsDiv.append(listFriends);
+            $(".user_page").append(friendsDiv);
+        }
+    });
 }
 function queryNewsFeed() {
 }
@@ -156,21 +174,19 @@ function updateNewsFeedDom() {
             }
             $(".name").click(function () {
                 var id = $(this).attr("id");
-                var myUrl = "/user/" + id + "";
                 console.log(id);
                 $.ajax({
                     type: "get",
-                    url: myUrl,
+                    url: "/user/" + id,
                     data: {
                         id: id
                     },
                     success: function (response) {
                         curUserDisplay = new SSUser();
-                        curUserDisplay.fullName = response.fullName;
-                        curUserDisplay.facebookID = response.facebookID;
+                        curUserDisplay.fullName = response.user.fullName;
+                        curUserDisplay.facebookID = response.user.facebookID;
                         curUserDisplay.classIDs = response.classIDs;
-                        curUserDisplay.classNames = response.classNames;
-                        curUserDisplay.classNums = response.classNums;
+                        curUserDisplay.classNames = response.user.classNames;
                         State.switchState(userPageState);
                     }
                 });
