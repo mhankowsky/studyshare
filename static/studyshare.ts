@@ -128,7 +128,8 @@ function updateProfileDom() {
     var listClasses = $("<ul>");
     for(var i = 0; i < classNames.length; i++) {
       var ssclass = $("<li>");
-      ssclass.append(classNames[i]);
+      var className = $("<a>").addClass("ssclass").attr("id", classIDs[i]).attr("href", "#").text(classNames[i]);
+      ssclass.append(className);
       listClasses.append(ssclass);
     }
     classesDiv.append(listClasses);
@@ -157,18 +158,39 @@ function updateProfileDom() {
         listFriends.append(friend);
       }
       $(".name").click(function() {
-      var id : string = $(this).attr("id");
+        var id : string = $(this).attr("id");
         
-      $.ajax({
-        type: "get",
-        url: "/user/" + id,
-        success: function(response) {
-          curUserDisplay = new SSUser();
-          curUserDisplay.fullName = response.fullName;
-          curUserDisplay.facebookID = response.facebookID;
-          curUserDisplay.classIDs = response.classIDs
-          curUserDisplay.classNames = response.classNames;
-          State.switchState(userPageState);
+        $.ajax({
+          type: "get",
+          url: "/user/" + id,
+          success: function(response) {
+            curUserDisplay = new SSUser();
+            curUserDisplay.fullName = response.fullName;
+            curUserDisplay.facebookID = response.facebookID;
+            curUserDisplay.classIDs = response.classIDs
+            curUserDisplay.classNames = response.classNames;
+            State.switchState(userPageState);
+          }
+        });
+      });
+      
+      $(".ssclass").click(function() {
+        var id : string = $(this).attr("id");
+        
+        $.ajax({
+          type: "get",
+          url: "/classes/" + id,
+          success: function(response) {
+            curClassDisplay = new SSClass();
+            curClassDisplay.name = response.name;
+            curClassDisplay.num = response.num;
+            curClassDisplay.deptNum = response.deptNum;
+            curClassDisplay.classNum = response.classNum;
+            curClassDisplay.ownerName = response.ownerName;
+            curClassDisplay.ownerID = response.ownerID;
+            curClassDisplay.studentNames = response.studentNames;
+            curClassDisplay.studentIDs = response.studentIDs;
+            State.switchState(classPageState);
           }
         });
       });
