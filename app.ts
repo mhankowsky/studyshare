@@ -4,6 +4,7 @@
 
 // Declares require function to make TSC happy when compiling
 declare function require(name:string);
+declare var __dirname;
 
 var express = require("express"); // imports express
 var app = express();        // create a new instance of express
@@ -356,6 +357,29 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
         });
       });
     });
+  });
+});
+
+app.post("/join_event", ensureAuthenticated, function(req, res) {
+  AnEvent.findOne({_id : req.body.event_id}, function(err, theEvent) {
+    var newAttendeeIDs = theEvent.attendeesIDs;
+    var newAttendeeNames = theEvent.attendeesNames;
+    var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
+    if(newAttendeeIDs.indexOf(theObjectID) != -1) {
+      res.send({
+        success: false,
+        alreadyJoined: true
+      });
+    } else {
+      newAttendeeIDs.push(theObjectID);
+      newAttendeeNames.push(req.user.fullName);
+      AnEvent.update({_id : req.body.event_id}, {$set : {attendeesIDs : newAttendeeIDs, attendeesNames : newAttendeeNames}}, function(err) {
+        if(err) {
+          throw err;
+        }
+        res.send({success : true});
+      });
+    }
   });
 });
 

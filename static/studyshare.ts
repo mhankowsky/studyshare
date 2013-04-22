@@ -310,6 +310,21 @@ function setPicture(pictureElement, theEvent) {
   });
 }
 
+function addJoinClick(joinEvent, _id) {
+  joinEvent.click(function() {
+    $.ajax({
+      type: "post",
+      url: "/join_event",
+      data: {
+        event_id : _id
+      },
+      success: function(response) {
+        console.log(response);
+      }
+    });
+  });
+}
+
 function updateNewsFeedDom() {
   $(".news_feed").html("loading...");
 
@@ -332,6 +347,8 @@ function updateNewsFeedDom() {
         var startTimeSpan = $("<span>").addClass("time").text("Start: " + response[i].startTime);
         var endTimeSpan = $("<span>").addClass("time").text("End: " + response[i].endTime);
         var infoP = $("<p>").addClass("info").text(response[i].info);
+        var joinEvent = $("<div>").addClass("join").text("Join Event");
+        addJoinClick(joinEvent, response[i]._id);
 
         containerDiv.append(pictureImg);
         containerDiv.append(eventDiv);
@@ -343,6 +360,7 @@ function updateNewsFeedDom() {
         eventDiv.append(startTimeSpan);
         eventDiv.append(endTimeSpan);
         containerDiv.append(infoP);
+        containerDiv.append(joinEvent);
 
         $(".news_feed").append(containerDiv);
       }
