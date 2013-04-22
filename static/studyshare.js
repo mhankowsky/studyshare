@@ -295,6 +295,12 @@ function updateNewsFeedDom() {
                 var infoP = $("<p>").addClass("info").text(response[i].info);
                 var joinEvent = $("<div>").addClass("join").text("Join Event");
                 addJoinClick(joinEvent, response[i]._id);
+                var textSpan3 = $("<span>").text("List of attendees: ");
+                var j;
+                for(j = 0; j < response[i].attendeesNames.length; j++) {
+                    var attendee = $("<p>").text(response[i].attendeesNames[j]);
+                    textSpan3.append(attendee);
+                }
                 containerDiv.append(pictureImg);
                 containerDiv.append(eventDiv);
                 eventDiv.append(nameAnchor);
@@ -305,6 +311,7 @@ function updateNewsFeedDom() {
                 eventDiv.append(startTimeSpan);
                 eventDiv.append(endTimeSpan);
                 containerDiv.append(infoP);
+                containerDiv.append(textSpan3);
                 containerDiv.append(joinEvent);
                 $(".news_feed").append(containerDiv);
             }
