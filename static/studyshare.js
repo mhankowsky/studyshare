@@ -7,6 +7,7 @@ var userPageState;
 var curUserDisplay;
 var currentLong;
 var currentLat;
+var MILLI_IN_HOUR = 60 * 60 * 1000;
 var SSUser = (function () {
     function SSUser() { }
     return SSUser;
@@ -215,7 +216,8 @@ function updateNewsFeedDom() {
                 var classAnchor = $("<a>").addClass("current_class").attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
                 var textSpan2 = $("<span>").text(" in ");
                 var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
-                var timeSpan = $("<span>").addClass("time").text(response[i].startTime);
+                var startTimeSpan = $("<span>").addClass("time").text("Start: " + response[i].startTime);
+                var endTimeSpan = $("<span>").addClass("time").text("End: " + response[i].endTime);
                 var infoP = $("<p>").addClass("info").text(response[i].info);
                 containerDiv.append(pictureImg);
                 containerDiv.append(eventDiv);
@@ -224,7 +226,8 @@ function updateNewsFeedDom() {
                 eventDiv.append(classAnchor);
                 eventDiv.append(textSpan2);
                 eventDiv.append(buildingAnchor);
-                eventDiv.append(timeSpan);
+                eventDiv.append(startTimeSpan);
+                eventDiv.append(endTimeSpan);
                 containerDiv.append(infoP);
                 $(".news_feed").append(containerDiv);
             }
@@ -247,6 +250,13 @@ function updateNewsFeedDom() {
     });
 }
 function updateEventDom() {
+    var currDate = new Date();
+    var currDatePlusHour = new Date();
+    currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
+    var defaultStartTime = currDate.toTimeString().split(" ")[0];
+    var defaultEndTime = currDatePlusHour.toTimeString().split(" ")[0];
+    $("#start_time").val(defaultStartTime);
+    $("#end_time").val(defaultEndTime);
     if(!navigator.geolocation) {
         return;
     } else {
@@ -294,7 +304,9 @@ $(function () {
             data: {
                 class: $("#class").val(),
                 building: $("#building").val(),
-                info: $("#info").val()
+                info: $("#info").val(),
+                start_time: $("#start_time").val(),
+                end_time: $("#end_time").val()
             },
             success: function (response) {
                 State.switchState(newsFeedState);
