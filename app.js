@@ -240,6 +240,24 @@ app.get('/classes', function (req, res) {
         res.send(classes);
     });
 });
+app.get('/classes/:id', function (req, res) {
+    Class.findOne({
+        _id: req.params.id
+    }, function (err, rec) {
+        if(err) {
+        }
+        res.send({
+            name: rec.name,
+            num: rec.num,
+            deptNum: rec.deptNum,
+            classNum: rec.classNum,
+            ownerName: rec.ownerName,
+            ownerID: rec.ownerID,
+            studentNames: rec.studentNames,
+            studentIDs: rec.studentIDs
+        });
+    });
+});
 app.get('/events', function (req, res) {
     AnEvent.find({
     }, function (err, events) {
@@ -284,6 +302,8 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
 app.put("/add_class", ensureAuthenticated, function (req, res) {
     var newClassIDs;
     var newClassNames;
+    var newStudentIDs;
+    var newStudentNames;
     Class.findOne({
         name: req.body.class
     }, function (err, theClass) {
@@ -291,12 +311,16 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
             facebookID: req.user.facebookID
         }, function (err, theUser) {
             newClassIDs = theUser.classIDs;
+            newClassNames = theUser.classNames;
             if(newClassIDs.indexOf(theClass._id) === -1) {
                 newClassIDs.push(theClass._id);
-            }
-            newClassNames = theUser.classNames;
-            if(newClassNames.indexOf(theClass.name) === -1) {
                 newClassNames.push(theClass.name);
+            }
+            newStudentIDs = theClass.studentIDs;
+            newStudentNames = theClass.studentNames;
+            if(newStudentIDs.indexOf(theUser._id) === -1) {
+                newStudentIDs.push(theUser._id);
+                newStudentNames.push(theUser.fullName);
             }
             User.update({
                 facebookID: req.user.facebookID
@@ -308,8 +332,19 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
             }, function (err) {
                 if(err) {
                 }
-                res.send({
-                    success: true
+                Class.update({
+                    _id: theClass._id
+                }, {
+                    $set: {
+                        studentIDs: newStudentIDs,
+                        studentNames: newStudentNames
+                    }
+                }, function (err) {
+                    if(err) {
+                    }
+                    res.send({
+                        success: true
+                    });
                 });
             });
         });

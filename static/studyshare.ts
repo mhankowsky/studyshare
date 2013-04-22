@@ -10,7 +10,9 @@ var classIDs : string[];
 var classNames : string[];
 
 var userPageState : State;
+var classPageState : State;
 var curUserDisplay : SSUser;
+var curClassDisplay : SSClass;
 
 var currentLong : number;
 var currentLat : number;
@@ -22,6 +24,17 @@ class SSUser {
   facebookID : string;
   classIDs : string[];
   classNames : string[];
+}
+
+class SSClass {
+  name: string;
+  num: number;
+  deptNum: number;
+  classNum: number;
+  ownerName: string;
+  ownerID: string;
+  studentNames: string[];
+  studentIDs: string[];
 }
 
 class State {
@@ -173,7 +186,8 @@ function updateUserPageDom() {
   var listClasses = $("<ul>");
   for(var i = 0; i < curUserDisplay.classNames.length; i++) {
     var ssclass = $("<li>");
-    ssclass.append(curUserDisplay.classNames[i]);
+    var className = $("<a>").addClass("ssclass").attr("id", curUserDisplay.classIDs[i]).attr("href", "#").text(curUserDisplay.classNames[i]);
+    ssclass.append(className);
     listClasses.append(ssclass);
   }
   classesDiv.append(listClasses);
@@ -214,7 +228,70 @@ function updateUserPageDom() {
           }
         });
       });
+      
+      $(".ssclass").click(function() {
+        var id : string = $(this).attr("id");
+        
+        $.ajax({
+          type: "get",
+          url: "/classes/" + id,
+          success: function(response) {
+            curClassDisplay = new SSClass();
+            curClassDisplay.name = response.name;
+            curClassDisplay.num = response.num;
+            curClassDisplay.deptNum = response.deptNum;
+            curClassDisplay.classNum = response.classNum;
+            curClassDisplay.ownerName = response.ownerName;
+            curClassDisplay.ownerID = response.ownerID;
+            curClassDisplay.studentNames = response.studentNames;
+            curClassDisplay.studentIDs = response.studentIDs;
+            State.switchState(classPageState);
+          }
+        });
+      });
     }
+  });
+}
+
+function updateClassPageDom() {
+  $(".class_page").html("");
+	
+  var nameDiv = $("<div id='nameTitle'>");
+  var nameTitle = $("<h>").text(curClassDisplay.name);
+  nameDiv.append(nameTitle);
+  $(".class_page").append(nameDiv);
+  	
+  var studentsDiv = $("<div id='studentsList'>");
+  studentsDiv.append("<h>Students</h>");
+  var i;
+  var listUsers = $("<ul>");
+  for(i = 0; i < curClassDisplay.studentNames.length; i++) {
+    var user = $("<li>");
+    //var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
+    var userName = $("<a>").addClass("name").attr("id", curClassDisplay.studentIDs[i].toString()).attr("href", "#").text(curClassDisplay.studentNames[i]);
+    user.append(userName);
+    //friend.append(picture);
+    listUsers.append(user);
+  }
+      
+  studentsDiv.append(listUsers);
+  $(".class_page").append(studentsDiv);
+      
+  $(".name").click(function() {
+    var id : string = $(this).attr("id");
+        
+    $.ajax({
+      type: "get",
+      url: "/user/" + id,
+      success: function(response) {
+        curUserDisplay = new SSUser();
+        curUserDisplay.fullName = response.fullName;
+        curUserDisplay.facebookID = response.facebookID;
+        curUserDisplay.classIDs = response.classIDs
+        curUserDisplay.classNames = response.classNames;
+        State.switchState(userPageState);
+      }
+    });
   });
 }
 
@@ -249,7 +326,7 @@ function updateNewsFeedDom() {
         var eventDiv = $("<div>").addClass("name_class");
         var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text(response[i].ownerName);
         var textSpan = $("<span>").text(" is studying ");
-        var classAnchor = $("<a>").addClass("current_class").attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
+        var classAnchor = $("<a>").addClass("ssclass").attr("id", response[i].clsID.toString()).attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
         var textSpan2 = $("<span>").text(" in ");
         var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
         var startTimeSpan = $("<span>").addClass("time").text("Start: " + response[i].startTime);
@@ -283,6 +360,27 @@ function updateNewsFeedDom() {
             curUserDisplay.classIDs = response.classIDs
             curUserDisplay.classNames = response.classNames;
             State.switchState(userPageState);
+          }
+        });
+      });
+      
+      $(".ssclass").click(function() {
+        var id : string = $(this).attr("id");
+        
+        $.ajax({
+          type: "get",
+          url: "/classes/" + id,
+          success: function(response) {
+            curClassDisplay = new SSClass();
+            curClassDisplay.name = response.name;
+            curClassDisplay.num = response.num;
+            curClassDisplay.deptNum = response.deptNum;
+            curClassDisplay.classNum = response.classNum;
+            curClassDisplay.ownerName = response.ownerName;
+            curClassDisplay.ownerID = response.ownerID;
+            curClassDisplay.studentNames = response.studentNames;
+            curClassDisplay.studentIDs = response.studentIDs;
+            State.switchState(classPageState);
           }
         });
       });
@@ -329,6 +427,7 @@ $(function() {
   var addEventState : State = new State($(".event_creation"), updateEventDom);
   var addClassState : State = new State($(".add_class"), updateClassDom);
   userPageState = new State($(".user_page"), updateUserPageDom);
+  classPageState = new State($(".class_page"), updateClassPageDom);
   //var friendsListState : State = new State($(".friends_list"), updateFriendsListDom);
   currentState = newsFeedState;
   newsFeedState.refreshDom();
