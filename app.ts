@@ -178,45 +178,46 @@ app.get('/user/:id', ensureAuthenticated, function(req, res) {
 
 app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
   var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-  request({
-    type: "get",
-    url: theUrl,
-    success: function(response) {
-      //TODO account for "paging" in the response
-      var idArray = response.data.map(function(val, i) {
-        return val.id;
-      });
-      
-      User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
-        res.send(records);
-      });
-    },
-    error: function(response) {
-      console.log("error :(?");
-      res.send(response);
+  request.get(
+    {url: theUrl},
+    function(e, r, response) {
+      response = JSON.parse(response);
+      if(e != null) {
+        console.log("error :(?");
+        r.send(response);
+      } else {
+        var idArray = response.data.map(function(val, i) {
+          return val.id;
+        });
+
+        User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
+          res.send(records);
+        });
+      }
     }
-  });
+  );
 });
 
 app.get('/facebook_friends/:id', ensureAuthenticated, function(req, res) {
   var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-  request({
-    type: "get",
-    url: theUrl,
-    success: function(response) {
-      //TODO account for "paging" in the response
-      var idArray = response.data.map(function(val, i) {
-        return val.id;
-      });
-      User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
-        res.send(records);
-      });
-    },
-    error: function(response) {
-      console.log("error :(?");
-      res.send(response);
+  request.get(
+    {url: theUrl},
+    function(e, r, response) {
+      response = JSON.parse(response);
+      if(e != null) {
+        console.log("error :(?");
+        r.send(response);
+      } else {
+        var idArray = response.data.map(function(val, i) {
+          return val.id;
+        });
+
+        User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
+          res.send(records);
+        });
+      }
     }
-  });
+  );
 });
 
 // GET /auth/facebook

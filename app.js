@@ -165,10 +165,14 @@ app.get('/user/:id', ensureAuthenticated, function (req, res) {
 });
 app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
     var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-    request({
-        type: "get",
-        url: theUrl,
-        success: function (response) {
+    request.get({
+        url: theUrl
+    }, function (e, r, response) {
+        response = JSON.parse(response);
+        if(e != null) {
+            console.log("error :(?");
+            r.send(response);
+        } else {
             var idArray = response.data.map(function (val, i) {
                 return val.id;
             });
@@ -178,19 +182,19 @@ app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
             }).where("facebookID").in(idArray).exec(function (err, records) {
                 res.send(records);
             });
-        },
-        error: function (response) {
-            console.log("error :(?");
-            res.send(response);
         }
     });
 });
 app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
     var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-    request({
-        type: "get",
-        url: theUrl,
-        success: function (response) {
+    request.get({
+        url: theUrl
+    }, function (e, r, response) {
+        response = JSON.parse(response);
+        if(e != null) {
+            console.log("error :(?");
+            r.send(response);
+        } else {
             var idArray = response.data.map(function (val, i) {
                 return val.id;
             });
@@ -200,10 +204,6 @@ app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
             }).where("facebookID").in(idArray).exec(function (err, records) {
                 res.send(records);
             });
-        },
-        error: function (response) {
-            console.log("error :(?");
-            res.send(response);
         }
     });
 });
