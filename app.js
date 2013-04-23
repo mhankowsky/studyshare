@@ -1,6 +1,6 @@
 var express = require("express");
 var app = express();
-var $ = require("jquery");
+var request = require("request");
 var fs = require("fs");
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
@@ -13,7 +13,9 @@ var optionsWithEnableWriteAccess = {
     w: 1
 };
 var dbName = 'studyshareDb';
-var mongoose = require('mongoose/'), db = mongoose.connect('mongodb://localhost/studyshareDb');
+var mongoose = require('mongoose/');
+var db = mongoose.connect('mongodb://localhost/studyshareDb');
+
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var UserSchema = new Schema({
@@ -165,11 +167,11 @@ app.get('/user/:id', ensureAuthenticated, function (req, res) {
 });
 app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
     var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-    $.ajax({
+    request({
         type: "get",
         url: theUrl,
         success: function (response) {
-            var idArray = $.map(response.data, function (val, i) {
+            var idArray = response.data.map(function (val, i) {
                 return val.id;
             });
             User.find({
@@ -187,11 +189,11 @@ app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
 });
 app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
     var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-    $.ajax({
+    request({
         type: "get",
         url: theUrl,
         success: function (response) {
-            var idArray = $.map(response.data, function (val, i) {
+            var idArray = response.data.map(function (val, i) {
                 return val.id;
             });
             User.find({
