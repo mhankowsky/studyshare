@@ -79,7 +79,7 @@ function updateProfileInformation() {
 
 function updateBuildingsClasses() {
   $.ajax({
-    type: "get",
+    type: "get",rome
     url: "/buildings",
     success: function(response) {
       var buildings = response;

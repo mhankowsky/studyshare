@@ -199,25 +199,35 @@ app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/facebook_friends/:id', ensureAuthenticated, function(req, res) {
-  var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-  request.get(
-    {url: theUrl},
-    function(e, r, response) {
-      response = JSON.parse(response);
-      if(e != null) {
-        console.log("error :(?");
-        r.send(response);
-      } else {
-        var idArray = response.data.map(function(val, i) {
-          return val.id;
-        });
-
-        User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
-          res.send(records);
-        });
-      }
+  var fbAccessToken;
+  
+  User.findOne({facebookID: req.params.id}, function(err, rec) {
+    if (err) {
+      //TODO do something useful here
     }
-  );
+    
+    fbAccessToken = rec.facebookAccessToken;
+    
+    var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + fbAccessToken;
+    request.get(
+      {url: theUrl},
+      function(e, r, response) {
+        response = JSON.parse(response);
+        if(e != null) {
+          console.log("error :(?");
+          r.send(response);
+        } else {
+          var idArray = response.data.map(function(val, i) {
+            return val.id;
+          });
+
+          User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
+            res.send(records);
+          });
+        }
+      }
+    );
+  });
 });
 
 // GET /auth/facebook
