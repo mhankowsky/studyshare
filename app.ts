@@ -312,6 +312,21 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
       theEvent.attendeesNames = [req.user.fullName];
       theEvent.attendeesIDs = [req.user._id];
       theEvent.info = req.body.info;
+      
+      var startDate = new Date(req.body.start_date);
+      console.log("1:" + startDate);
+      var timeStr = req.body.start_time.split(":");
+      startDate.setHours(timeStr[0]);
+      console.log("2:" + startDate);
+      startDate.setMinutes(timeStr[1]);
+      
+      var endDate = new Date(req.body.end_date);
+      var timeStr = req.body.end_time.split(":");
+      endDate.setHours(timeStr[0]);
+      endDate.setMinutes(timeStr[1]);
+      
+      theEvent.startTime = startDate;
+      theEvent.endTime = endDate;
       theEvent.save(function(err) {
         if(err) {
           throw err;

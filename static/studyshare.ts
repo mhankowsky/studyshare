@@ -449,9 +449,12 @@ function updateEventDom() {
   var currDate = new Date();
   var currDatePlusHour = new Date();
   currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
+  
   var defaultStartTime = currDate.toTimeString().split(" ")[0];
   var defaultEndTime = currDatePlusHour.toTimeString().split(" ")[0];
+  $("#start_date").val(dateToString(currDate));
   $("#start_time").val(defaultStartTime);
+  $("#end_date").val(dateToString(currDatePlusHour));
   $("#end_time").val(defaultEndTime);
   if(!navigator.geolocation) {
     return;
@@ -469,6 +472,26 @@ function updateEventDom() {
       //$("#distance").html(calculateDistance(position.coords.longitude, position.coords.latitude) + " km");
     });
   }
+}
+
+function dateToString(date : Date) : string {
+  var month : number = (date.getMonth() + 1);
+  var day : number = date.getDate();
+  var monthStr : string = "";
+  var dayStr : string = "";
+  
+  if(month < 10) {
+    monthStr = "0" + month;
+  } else {
+    monthStr = "" + month;
+  }
+  if(day < 10) {
+    dayStr = "0" + day;
+  } else {
+    dayStr = "" + day;
+  }
+  
+  return (date.getFullYear() + '-'+ monthStr + '-' + dayStr);
 }
 
 function updateClassDom() {
@@ -508,7 +531,9 @@ $(function() {
         class: $("#class").val(),
         building: $("#building").val(),
         info: $("#info").val(),
+        start_date: $("#start_date").val(),
         start_time: $("#start_time").val(),
+        end_date: $("#end_date").val(),
         end_time: $("#end_time").val()
       },
       success: function(response) {
