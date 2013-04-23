@@ -369,8 +369,13 @@ function updateNewsFeedDom() {
         var classAnchor = $("<a>").addClass("ssclass").attr("id", response[i].clsID.toString()).attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
         var textSpan2 = $("<span>").text(" in ");
         var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
-        var startTimeSpan = $("<span>").addClass("time").text("Start: " + response[i].startTime);
-        var endTimeSpan = $("<span>").addClass("time").text("End: " + response[i].endTime);
+        
+        var startTime = new Date(response[i].startTime);
+        var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime);
+        
+        var endTime = new Date(response[i].endTime);
+        var endTimeSpan = $("<span>").addClass("time").text("End: " + endTime);
+        
         var infoP = $("<p>").addClass("info").text(response[i].info);
         var joinEvent = $("<div>").addClass("join").text("Join Event");
         addJoinClick(joinEvent, response[i]._id);
@@ -524,6 +529,8 @@ $(function() {
   });
 
   $("#submit_event").click(function() {
+    var curDate = new Date();
+    
     $.ajax({
       type: "post",
       url: "/submit_event",
@@ -534,7 +541,8 @@ $(function() {
         start_date: $("#start_date").val(),
         start_time: $("#start_time").val(),
         end_date: $("#end_date").val(),
-        end_time: $("#end_time").val()
+        end_time: $("#end_time").val(),
+        offset: curDate.getTimezoneOffset()
       },
       success: function(response) {
         State.switchState(newsFeedState);

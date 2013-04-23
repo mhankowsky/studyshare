@@ -315,12 +315,16 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
       
       var startDate = new Date(req.body.start_date);
       console.log("1:" + startDate);
+      startDate.setMinutes(req.body.offset);
+      console.log("2:" + startDate);
       var timeStr = req.body.start_time.split(":");
       startDate.setHours(timeStr[0]);
-      console.log("2:" + startDate);
+      console.log("3:" + startDate);
       startDate.setMinutes(timeStr[1]);
+      console.log("4:" + startDate);
       
       var endDate = new Date(req.body.end_date);
+      endDate.setMinutes(req.body.offset);
       var timeStr = req.body.end_time.split(":");
       endDate.setHours(timeStr[0]);
       endDate.setMinutes(timeStr[1]);
