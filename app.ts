@@ -302,9 +302,11 @@ app.get('/classes/:id', function(req, res) {
 });
 
 app.get('/events', function(req, res) {
-  AnEvent.find({}, function(err, events) {
-    res.send(events);
-  });
+  AnEvent.remove({endTime : {$lt : new Date() }}, function(err) {
+    AnEvent.find({}, function(err, events) {
+      res.send(events);
+    });
+  }); 
 });
 
 app.post("/submit_event", ensureAuthenticated, function(req, res) {
@@ -325,14 +327,10 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
       theEvent.info = req.body.info;
       
       var startDate = new Date(req.body.start_date);
-      console.log("1:" + startDate);
       startDate.setMinutes(req.body.offset);
-      console.log("2:" + startDate);
       var timeStr = req.body.start_time.split(":");
       startDate.setHours(timeStr[0]);
-      console.log("3:" + startDate);
       startDate.setMinutes(timeStr[1]);
-      console.log("4:" + startDate);
       
       var endDate = new Date(req.body.end_date);
       endDate.setMinutes(req.body.offset);
