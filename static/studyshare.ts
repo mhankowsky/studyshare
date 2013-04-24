@@ -403,10 +403,10 @@ function updateNewsFeedDom() {
         var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
         
         var startTime = new Date(response[i].startTime);
-        var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime);
+        var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime.toLocaleString());
         
         var endTime = new Date(response[i].endTime);
-        var endTimeSpan = $("<span>").addClass("time").text("End: " + endTime);
+        var endTimeSpan = $("<span>").addClass("time").text("End : " + endTime.toLocaleString());
         
         var infoP = $("<p>").addClass("info").text(response[i].info);
         var joinEvent = $("<div>").addClass("join").text("Join Event");
