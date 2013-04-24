@@ -14,16 +14,16 @@ body {
 }
 
 a:link {
-  color:#000;
+  color:#117AFF;
   text-decoration:none;}      /* unvisited link */
 a:visited {
-  color:#000;
+  color:#117AFF;
   text-decoration:none;}  /* visited link */
 a:hover {
-  color:#000;
+  color:#117AFF;
   text-decoration:none;}  /* mouse over link */
 a:active {  
-  color:#000;
+  color:#117AFF;
   text-decoration:none;}  /* selected link */
         
 
@@ -133,12 +133,14 @@ a:active {
 .content-box {
   width: 75%;
   margin:5% 0 0 5%;
-  padding: 10px 0 0 2%;
+  padding: 10px 0 10px 2%;
 
   background-color: #ffffff;
   border: 2px solid #999999;
   border-radius: 10px;
   box-shadow: 0px 0px 8px #000000;
+  
+  position: relative;
 }
     
 .profile_thumb {
@@ -298,5 +300,20 @@ h {
 
 .error {
   color: red;
-  text-align: right;
+  text-align: center;
+}
+
+.join {
+  background-color: #FF9D38;
+  width:90px;
+  height:25px;
+  display: block;
+  border: 1px solid #999;
+  font-size: 20px;
+  padding: 5px;
+  margin: 10px;
+  
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
 }
