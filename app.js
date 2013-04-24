@@ -273,7 +273,9 @@ app.get('/events', function (req, res) {
         }
     }, function (err) {
         AnEvent.find({
-        }, function (err, events) {
+        }).sort({
+            endTime: 1
+        }).exec(function (err, events) {
             res.send(events);
         });
     });

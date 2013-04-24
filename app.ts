@@ -303,7 +303,7 @@ app.get('/classes/:id', function(req, res) {
 
 app.get('/events', function(req, res) {
   AnEvent.remove({endTime : {$lt : new Date() }}, function(err) {
-    AnEvent.find({}, function(err, events) {
+    AnEvent.find({}).sort({endTime : 1}).exec(function(err, events) {
       res.send(events);
     });
   }); 
