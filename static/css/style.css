@@ -10,6 +10,8 @@ body {
 }
 
 .main{
+  margin: 130px 0 0 0;
+  padding: 10px 4px 10px 4px;
   overflow:hidden;
 }
 
@@ -76,7 +78,14 @@ a:active {
 
 .header {
   display:block;
+  
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  z-index: 1;
+  
   height:100px;
+  width: 100%;
   padding: 10px 5px 20px 10px;
   margin: 0 0 20px 0;
 
@@ -131,8 +140,8 @@ a:active {
  * *************************/
 
 .content-box {
-  width: 75%;
-  margin:5% 0 0 5%;
+  width: 87%;
+  margin: 15px 0 15px 5%;
   padding: 10px 0 10px 2%;
 
   background-color: #ffffff;
