@@ -484,23 +484,40 @@ $(function () {
     });
     $("#submit_event").click(function () {
         var curDate = new Date();
-        $.ajax({
-            type: "post",
-            url: "/submit_event",
-            data: {
-                class: $("#class").val(),
-                building: $("#building").val(),
-                info: $("#info").val(),
-                start_date: $("#start_date").val(),
-                start_time: $("#start_time").val(),
-                end_date: $("#end_date").val(),
-                end_time: $("#end_time").val(),
-                offset: curDate.getTimezoneOffset()
-            },
-            success: function (response) {
-                State.switchState(newsFeedState);
-            }
-        });
+        var offset = curDate.getTimezoneOffset();
+        var startDate = new Date($("#start_date").val());
+        startDate.setMinutes(offset);
+        var timeStr = $("#start_time").val().split(":");
+        startDate.setHours(timeStr[0]);
+        startDate.setMinutes(timeStr[1]);
+        var endDate = new Date($("#end_date").val());
+        endDate.setMinutes(offset);
+        var timeStr = $("#end_time").val().split(":");
+        endDate.setHours(timeStr[0]);
+        endDate.setMinutes(timeStr[1]);
+        if(endDate.getTime() < startDate.getTime()) {
+            alert("The end date/time must occur after the start date/time.");
+        } else if(endDate.getTime() < curDate.getTime()) {
+            alert("The event cannot end before the current time.");
+        } else {
+            $.ajax({
+                type: "post",
+                url: "/submit_event",
+                data: {
+                    class: $("#class").val(),
+                    building: $("#building").val(),
+                    info: $("#info").val(),
+                    start_date: $("#start_date").val(),
+                    start_time: $("#start_time").val(),
+                    end_date: $("#end_date").val(),
+                    end_time: $("#end_time").val(),
+                    offset: offset
+                },
+                success: function (response) {
+                    State.switchState(newsFeedState);
+                }
+            });
+        }
     });
     $("#add_class").click(function () {
         $.ajax({
