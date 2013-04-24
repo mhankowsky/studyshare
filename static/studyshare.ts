@@ -350,6 +350,7 @@ function addJoinClick(joinEvent, _id) {
       },
       success: function(response) {
         console.log(response);
+        updateNewsFeedDom();
       }
     });
   });

@@ -198,7 +198,6 @@ app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
             url: theUrl
         }, function (e, r, response) {
             response = JSON.parse(response);
-            console.log(response);
             if(e != null) {
                 console.log("error :(?");
                 r.send(response);
