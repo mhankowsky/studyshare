@@ -181,12 +181,16 @@ function updateUserPageDom() {
     $(".user_page").append(classesDiv);
     var friendsDiv = $("<div id='friendsList'>");
     friendsDiv.append("<h>Friends</h>");
+    var listFriends = $("<ul>");
+    listFriends.text("Loading friends list...");
+    friendsDiv.append(listFriends);
+    $(".user_page").append(friendsDiv);
     $.ajax({
         type: "get",
         url: "/facebook_friends/" + curUserDisplay.facebookID,
         success: function (response) {
+            listFriends.text("");
             var i;
-            var listFriends = $("<ul>");
             for(i = 0; i < response.length; i++) {
                 var friend = $("<li>");
                 var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
@@ -195,8 +199,6 @@ function updateUserPageDom() {
                 friend.append(picture);
                 listFriends.append(friend);
             }
-            friendsDiv.append(listFriends);
-            $(".user_page").append(friendsDiv);
             $(".name").click(function () {
                 var id = $(this).attr("id");
                 $.ajax({
