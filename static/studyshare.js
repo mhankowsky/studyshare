@@ -324,6 +324,7 @@ function addJoinClick(joinEvent, _id) {
 }
 function updateNewsFeedDom() {
     $(".news_feed").html("loading...");
+    var now = new Date();
     $.ajax({
         type: "get",
         url: "/events",
@@ -341,6 +342,9 @@ function updateNewsFeedDom() {
                 var textSpan2 = $("<span>").text(" in ");
                 var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
                 var startTime = new Date(response[i].startTime);
+                if(startTime.getTime() < now.getTime()) {
+                    containerDiv.attr("id", "now");
+                }
                 var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime);
                 var endTime = new Date(response[i].endTime);
                 var endTimeSpan = $("<span>").addClass("time").text("End: " + endTime);

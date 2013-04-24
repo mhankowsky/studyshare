@@ -151,6 +151,11 @@ a:active {
   
   position: relative;
 }
+
+#now {
+  background-color: #04CC20;
+  opacity: 1.0;
+}
     
 .profile_thumb {
   width: 50px;
