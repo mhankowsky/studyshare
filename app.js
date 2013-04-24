@@ -198,7 +198,6 @@ app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
             url: theUrl
         }, function (e, r, response) {
             response = JSON.parse(response);
-            console.log(response);
             if(e != null) {
                 console.log("error :(?");
                 r.send(response);
@@ -382,7 +381,12 @@ app.post("/join_event", ensureAuthenticated, function (req, res) {
         var newAttendeeIDs = theEvent.attendeesIDs;
         var newAttendeeNames = theEvent.attendeesNames;
         var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
-        if(newAttendeeIDs.indexOf(theObjectID) != -1) {
+        if(theEvent.endTime < new Date()) {
+            res.send({
+                success: false,
+                alreadyEnded: true
+            });
+        } else if(newAttendeeIDs.indexOf(theObjectID) != -1) {
             res.send({
                 success: false,
                 alreadyJoined: true

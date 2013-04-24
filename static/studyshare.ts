@@ -4,6 +4,7 @@ declare var Hammer;
 
 var fullName : string;
 var facebookID : string;
+var mongoID : string;
 var currentState : State;
 
 var classIDs : string[];
@@ -65,6 +66,7 @@ function updateProfileInformation() {
     url: "/account",
     success: function(response) {
       facebookID = response.user.facebookID;
+      mongoID = response.user._id;
       fullName = response.user.fullName;
       classIDs = response.user.classIDs;
       classNames = response.user.classNames;
@@ -349,7 +351,32 @@ function addJoinClick(joinEvent, _id) {
         event_id : _id
       },
       success: function(response) {
-        console.log(response);
+        if(response.alreadyJoined) {
+          joinEvent.parent().children(".error").eq(0).text("Error: you have already joined this event.");
+        } else if(response.alreadyEnded) {
+          joinEvent.parent().children(".error").eq(0).text("Error: you cannot join an event that has ended.");
+        } else {
+          var attendee = $("<li>");
+          var attendeeText = $("<a>").addClass("name").attr("id", mongoID).attr("href", "#").text(fullName);
+          attendee.append(attendeeText);
+          joinEvent.parent().children("ul").eq(0).append(attendee);
+          attendeeText.click(function() {
+            var id : string = $(this).attr("id");
+            
+            $.ajax({
+              type: "get",
+              url: "/user/" + id,
+              success: function(response) {
+                curUserDisplay = new SSUser();
+                curUserDisplay.fullName = response.fullName;
+                curUserDisplay.facebookID = response.facebookID;
+                curUserDisplay.classIDs = response.classIDs
+                curUserDisplay.classNames = response.classNames;
+                State.switchState(userPageState);
+              }
+            });
+          });
+        }
       }
     });
   });
@@ -388,6 +415,8 @@ function updateNewsFeedDom() {
         var textSpan3 = $("<span>").text("List of attendees: ");
         var listAttendees = $("<ul>");
 
+        var errorMessage = $("<p>").addClass("error").text("");
+
         var j;
         for(j = 0; j < response[i].attendeesNames.length; j++) {
           var attendee = $("<li>");
@@ -409,6 +438,7 @@ function updateNewsFeedDom() {
         containerDiv.append(textSpan3);
         containerDiv.append(listAttendees);
         containerDiv.append(joinEvent);
+        containerDiv.append(errorMessage);
 
         $(".news_feed").append(containerDiv);
       }

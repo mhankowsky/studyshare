@@ -396,7 +396,12 @@ app.post("/join_event", ensureAuthenticated, function(req, res) {
     var newAttendeeIDs = theEvent.attendeesIDs;
     var newAttendeeNames = theEvent.attendeesNames;
     var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
-    if(newAttendeeIDs.indexOf(theObjectID) != -1) {
+    if(theEvent.endTime < new Date()) {
+      res.send({
+        success: false,
+        alreadyEnded: true
+      });
+    } else if(newAttendeeIDs.indexOf(theObjectID) != -1) {
       res.send({
         success: false,
         alreadyJoined: true
