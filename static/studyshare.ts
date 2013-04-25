@@ -290,16 +290,15 @@ function updateClassPageDom() {
   $(".class_page").html("");
 	
   var nameDiv = $("<div id='nameTitle'>");
-  var nameTitle = $("<h>").text(curClassDisplay.name);
+  var nameTitle = $("<h1>").text(curClassDisplay.name);
   nameDiv.append(nameTitle);
   $(".class_page").append(nameDiv);
-  	
-  var studentsDiv = $("<div id='studentsList'>");
-  studentsDiv.append("<h>Students</h>");
+  var studentsDiv = $("<div id='studentsList' >");
+  studentsDiv.append("<h3>Students</h3>");
   var i;
   var listUsers = $("<ul>");
   for(i = 0; i < curClassDisplay.studentNames.length; i++) {
-    var user = $("<li>");
+    var user = $("<li>").addClass("studentButton");
     //var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
     var userName = $("<a>").addClass("name").attr("id", curClassDisplay.studentIDs[i].toString()).attr("href", "#").text(curClassDisplay.studentNames[i]);
     user.append(userName);
@@ -441,9 +440,9 @@ function updateNewsFeedDom() {
         }
 
         var textSpan3 = $("<span>").text("List of attendees: ");
-        var listAttendees = $("<ul>");
+        var listAttendees = $("<ul>").addClass("event_attendees");
 
-        var errorMessage = $("<p>").addClass("error").text("");
+        var errorMessage = $("<p>").addClass("error").text("").addClass("event_attendees");
 
         var j;
         for(j = 0; j < response[i].attendeesNames.length; j++) {
