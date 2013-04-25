@@ -1,3 +1,11 @@
+Studyshare
+
+Daniel Deutsch - ddeutsch
+Michael Hankowsky - mhankows
+Tyler Healy - thealy
+
+This is the feedback that we have received (and the implementations we have made) from the 12 user studies that were conducted over the past week:
+
 When clicking on a profile page, many users noted that it was weird to have the friends list on a profile suddenly pop up after a 5 second lag or so.  The reason behind this lag was because we were not appending the friends list div element to the doom until a response was received from our Facebook ajax request.  Instead, we added the div right away with a "loading" text so the user would know that it was waiting to receive the friends list.  This can be seen in the "loading_friends_list" screenshot in the after_feedback folder, as opposed to the "loading_profile" -> "profile" transition in the before_feedback folder.
 
 It was also noted that there was no feedback given when the "Join Event" button is clicked.  This is because we were adding the user to the database in the backend, but not locally refreshing the DOM on the frontend until the user refreshed the page.  This was fixed by locally adding the user to the DOM when join_event button is clicked.  However, the poor feedback was compounded by confusion over when you could actually join an event.  Previously, you could join events that had already ended.  Furthermore, you could click the button, but nothing would actually happen if you had previously joined the event.  This was fixed by adding an error message that can be seen in the "already_ended" and "already_joined" screenshots in the after_feedback folder.
@@ -19,3 +27,16 @@ Clicking the "add class" button in the classes tab also gave no feedback, which 
 Users also were confused as to what the purpose of adding classes was, since it is nice that you can see everyone that has added a class on a class page, but there is no incentive to add the classes you are in.  Also, it was pointless as when adding an event, all classes in the database were listed anyway, which could be overwhelming.  This was remedied by only listing classes you have added into the add_event page, as you would never want to add an event for a class that you were not even in.  Some people noted that they have side projects that aren't necessarily related to classes at CMU, but they would still want to broadcast as events.  So, we added an "other" option that is always visible under the classes in add_event.
 
 Multiple users tried to add events with incorrect times (either an end time that occurred in the past, or with an end time occurring before a start time). They were surprised to see that the events were created and displayed in the newsfeed, and noted that there should be an error when a user attempts to do this. Now, if a user attempts to create an event that falls under the two cases mentioned above, an error message is displayed on the add event page. This can be seen in the "event_error" screenshot in after_feedback.
+
+One user also pointed out that most mobile apps have a fixed navigation bar either at the top of the bottom. As evident in "newsfeed" in before_feedback, you can see that our navigation bar is at the top of the page. However, when there is a long list of events on the newsfeed, as there often will be with many users, you can scroll down through the events and the navigation bar disappears. You can now see in "new_newsfeed" that the navigation bar is fixed, and events scroll behind the navigation bar.
+
+Soon to be implemented user feedback:
+
+A couple users suggested a re-design of our navigation bar which involved changing what buttons were in the menu. The suggestion that we are most likely going to implement involves the following:
+
+Left-most: Tab that opens up the side-menu which can now only be opened with a swipe of the finger. Most users did not realize that there was a side menu because there is no prompt.
+Middle-left: Newsfeed
+Middle-right: Profile Page
+Right-most: Add event
+
+This would remove the add class button. However, users felt this button was not important enough to be included in the navigation bar. In replace of this navigation button, it was suggested that a button be included on the profile page where it lists a users class.
