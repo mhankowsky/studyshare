@@ -353,9 +353,9 @@ function addJoinClick(joinEvent, _id) {
       },
       success: function(response) {
         if(response.alreadyJoined) {
-          joinEvent.parent().children(".error").eq(0).text("Error: you have already joined this event.");
+          joinEvent.parent().children(".error-center").eq(0).text("Error: you have already joined this event.");
         } else if(response.alreadyEnded) {
-          joinEvent.parent().children(".error").eq(0).text("Error: you cannot join an event that has ended.");
+          joinEvent.parent().children(".error-center").eq(0).text("Error: you cannot join an event that has ended.");
         } else {
           var attendee = $("<li>");
           var attendeeText = $("<a>").addClass("name").attr("id", mongoID).attr("href", "#").text(fullName);
@@ -492,6 +492,7 @@ function updateNewsFeedDom() {
 }
 
 function updateEventDom() {
+  $("#submit_event_error").text("");
   var currDate = new Date();
   var currDatePlusHour = new Date();
   currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
@@ -586,9 +587,9 @@ $(function() {
     endDate.setMinutes(timeStr[1]);
     
     if (endDate.getTime() < startDate.getTime()) {
-      alert("The end date/time must occur after the start date/time.")
+      $("#submit_event_error").text("The end date/time must occur after the start date/time.");
     } else if (endDate.getTime() < curDate.getTime()) {
-      alert("The event cannot end before the current time.");
+      $("#submit_event_error").text("The event cannot end before the current time.");
     } else {  
       $.ajax({
         type: "post",

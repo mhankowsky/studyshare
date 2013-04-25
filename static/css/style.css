@@ -318,6 +318,10 @@ h {
 
 .error {
   color: red;
+}
+
+.error-center {
+  color: red;
   text-align: center;
 }
 
