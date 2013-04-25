@@ -173,14 +173,13 @@ function updateBuildingsClasses() {
       var classes = response;
       var i;
       $("#class").html("");
-      for(i = 0; i < classes.length; i++) {
-        var option = $("<option>").attr("value", classes[i].name).text(classes[i].name);// + " (" + classes[i].num + ")");
-        $("#class").append(option);
-      }
       $("#ACclass").html("");
       for(i = 0; i < classes.length; i++) {
-        var option = $("<option>").attr("value", classes[i].name).text(classes[i].name);// + " (" + classes[i].num + ")");
-        $("#ACclass").append(option);
+        if(classes[i].name !== "Other") {
+          var option = $("<option>").attr("value", classes[i].name).text(classes[i].name);// + " (" + classes[i].num + ")");
+          $("#class").append(option);
+          $("#ACclass").append(option);
+        }
       }
     }
   });
