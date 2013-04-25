@@ -302,9 +302,9 @@ app.get('/classes/:id', function(req, res) {
 });
 
 app.get('/events', function(req, res) {
-  var oneHourAgo = new Date();
-  oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-  AnEvent.remove({endTime : {$lt : oneHourAgo }}, function(err) {
+  var currDate = new Date();
+  //oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+  AnEvent.remove({endTime : {$lt : currDate }}, function(err) {
     AnEvent.find({}).sort({endTime : 1}).exec(function(err, events) {
       res.send(events);
     });
