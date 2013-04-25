@@ -306,7 +306,6 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
     Building.findOne({
         name: req.body.building
     }, function (err, theBuilding) {
-        console.log(req.body.building);
         theEvent.buildingName = theBuilding.name;
         theEvent.buildingID = theBuilding._id;
         Class.findOne({

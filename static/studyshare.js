@@ -633,7 +633,6 @@ $(function () {
         var timeStr = $("#end_time").val().split(":");
         endDate.setHours(timeStr[0]);
         endDate.setMinutes(timeStr[1]);
-        console.log($("#class").val());
         if(endDate.getTime() < startDate.getTime()) {
             $("#submit_event_error").text("The end date/time must occur after the start date/time.");
         } else if(endDate.getTime() < curDate.getTime()) {
