@@ -115,6 +115,7 @@ function updateBuildingsClasses() {
 }
 
 function updateProfileDom() {
+  updateProfileInformation();
   $(".profile_page").html("");
   
   var nameDiv = $("<div id='nameTitle'>");
@@ -540,7 +541,7 @@ function dateToString(date : Date) : string {
 }
 
 function updateClassDom() {
-
+  $("#class_feedback_message").text("");
 }
 
 $(function() {
@@ -598,7 +599,11 @@ $(function() {
         class: $("#ACclass").val(),
       },
       success: function(response) {
-        updateProfileInformation();
+        if(response.alreadyInClass) {
+          $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
+        } else {
+          $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
+        }
       }
     });
   });

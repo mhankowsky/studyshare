@@ -15,6 +15,10 @@ body {
   overflow:hidden;
 }
 
+a {
+  color:#117AFF;
+  text-decoration:none;
+}
 a:link {
   color:#117AFF;
   text-decoration:none;}      /* unvisited link */
@@ -23,7 +27,7 @@ a:visited {
   text-decoration:none;}  /* visited link */
 a:hover {
   color:#117AFF;
-  text-decoration:none;}  /* mouse over link */
+  text-decoration:underline;}  /* mouse over link */
 a:active {  
   color:#117AFF;
   text-decoration:none;}  /* selected link */

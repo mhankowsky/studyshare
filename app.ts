@@ -359,6 +359,8 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
   var newStudentIDs;
   var newStudentNames;
 
+
+
   Class.findOne({name : req.body.class}, function(err, theClass) {
     User.findOne({facebookID : req.user.facebookID}, function(err, theUser) {
       newClassIDs = theUser.classIDs;
@@ -366,6 +368,9 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
       if (newClassIDs.indexOf(theClass._id) === -1) {
         newClassIDs.push(theClass._id);
         newClassNames.push(theClass.name);
+      } else {
+        res.send({success: false, alreadyInClass : true});
+        return;
       }
       
       newStudentIDs = theClass.studentIDs;
@@ -377,11 +382,11 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
       
       User.update({facebookID : req.user.facebookID}, { $set: {classIDs : newClassIDs, classNames : newClassNames}}, function(err) {
         if (err) {
-          //TODO Do something useful here...
+          throw err;
         }
         Class.update({_id : theClass._id}, { $set: {studentIDs : newStudentIDs, studentNames : newStudentNames}}, function(err) {
           if (err) {
-            //TODO Do something useful here...
+            throw err;
           }
           
           res.send({success:true});

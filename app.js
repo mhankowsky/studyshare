@@ -339,6 +339,12 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
             if(newClassIDs.indexOf(theClass._id) === -1) {
                 newClassIDs.push(theClass._id);
                 newClassNames.push(theClass.name);
+            } else {
+                res.send({
+                    success: false,
+                    alreadyInClass: true
+                });
+                return;
             }
             newStudentIDs = theClass.studentIDs;
             newStudentNames = theClass.studentNames;
@@ -355,6 +361,7 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
                 }
             }, function (err) {
                 if(err) {
+                    throw err;
                 }
                 Class.update({
                     _id: theClass._id
@@ -365,6 +372,7 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
                     }
                 }, function (err) {
                     if(err) {
+                        throw err;
                     }
                     res.send({
                         success: true
