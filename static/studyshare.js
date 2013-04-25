@@ -11,6 +11,10 @@ var curClassDisplay;
 var currentLong;
 var currentLat;
 var MILLI_IN_HOUR = 60 * 60 * 1000;
+var aLocation = (function () {
+    function aLocation() { }
+    return aLocation;
+})();
 var SSUser = (function () {
     function SSUser() { }
     return SSUser;
@@ -53,6 +57,51 @@ function updateProfileInformation() {
         }
     });
 }
+function calculateDistance(loc1, loc2) {
+    var lon1 = loc1.long;
+    var lat1 = loc1.lat;
+    var lon2 = loc2.long;
+    var lat2 = loc2.lat;
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var lat1 = lat1 * Math.PI / 180;
+    var lat2 = lat2 * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+function precise_round(num, decimals) {
+    return Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
+}
+function updateBuildings() {
+    $.ajax({
+        type: "get",
+        url: "/buildings",
+        success: function (response) {
+            var buildings = response;
+            var i;
+            $("#building").html("");
+            for(i = 0; i < buildings.length; i++) {
+                var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i].name);
+                var distance;
+                if(currentLong !== undefined) {
+                    var currentLoc = new aLocation();
+                    currentLoc.long = currentLong;
+                    currentLoc.lat = currentLat;
+                    var buildingLoc = new aLocation();
+                    buildingLoc.long = buildings[i].long;
+                    buildingLoc.lat = buildings[i].lat;
+                    distance = calculateDistance(currentLoc, buildingLoc);
+                    option.text(buildings[i].name + " (Distance: " + precise_round(distance, 3) + " km)");
+                } else {
+                    option.text(buildings[i].name);
+                }
+                $("#building").append(option);
+            }
+        }
+    });
+}
 function updateBuildingsClasses() {
     $.ajax({
         type: "get",
@@ -62,7 +111,20 @@ function updateBuildingsClasses() {
             var i;
             $("#building").html("");
             for(i = 0; i < buildings.length; i++) {
-                var option = $("<option>").attr("value", buildings[i].name).text(buildings[i].name);
+                var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i].name);
+                var distance;
+                if(currentLong !== undefined) {
+                    var currentLoc = new aLocation();
+                    currentLoc.long = currentLong;
+                    currentLoc.lat = currentLat;
+                    var buildingLoc = new aLocation();
+                    buildingLoc.long = buildings[i].long;
+                    buildingLoc.lat = buildings[i].lat;
+                    distance = calculateDistance(currentLoc, buildingLoc);
+                    option.text(buildings[i].name + " (Distance: " + distance + " km)");
+                } else {
+                    option.text(buildings[i].name);
+                }
                 $("#building").append(option);
             }
         }
@@ -458,21 +520,36 @@ function updateEventDom() {
     $("#start_time").val(defaultStartTime);
     $("#end_date").val(dateToString(currDatePlusHour));
     $("#end_time").val(defaultEndTime);
+    updateCurrentPosition(true);
+}
+function updateCurrentPosition(withMap) {
     if(!navigator.geolocation) {
         return;
     } else {
         navigator.geolocation.getCurrentPosition(function (position) {
             currentLong = position.coords.longitude;
             currentLat = position.coords.latitude;
-            var mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
-            mapString = mapString + currentLat + "," + currentLong;
-            mapString += "&maptype=hybrid&zoom=17&size=400x400&sensor=true&markers=size:mid|color:red|40.443078,-79.942092";
-            mapString += "&markers=size:mid|color:blue|" + currentLat + "," + currentLong;
-            $("#map").attr("src", mapString);
-            $("#map").show();
-            $("#loading_map").hide();
+            if(withMap) {
+                var loc = new aLocation();
+                loc.lat = $("#building").val().split(",")[0];
+                loc.long = $("#building").val().split(",")[1];
+                updateMap(loc);
+            }
+            updateBuildings();
         });
     }
+}
+function updateMap(loc) {
+    var mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
+    mapString = mapString + currentLat + "," + currentLong;
+    mapString += "&maptype=hybrid&zoom=16&size=400x400&sensor=true";
+    mapString += "&markers=size:large|color:blue|" + currentLat + "," + currentLong;
+    if(loc !== null) {
+        mapString += "&markers=size:mid|color:red|" + loc.lat + "," + loc.long;
+    }
+    $("#map").attr("src", mapString);
+    $("#map").show();
+    $("#loading_map").hide();
 }
 function dateToString(date) {
     var month = (date.getMonth() + 1);
@@ -497,6 +574,7 @@ function updateClassDom() {
 $(function () {
     updateProfileInformation();
     updateBuildingsClasses();
+    updateCurrentPosition(false);
     var newsFeedState = new State($(".news_feed"), updateNewsFeedDom);
     var profilePageState = new State($(".profile_page"), updateProfileDom);
     var addEventState = new State($(".event_creation"), updateEventDom);
@@ -516,6 +594,13 @@ $(function () {
     });
     $("#classes").click(function () {
         State.switchState(addClassState);
+    });
+    $("#building").change(function () {
+        var loc = new aLocation();
+        var coords = $(this).val();
+        loc.lat = coords.split(",")[0];
+        loc.long = coords.split(",")[1];
+        updateMap(loc);
     });
     $("#submit_event").click(function () {
         var curDate = new Date();
@@ -540,7 +625,7 @@ $(function () {
                 url: "/submit_event",
                 data: {
                     class: $("#class").val(),
-                    building: $("#building").val(),
+                    building: $("#building").attr("id"),
                     info: $("#info").val(),
                     start_date: $("#start_date").val(),
                     start_time: $("#start_time").val(),
