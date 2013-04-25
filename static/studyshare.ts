@@ -20,6 +20,8 @@ var currentLat : number;
 
 var MILLI_IN_HOUR = 60*60*1000;
 
+var userProfilePicture: string;
+
 class SSUser {
   fullName : string;
   facebookID : string;
@@ -70,6 +72,7 @@ function updateProfileInformation() {
       fullName = response.user.fullName;
       classIDs = response.user.classIDs;
       classNames = response.user.classNames;
+      userProfilePicture = response.user.profilePicture;
       $("#userName").text(response.user.fullName);
       $("#personal_picture").attr("src", response.user.profilePicture);
     },
@@ -120,6 +123,8 @@ function updateProfileDom() {
   
   var nameDiv = $("<div id='nameTitle'>");
   var nameTitle = $("<h>").text(fullName); 
+  var userProfilePic = $("<img>").addClass("userPic").attr("src", userProfilePicture);
+  nameDiv.append(userProfilePic);
   nameDiv.append(nameTitle);
   $(".profile_page").append(nameDiv); 
   
@@ -189,6 +194,8 @@ function updateProfileDom() {
             curClassDisplay.num = response.num;
             curClassDisplay.deptNum = response.deptNum;
             curClassDisplay.classNum = response.classNum;
+            var current_event = $("<span>").addClass("currMarker");
+            //containerDiv.append(current_event);
             curClassDisplay.ownerName = response.ownerName;
             curClassDisplay.ownerID = response.ownerID;
             curClassDisplay.studentNames = response.studentNames;
@@ -436,6 +443,8 @@ function updateNewsFeedDom() {
 
         if (startTime.getTime() < now.getTime()) {
           containerDiv.attr("id", "now");
+          var current_event = $("<span>").addClass("currMarker");
+          containerDiv.append(current_event);
         }
         var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime.toLocaleString());
         

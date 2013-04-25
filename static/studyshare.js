@@ -11,6 +11,7 @@ var curClassDisplay;
 var currentLong;
 var currentLat;
 var MILLI_IN_HOUR = 60 * 60 * 1000;
+var userProfilePicture;
 var SSUser = (function () {
     function SSUser() { }
     return SSUser;
@@ -46,6 +47,7 @@ function updateProfileInformation() {
             fullName = response.user.fullName;
             classIDs = response.user.classIDs;
             classNames = response.user.classNames;
+            userProfilePicture = response.user.profilePicture;
             $("#userName").text(response.user.fullName);
             $("#personal_picture").attr("src", response.user.profilePicture);
         },
@@ -91,6 +93,8 @@ function updateProfileDom() {
     $(".profile_page").html("");
     var nameDiv = $("<div id='nameTitle'>");
     var nameTitle = $("<h>").text(fullName);
+    var userProfilePic = $("<img>").addClass("userPic").attr("src", userProfilePicture);
+    nameDiv.append(userProfilePic);
     nameDiv.append(nameTitle);
     $(".profile_page").append(nameDiv);
     var classesDiv = $("<div id='classesList'>");
@@ -154,6 +158,7 @@ function updateProfileDom() {
                         curClassDisplay.num = response.num;
                         curClassDisplay.deptNum = response.deptNum;
                         curClassDisplay.classNum = response.classNum;
+                        var current_event = $("<span>").addClass("currMarker");
                         curClassDisplay.ownerName = response.ownerName;
                         curClassDisplay.ownerID = response.ownerID;
                         curClassDisplay.studentNames = response.studentNames;
@@ -372,6 +377,8 @@ function updateNewsFeedDom() {
                 var startTime = new Date(response[i].startTime);
                 if(startTime.getTime() < now.getTime()) {
                     containerDiv.attr("id", "now");
+                    var current_event = $("<span>").addClass("currMarker");
+                    containerDiv.append(current_event);
                 }
                 var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime.toLocaleString());
                 var endTime = new Date(response[i].endTime);
