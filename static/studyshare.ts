@@ -377,6 +377,11 @@ function addJoinClick(joinEvent, _id) {
               }
             });
           });
+          
+          var joinOrLeave = joinEvent.parent().find(".joinOrLeave");
+          joinOrLeave.unbind('click');
+          joinOrLeave.attr("id", "leave").text("Leave Event");
+          addLeaveClick(joinOrLeave, _id);
         }
       }
     });
@@ -393,6 +398,10 @@ function addLeaveClick(leaveEvent, _id) {
       },
       success: function(response) {
         leaveEvent.parent().children("ul").find("#" + mongoID).remove();
+        var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
+        joinOrLeave.unbind('click');
+        joinOrLeave.attr("id", "join").text("Join Event");
+        addJoinClick(joinOrLeave, _id);
       }
     });
   });
