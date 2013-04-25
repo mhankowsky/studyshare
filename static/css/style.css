@@ -148,9 +148,9 @@ a:active {
 
 .name_class {
   position:relative;
-  display:inline;
+  display:inline-block;
   top:-20px;
-  left:20px;
+  left:55px;
 }
 
 .time {
@@ -248,7 +248,7 @@ a:active {
   padding: 10px;
   font-size: 17;
   margin: 10px 0 10px 20px;
-  background-color: #FF9D38;
+  background-color: #ddd;
 
 }
 
@@ -258,7 +258,7 @@ a:active {
   padding: 10px;
   font-size: 20;
   margin: 10px 0 10px 20px;
-  background-color: #FF9D38;
+  background-color: #ddd;
 
 }
 .event_creation p {
@@ -267,7 +267,7 @@ a:active {
 }
 
 .event_creation a {
-  background-color: #FF9D38;
+  background-color: #ddd;
   width:100px;
   height:50px;
   display: block;
