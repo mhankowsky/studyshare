@@ -4,6 +4,7 @@ declare var Hammer;
 
 var fullName : string;
 var facebookID : string;
+var mongoID : string;
 var currentState : State;
 
 var classIDs : string[];
@@ -65,6 +66,7 @@ function updateProfileInformation() {
     url: "/account",
     success: function(response) {
       facebookID = response.user.facebookID;
+      mongoID = response.user._id;
       fullName = response.user.fullName;
       classIDs = response.user.classIDs;
       classNames = response.user.classNames;
@@ -113,6 +115,7 @@ function updateBuildingsClasses() {
 }
 
 function updateProfileDom() {
+  updateProfileInformation();
   $(".profile_page").html("");
   
   var nameDiv = $("<div id='nameTitle'>");
@@ -220,12 +223,19 @@ function updateUserPageDom() {
   
   var friendsDiv = $("<div id='friendsList'>");
   friendsDiv.append("<h>Friends</h>");
+
+  var listFriends = $("<ul>");
+  listFriends.text("Loading friends list...");
+  friendsDiv.append(listFriends);
+
+  $(".user_page").append(friendsDiv);
+
   $.ajax({
     type: "get",
     url: "/facebook_friends/" + curUserDisplay.facebookID,
     success: function(response) {
+      listFriends.text("");
       var i;
-      var listFriends = $("<ul>");
       for(i = 0; i < response.length; i++) {
         var friend = $("<li>");
         var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
@@ -234,8 +244,6 @@ function updateUserPageDom() {
         friend.append(picture);
         listFriends.append(friend);
       }
-      friendsDiv.append(listFriends);
-      $(".user_page").append(friendsDiv);
       
       $(".name").click(function() {
         var id : string = $(this).attr("id");
@@ -344,7 +352,47 @@ function addJoinClick(joinEvent, _id) {
         event_id : _id
       },
       success: function(response) {
-        console.log(response);
+        if(response.alreadyJoined) {
+          joinEvent.parent().children(".error").eq(0).text("Error: you have already joined this event.");
+        } else if(response.alreadyEnded) {
+          joinEvent.parent().children(".error").eq(0).text("Error: you cannot join an event that has ended.");
+        } else {
+          var attendee = $("<li>");
+          var attendeeText = $("<a>").addClass("name").attr("id", mongoID).attr("href", "#").text(fullName);
+          attendee.append(attendeeText);
+          joinEvent.parent().children("ul").eq(0).append(attendee);
+          attendeeText.click(function() {
+            var id : string = $(this).attr("id");
+            
+            $.ajax({
+              type: "get",
+              url: "/user/" + id,
+              success: function(response) {
+                curUserDisplay = new SSUser();
+                curUserDisplay.fullName = response.fullName;
+                curUserDisplay.facebookID = response.facebookID;
+                curUserDisplay.classIDs = response.classIDs
+                curUserDisplay.classNames = response.classNames;
+                State.switchState(userPageState);
+              }
+            });
+          });
+        }
+      }
+    });
+  });
+}
+
+function addLeaveClick(leaveEvent, _id) {
+  leaveEvent.click(function() {
+    $.ajax({
+      type: "put",
+      url: "/leave_event",
+      data: {
+        event_id : _id
+      },
+      success: function(response) {
+        leaveEvent.parent().children("ul").find("#" + mongoID).remove();
       }
     });
   });
@@ -352,6 +400,7 @@ function addJoinClick(joinEvent, _id) {
 
 function updateNewsFeedDom() {
   $(".news_feed").html("loading...");
+  var now = new Date();
 
   $.ajax({
     type: "get",
@@ -371,17 +420,30 @@ function updateNewsFeedDom() {
         var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
         
         var startTime = new Date(response[i].startTime);
-        var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime);
+
+        if (startTime.getTime() < now.getTime()) {
+          containerDiv.attr("id", "now");
+        }
+        var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime.toLocaleString());
         
         var endTime = new Date(response[i].endTime);
-        var endTimeSpan = $("<span>").addClass("time").text("End: " + endTime);
+        var endTimeSpan = $("<span>").addClass("time").text("End : " + endTime.toLocaleString());
         
         var infoP = $("<p>").addClass("info").text(response[i].info);
-        var joinEvent = $("<div>").addClass("join").text("Join Event");
-        addJoinClick(joinEvent, response[i]._id);
+        
+        var joinOrLeave = $("<div>").addClass("joinOrLeave");
+        if (response[i].attendeesIDs.indexOf(mongoID) === -1) {
+          joinOrLeave.attr("id", "join").text("Join Event");
+          addJoinClick(joinOrLeave, response[i]._id);
+        } else {
+          joinOrLeave.attr("id", "leave").text("Leave Event");
+          addLeaveClick(joinOrLeave, response[i]._id);
+        }
 
         var textSpan3 = $("<span>").text("List of attendees: ");
         var listAttendees = $("<ul>");
+
+        var errorMessage = $("<p>").addClass("error").text("");
 
         var j;
         for(j = 0; j < response[i].attendeesNames.length; j++) {
@@ -403,7 +465,8 @@ function updateNewsFeedDom() {
         containerDiv.append(infoP);
         containerDiv.append(textSpan3);
         containerDiv.append(listAttendees);
-        containerDiv.append(joinEvent);
+        containerDiv.append(joinOrLeave);
+        containerDiv.append(errorMessage);
 
         $(".news_feed").append(containerDiv);
       }
@@ -500,7 +563,7 @@ function dateToString(date : Date) : string {
 }
 
 function updateClassDom() {
-
+  $("#class_feedback_message").text("");
 }
 
 $(function() {
@@ -530,24 +593,43 @@ $(function() {
 
   $("#submit_event").click(function() {
     var curDate = new Date();
+    var offset = curDate.getTimezoneOffset();
     
-    $.ajax({
-      type: "post",
-      url: "/submit_event",
-      data: {
-        class: $("#class").val(),
-        building: $("#building").val(),
-        info: $("#info").val(),
-        start_date: $("#start_date").val(),
-        start_time: $("#start_time").val(),
-        end_date: $("#end_date").val(),
-        end_time: $("#end_time").val(),
-        offset: curDate.getTimezoneOffset()
-      },
-      success: function(response) {
-        State.switchState(newsFeedState);
-      }
-    });
+    var startDate = new Date($("#start_date").val());
+    startDate.setMinutes(offset);
+    var timeStr = $("#start_time").val().split(":");
+    startDate.setHours(timeStr[0]);
+    startDate.setMinutes(timeStr[1]);
+    
+    var endDate = new Date($("#end_date").val());
+    endDate.setMinutes(offset);
+    var timeStr = $("#end_time").val().split(":");
+    endDate.setHours(timeStr[0]);
+    endDate.setMinutes(timeStr[1]);
+    
+    if (endDate.getTime() < startDate.getTime()) {
+      alert("The end date/time must occur after the start date/time.")
+    } else if (endDate.getTime() < curDate.getTime()) {
+      alert("The event cannot end before the current time.");
+    } else {  
+      $.ajax({
+        type: "post",
+        url: "/submit_event",
+        data: {
+          class: $("#class").val(),
+          building: $("#building").val(),
+          info: $("#info").val(),
+          start_date: $("#start_date").val(),
+          start_time: $("#start_time").val(),
+          end_date: $("#end_date").val(),
+          end_time: $("#end_time").val(),
+          offset: offset
+        },
+        success: function(response) {
+          State.switchState(newsFeedState);
+        }
+      });
+    }
   });
   
   $("#add_class").click(function() {
@@ -558,7 +640,11 @@ $(function() {
         class: $("#ACclass").val(),
       },
       success: function(response) {
-        updateProfileInformation();
+        if(response.alreadyInClass) {
+          $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
+        } else {
+          $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
+        }
       }
     });
   });

@@ -186,25 +186,33 @@ app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
     });
 });
 app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
-    var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-    request.get({
-        url: theUrl
-    }, function (e, r, response) {
-        response = JSON.parse(response);
-        if(e != null) {
-            console.log("error :(?");
-            r.send(response);
-        } else {
-            var idArray = response.data.map(function (val, i) {
-                return val.id;
-            });
-            User.find({
-            }, {
-                facebookAccessToken: 0
-            }).where("facebookID").in(idArray).exec(function (err, records) {
-                res.send(records);
-            });
+    var fbAccessToken;
+    User.findOne({
+        facebookID: req.params.id
+    }, function (err, rec) {
+        if(err) {
         }
+        fbAccessToken = rec.facebookAccessToken;
+        var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + fbAccessToken;
+        request.get({
+            url: theUrl
+        }, function (e, r, response) {
+            response = JSON.parse(response);
+            if(e != null) {
+                console.log("error :(?");
+                r.send(response);
+            } else {
+                var idArray = response.data.map(function (val, i) {
+                    return val.id;
+                });
+                User.find({
+                }, {
+                    facebookAccessToken: 0
+                }).where("facebookID").in(idArray).exec(function (err, records) {
+                    res.send(records);
+                });
+            }
+        });
     });
 });
 app.get('/auth/facebook', passport.authorize('facebook', {
@@ -259,9 +267,17 @@ app.get('/classes/:id', function (req, res) {
     });
 });
 app.get('/events', function (req, res) {
-    AnEvent.find({
-    }, function (err, events) {
-        res.send(events);
+    AnEvent.remove({
+        endTime: {
+            $lt: new Date()
+        }
+    }, function (err) {
+        AnEvent.find({
+        }).sort({
+            endTime: 1
+        }).exec(function (err, events) {
+            res.send(events);
+        });
     });
 });
 app.post("/submit_event", ensureAuthenticated, function (req, res) {
@@ -288,14 +304,10 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
             ];
             theEvent.info = req.body.info;
             var startDate = new Date(req.body.start_date);
-            console.log("1:" + startDate);
             startDate.setMinutes(req.body.offset);
-            console.log("2:" + startDate);
             var timeStr = req.body.start_time.split(":");
             startDate.setHours(timeStr[0]);
-            console.log("3:" + startDate);
             startDate.setMinutes(timeStr[1]);
-            console.log("4:" + startDate);
             var endDate = new Date(req.body.end_date);
             endDate.setMinutes(req.body.offset);
             var timeStr = req.body.end_time.split(":");
@@ -331,6 +343,12 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
             if(newClassIDs.indexOf(theClass._id) === -1) {
                 newClassIDs.push(theClass._id);
                 newClassNames.push(theClass.name);
+            } else {
+                res.send({
+                    success: false,
+                    alreadyInClass: true
+                });
+                return;
             }
             newStudentIDs = theClass.studentIDs;
             newStudentNames = theClass.studentNames;
@@ -347,6 +365,7 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
                 }
             }, function (err) {
                 if(err) {
+                    throw err;
                 }
                 Class.update({
                     _id: theClass._id
@@ -357,6 +376,7 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
                     }
                 }, function (err) {
                     if(err) {
+                        throw err;
                     }
                     res.send({
                         success: true
@@ -373,7 +393,12 @@ app.post("/join_event", ensureAuthenticated, function (req, res) {
         var newAttendeeIDs = theEvent.attendeesIDs;
         var newAttendeeNames = theEvent.attendeesNames;
         var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
-        if(newAttendeeIDs.indexOf(theObjectID) != -1) {
+        if(theEvent.endTime < new Date()) {
+            res.send({
+                success: false,
+                alreadyEnded: true
+            });
+        } else if(newAttendeeIDs.indexOf(theObjectID) != -1) {
             res.send({
                 success: false,
                 alreadyJoined: true
@@ -381,6 +406,45 @@ app.post("/join_event", ensureAuthenticated, function (req, res) {
         } else {
             newAttendeeIDs.push(theObjectID);
             newAttendeeNames.push(req.user.fullName);
+            AnEvent.update({
+                _id: req.body.event_id
+            }, {
+                $set: {
+                    attendeesIDs: newAttendeeIDs,
+                    attendeesNames: newAttendeeNames
+                }
+            }, function (err) {
+                if(err) {
+                    throw err;
+                }
+                res.send({
+                    success: true
+                });
+            });
+        }
+    });
+});
+app.put("/leave_event", ensureAuthenticated, function (req, res) {
+    AnEvent.findOne({
+        _id: req.body.event_id
+    }, function (err, theEvent) {
+        var newAttendeeIDs = theEvent.attendeesIDs;
+        var newAttendeeNames = theEvent.attendeesNames;
+        var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
+        var index = newAttendeeIDs.indexOf(theObjectID);
+        if(index !== -1) {
+            newAttendeeIDs.splice(index, 1);
+            newAttendeeNames.splice(index, 1);
+        }
+        if(newAttendeeIDs.length === 0) {
+            AnEvent.remove({
+                _id: theEvent.id
+            }, function (err) {
+                res.send({
+                    success: true
+                });
+            });
+        } else {
             AnEvent.update({
                 _id: req.body.event_id
             }, {

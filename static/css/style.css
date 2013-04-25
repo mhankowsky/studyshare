@@ -10,20 +10,26 @@ body {
 }
 
 .main{
+  margin: 130px 0 0 0;
+  padding: 10px 4px 10px 4px;
   overflow:hidden;
 }
 
+a {
+  color:#117AFF;
+  text-decoration:none;
+}
 a:link {
-  color:#000;
+  color:#117AFF;
   text-decoration:none;}      /* unvisited link */
 a:visited {
-  color:#000;
+  color:#117AFF;
   text-decoration:none;}  /* visited link */
 a:hover {
-  color:#000;
-  text-decoration:none;}  /* mouse over link */
+  color:#117AFF;
+  text-decoration:underline;}  /* mouse over link */
 a:active {  
-  color:#000;
+  color:#117AFF;
   text-decoration:none;}  /* selected link */
         
 
@@ -76,7 +82,14 @@ a:active {
 
 .header {
   display:block;
+  
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  z-index: 1;
+  
   height:100px;
+  width: 100%;
   padding: 10px 5px 20px 10px;
   margin: 0 0 20px 0;
 
@@ -131,14 +144,21 @@ a:active {
  * *************************/
 
 .content-box {
-  width: 75%;
-  margin:5% 0 0 5%;
-  padding: 10px 0 0 2%;
+  width: 87%;
+  margin: 15px 0 15px 5%;
+  padding: 10px 0 10px 2%;
 
   background-color: #ffffff;
   border: 2px solid #999999;
   border-radius: 10px;
   box-shadow: 0px 0px 8px #000000;
+  
+  position: relative;
+}
+
+#now {
+  background-color: #04CC20;
+  opacity: 1.0;
 }
     
 .profile_thumb {
@@ -156,7 +176,7 @@ a:active {
 .time {
   display:block;
   font-size:10px;
-  color: #D1D1D1;
+  color: #909197;
 
   margin-left:9%;
 }
@@ -278,7 +298,7 @@ a:active {
 }
 
 /**************************8
- * Shitty Tyler test styles 
+ * Shitty Tyler/Daniel test styles 
  * *************************/
  
 h {
@@ -294,4 +314,24 @@ h {
 
   border-style : solid;
   border-width : 5px;
+}
+
+.error {
+  color: red;
+  text-align: center;
+}
+
+.joinOrLeave {
+  background-color: #FF9D38;
+  width:110px;
+  height:25px;
+  display: block;
+  border: 1px solid #999;
+  font-size: 20px;
+  padding: 5px;
+  margin: 10px;
+  
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
 }
