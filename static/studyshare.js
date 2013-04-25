@@ -15,6 +15,7 @@ var aLocation = (function () {
     function aLocation() { }
     return aLocation;
 })();
+var userProfilePicture;
 var SSUser = (function () {
     function SSUser() { }
     return SSUser;
@@ -50,6 +51,7 @@ function updateProfileInformation() {
             fullName = response.user.fullName;
             classIDs = response.user.classIDs;
             classNames = response.user.classNames;
+            userProfilePicture = response.user.profilePicture;
             $("#userName").text(response.user.fullName);
             $("#personal_picture").attr("src", response.user.profilePicture);
         },
@@ -153,6 +155,8 @@ function updateProfileDom() {
     $(".profile_page").html("");
     var nameDiv = $("<div id='nameTitle'>");
     var nameTitle = $("<h>").text(fullName);
+    var userProfilePic = $("<img>").addClass("userPic").attr("src", userProfilePicture);
+    nameDiv.append(userProfilePic);
     nameDiv.append(nameTitle);
     $(".profile_page").append(nameDiv);
     var classesDiv = $("<div id='classesList'>");
@@ -216,6 +220,7 @@ function updateProfileDom() {
                         curClassDisplay.num = response.num;
                         curClassDisplay.deptNum = response.deptNum;
                         curClassDisplay.classNum = response.classNum;
+                        var current_event = $("<span>").addClass("currMarker");
                         curClassDisplay.ownerName = response.ownerName;
                         curClassDisplay.ownerID = response.ownerID;
                         curClassDisplay.studentNames = response.studentNames;
@@ -304,15 +309,15 @@ function updateUserPageDom() {
 function updateClassPageDom() {
     $(".class_page").html("");
     var nameDiv = $("<div id='nameTitle'>");
-    var nameTitle = $("<h>").text(curClassDisplay.name);
+    var nameTitle = $("<h1>").text(curClassDisplay.name);
     nameDiv.append(nameTitle);
     $(".class_page").append(nameDiv);
-    var studentsDiv = $("<div id='studentsList'>");
-    studentsDiv.append("<h>Students</h>");
+    var studentsDiv = $("<div id='studentsList' >");
+    studentsDiv.append("<h3>Students</h3>");
     var i;
     var listUsers = $("<ul>");
     for(i = 0; i < curClassDisplay.studentNames.length; i++) {
-        var user = $("<li>");
+        var user = $("<li>").addClass("studentButton");
         var userName = $("<a>").addClass("name").attr("id", curClassDisplay.studentIDs[i].toString()).attr("href", "#").text(curClassDisplay.studentNames[i]);
         user.append(userName);
         listUsers.append(user);
@@ -380,6 +385,10 @@ function addJoinClick(joinEvent, _id) {
                             }
                         });
                     });
+                    var joinOrLeave = joinEvent.parent().find(".joinOrLeave");
+                    joinOrLeave.unbind('click');
+                    joinOrLeave.attr("id", "leave").text("Leave Event");
+                    addLeaveClick(joinOrLeave, _id);
                 }
             }
         });
@@ -395,6 +404,10 @@ function addLeaveClick(leaveEvent, _id) {
             },
             success: function (response) {
                 leaveEvent.parent().children("ul").find("#" + mongoID).remove();
+                var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
+                joinOrLeave.unbind('click');
+                joinOrLeave.attr("id", "join").text("Join Event");
+                addJoinClick(joinOrLeave, _id);
             }
         });
     });
@@ -426,6 +439,8 @@ function updateNewsFeedDom() {
                 var startTime = new Date(response[i].startTime);
                 if(startTime.getTime() < now.getTime()) {
                     containerDiv.attr("id", "now");
+                    var current_event = $("<span>").addClass("currMarker");
+                    containerDiv.append(current_event);
                 }
                 var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime.toLocaleString());
                 var endTime = new Date(response[i].endTime);
@@ -440,8 +455,8 @@ function updateNewsFeedDom() {
                     addLeaveClick(joinOrLeave, response[i]._id);
                 }
                 var textSpan3 = $("<span>").text("List of attendees: ");
-                var listAttendees = $("<ul>");
-                var errorMessage = $("<p>").addClass("error").text("");
+                var listAttendees = $("<ul>").addClass("event_attendees");
+                var errorMessage = $("<p>").addClass("error").text("").addClass("event_attendees");
                 var j;
                 for(j = 0; j < response[i].attendeesNames.length; j++) {
                     var attendee = $("<li>");

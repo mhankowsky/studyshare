@@ -267,11 +267,10 @@ app.get('/classes/:id', function (req, res) {
     });
 });
 app.get('/events', function (req, res) {
-    var oneHourAgo = new Date();
-    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+    var currDate = new Date();
     AnEvent.remove({
         endTime: {
-            $lt: oneHourAgo
+            $lt: currDate
         }
     }, function (err) {
         AnEvent.find({
