@@ -5,3 +5,4 @@ db.classes.insert({name : "Cross-Platform Mobile Web Apps", num : 15237, deptNum
 db.classes.insert({name : "Distributed Systems", num : 15440, deptNum : 15, classNum : 440});
 db.classes.insert({name : "Set Theory", num : 21329, deptNum : 21, classNum : 329});
 db.classes.insert({name : "Graph Theory", num: 21484, deptNum : 21, classNum : 484});
+db.classes.insert({name : "Other", num: 0, deptNum : 0, classNum : 0});

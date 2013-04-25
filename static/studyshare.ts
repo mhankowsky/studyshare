@@ -400,7 +400,12 @@ function updateNewsFeedDom() {
         var eventDiv = $("<div>").addClass("name_class");
         var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text(response[i].ownerName);
         var textSpan = $("<span>").text(" is studying ");
-        var classAnchor = $("<a>").addClass("ssclass").attr("id", response[i].clsID.toString()).attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
+        var classAnchor;
+        if(response[i].clsName === "Other") {
+          classAnchor = $("<span>").attr("id", response[i].clsID.toString()).text("Other");
+        } else {
+          classAnchor = $("<a>").addClass("ssclass").attr("id", response[i].clsID.toString()).attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
+        }
         var textSpan2 = $("<span>").text(" in ");
         var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
         
@@ -497,6 +502,15 @@ function updateEventDom() {
   var currDatePlusHour = new Date();
   currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
   
+  $("#class").html("");
+  for(var i = 0; i < classNames.length; i++) {
+    var option = $("<option>").attr("value", classNames[i]).text(classNames[i]);// + " (" + classes[i].num + ")");
+    $("#class").append(option);
+  }
+  var other = $("<option>").attr("value", "Other").text("Other");
+  $("#class").append(other);
+
+
   var defaultStartTime = currDate.toTimeString().split(" ")[0];
   var defaultEndTime = currDatePlusHour.toTimeString().split(" ")[0];
   $("#start_date").val(dateToString(currDate));
@@ -619,6 +633,7 @@ $(function() {
         class: $("#ACclass").val(),
       },
       success: function(response) {
+        updateProfileInformation();
         if(response.alreadyInClass) {
           $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
         } else {
