@@ -323,6 +323,20 @@ function addJoinClick(joinEvent, _id) {
         });
     });
 }
+function addLeaveClick(leaveEvent, _id) {
+    leaveEvent.click(function () {
+        $.ajax({
+            type: "put",
+            url: "/leave_event",
+            data: {
+                event_id: _id
+            },
+            success: function (response) {
+                leaveEvent.parent().children("ul").find("#" + mongoID).remove();
+            }
+        });
+    });
+}
 function updateNewsFeedDom() {
     $(".news_feed").html("loading...");
     var now = new Date();
@@ -350,8 +364,14 @@ function updateNewsFeedDom() {
                 var endTime = new Date(response[i].endTime);
                 var endTimeSpan = $("<span>").addClass("time").text("End : " + endTime.toLocaleString());
                 var infoP = $("<p>").addClass("info").text(response[i].info);
-                var joinEvent = $("<div>").addClass("join").text("Join Event");
-                addJoinClick(joinEvent, response[i]._id);
+                var joinOrLeave = $("<div>").addClass("joinOrLeave");
+                if(response[i].attendeesIDs.indexOf(mongoID) === -1) {
+                    joinOrLeave.attr("id", "join").text("Join Event");
+                    addJoinClick(joinOrLeave, response[i]._id);
+                } else {
+                    joinOrLeave.attr("id", "leave").text("Leave Event");
+                    addLeaveClick(joinOrLeave, response[i]._id);
+                }
                 var textSpan3 = $("<span>").text("List of attendees: ");
                 var listAttendees = $("<ul>");
                 var errorMessage = $("<p>").addClass("error").text("");
@@ -374,7 +394,7 @@ function updateNewsFeedDom() {
                 containerDiv.append(infoP);
                 containerDiv.append(textSpan3);
                 containerDiv.append(listAttendees);
-                containerDiv.append(joinEvent);
+                containerDiv.append(joinOrLeave);
                 containerDiv.append(errorMessage);
                 $(".news_feed").append(containerDiv);
             }

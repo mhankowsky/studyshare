@@ -424,6 +424,45 @@ app.post("/join_event", ensureAuthenticated, function (req, res) {
         }
     });
 });
+app.put("/leave_event", ensureAuthenticated, function (req, res) {
+    AnEvent.findOne({
+        _id: req.body.event_id
+    }, function (err, theEvent) {
+        var newAttendeeIDs = theEvent.attendeesIDs;
+        var newAttendeeNames = theEvent.attendeesNames;
+        var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
+        var index = newAttendeeIDs.indexOf(theObjectID);
+        if(index !== -1) {
+            newAttendeeIDs.splice(index, 1);
+            newAttendeeNames.splice(index, 1);
+        }
+        if(newAttendeeIDs.length === 0) {
+            AnEvent.remove({
+                _id: theEvent.id
+            }, function (err) {
+                res.send({
+                    success: true
+                });
+            });
+        } else {
+            AnEvent.update({
+                _id: req.body.event_id
+            }, {
+                $set: {
+                    attendeesIDs: newAttendeeIDs,
+                    attendeesNames: newAttendeeNames
+                }
+            }, function (err) {
+                if(err) {
+                    throw err;
+                }
+                res.send({
+                    success: true
+                });
+            });
+        }
+    });
+});
 app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
 });
