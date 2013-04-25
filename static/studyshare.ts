@@ -741,7 +741,7 @@ $(function() {
         url: "/submit_event",
         data: {
           class: $("#class").val(),
-          building: $("#building").attr("id"),
+          building: $("#building").find(":selected").attr("id"),
           info: $("#info").val(),
           start_date: $("#start_date").val(),
           start_time: $("#start_time").val(),

@@ -13,8 +13,6 @@ fs.readFile("facebook_properties.txt", function (err, data) {
         var JSONdata = JSON.parse(data);
         FACEBOOK_APP_ID = JSONdata.FACEBOOK_APP_ID;
         FACEBOOK_APP_SECRET = JSONdata.FACEBOOK_APP_SECRET;
-        console.log("FACEBOOK_APP_ID : " + FACEBOOK_APP_ID);
-        console.log("FACEBOOK_APP_SECRET : " + FACEBOOK_APP_SECRET);
     }
     startPassport();
 });
