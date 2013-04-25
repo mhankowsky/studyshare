@@ -4,6 +4,7 @@ var mongoID;
 var currentState;
 var classIDs;
 var classNames;
+var classNums;
 var userPageState;
 var classPageState;
 var curUserDisplay;
@@ -51,6 +52,7 @@ function updateProfileInformation() {
             fullName = response.user.fullName;
             classIDs = response.user.classIDs;
             classNames = response.user.classNames;
+            classNums = response.user.classNums;
             userProfilePicture = response.user.profilePicture;
             $("#userName").text(response.user.fullName);
             $("#personal_picture").attr("src", response.user.profilePicture);
@@ -141,7 +143,8 @@ function updateBuildingsClasses() {
             $("#ACclass").html("");
             for(i = 0; i < classes.length; i++) {
                 if(classes[i].name !== "Other") {
-                    var option = $("<option>").attr("value", classes[i].name).text(classes[i].name);
+                    var valString = "" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name;
+                    var option = $("<option>").attr("value", classes[i].num).text(valString);
                     $("#class").append(option);
                     $("#ACclass").append(option);
                 }
@@ -523,7 +526,8 @@ function updateEventDom() {
     currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
     $("#class").html("");
     for(var i = 0; i < classNames.length; i++) {
-        var option = $("<option>").attr("value", classNames[i]).text(classNames[i]);
+        var valString = "" + classNums[i].substring(0, 2) + "-" + classNums[i].substring(2, 5) + " : " + classNames[i];
+        var option = $("<option>").attr("value", classNums[i]).text(valString);
         $("#class").append(option);
     }
     var other = $("<option>").attr("value", "Other").text("Other");
@@ -629,6 +633,7 @@ $(function () {
         var timeStr = $("#end_time").val().split(":");
         endDate.setHours(timeStr[0]);
         endDate.setMinutes(timeStr[1]);
+        console.log($("#class").val());
         if(endDate.getTime() < startDate.getTime()) {
             $("#submit_event_error").text("The end date/time must occur after the start date/time.");
         } else if(endDate.getTime() < curDate.getTime()) {
