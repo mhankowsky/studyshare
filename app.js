@@ -2,10 +2,24 @@ var express = require("express");
 var app = express();
 var request = require("request");
 var fs = require("fs");
+var FACEBOOK_APP_ID;
+var FACEBOOK_APP_SECRET;
+fs.readFile("facebook_properties.txt", function (err, data) {
+    if(err) {
+        console.log("Error reading facebook_properties.txt");
+        FACEBOOK_APP_ID = "585448871465575";
+        FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
+    } else {
+        var JSONdata = JSON.parse(data);
+        FACEBOOK_APP_ID = JSONdata.FACEBOOK_APP_ID;
+        FACEBOOK_APP_SECRET = JSONdata.FACEBOOK_APP_SECRET;
+        console.log("FACEBOOK_APP_ID : " + FACEBOOK_APP_ID);
+        console.log("FACEBOOK_APP_SECRET : " + FACEBOOK_APP_SECRET);
+    }
+    startPassport();
+});
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
-var FACEBOOK_APP_ID = "585448871465575";
-var FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
 var mongo = require('mongodb');
 var host = 'localhost';
 var port = mongo.Connection.DEFAULT_PORT;
@@ -104,44 +118,46 @@ passport.deserializeUser(function (user, done) {
         done(err, user);
     });
 });
-passport.use(new FacebookStrategy({
-    clientID: FACEBOOK_APP_ID,
-    clientSecret: FACEBOOK_APP_SECRET,
-    profileFields: [
-        'photos', 
-        'id', 
-        'displayName', 
-        'name'
-    ],
-    callbackURL: "http://localhost:8889/auth/facebook/callback",
-    passReqToCallback: true
-}, function (req, accessToken, refreshToken, profile, done) {
-    User.findOne({
-        facebookID: profile.id
-    }, function (err, user) {
-        if(err) {
-        }
-        if(user === null) {
-            var user = new User();
-            user.facebookID = profile.id;
-            user.fullName = profile.displayName;
-            user.name = profile.name;
-            user.profilePicture = profile.photos[0].value;
-            user.facebookAccessToken = accessToken;
-            user.classNames = [];
-            user.classIDs = [];
-            user.save(function (err1) {
-                if(err1) {
-                    throw err1;
-                }
+function startPassport() {
+    passport.use(new FacebookStrategy({
+        clientID: FACEBOOK_APP_ID,
+        clientSecret: FACEBOOK_APP_SECRET,
+        profileFields: [
+            'photos', 
+            'id', 
+            'displayName', 
+            'name'
+        ],
+        callbackURL: "http://localhost:8889/auth/facebook/callback",
+        passReqToCallback: true
+    }, function (req, accessToken, refreshToken, profile, done) {
+        User.findOne({
+            facebookID: profile.id
+        }, function (err, user) {
+            if(err) {
+            }
+            if(user === null) {
+                var user = new User();
+                user.facebookID = profile.id;
+                user.fullName = profile.displayName;
+                user.name = profile.name;
+                user.profilePicture = profile.photos[0].value;
+                user.facebookAccessToken = accessToken;
+                user.classNames = [];
+                user.classIDs = [];
+                user.save(function (err1) {
+                    if(err1) {
+                        throw err1;
+                    }
+                    done(null, user);
+                });
+            } else {
+                user.facebookAccessToken = accessToken;
                 done(null, user);
-            });
-        } else {
-            user.facebookAccessToken = accessToken;
-            done(null, user);
-        }
-    });
-}));
+            }
+        });
+    }));
+}
 app.get('/account', ensureAuthenticated, function (req, res) {
     res.send({
         user: req.user

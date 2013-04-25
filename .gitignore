@@ -3,3 +3,4 @@
 .DS_Store
 *.gitignore~
 data/db
+facebook_properties.txt
