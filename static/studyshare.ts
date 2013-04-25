@@ -352,9 +352,9 @@ function addJoinClick(joinEvent, _id) {
       },
       success: function(response) {
         if(response.alreadyJoined) {
-          joinEvent.parent().children(".error").eq(0).text("Error: you have already joined this event.");
+          joinEvent.parent().children(".error-center").eq(0).text("Error: you have already joined this event.");
         } else if(response.alreadyEnded) {
-          joinEvent.parent().children(".error").eq(0).text("Error: you cannot join an event that has ended.");
+          joinEvent.parent().children(".error-center").eq(0).text("Error: you cannot join an event that has ended.");
         } else {
           var attendee = $("<li>");
           var attendeeText = $("<a>").addClass("name").attr("id", mongoID).attr("href", "#").text(fullName);
@@ -376,6 +376,11 @@ function addJoinClick(joinEvent, _id) {
               }
             });
           });
+          
+          var joinOrLeave = joinEvent.parent().find(".joinOrLeave");
+          joinOrLeave.unbind('click');
+          joinOrLeave.attr("id", "leave").text("Leave Event");
+          addLeaveClick(joinOrLeave, _id);
         }
       }
     });
@@ -392,6 +397,10 @@ function addLeaveClick(leaveEvent, _id) {
       },
       success: function(response) {
         leaveEvent.parent().children("ul").find("#" + mongoID).remove();
+        var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
+        joinOrLeave.unbind('click');
+        joinOrLeave.attr("id", "join").text("Join Event");
+        addJoinClick(joinOrLeave, _id);
       }
     });
   });
@@ -414,7 +423,12 @@ function updateNewsFeedDom() {
         var eventDiv = $("<div>").addClass("name_class");
         var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text(response[i].ownerName);
         var textSpan = $("<span>").text(" is studying ");
-        var classAnchor = $("<a>").addClass("ssclass").attr("id", response[i].clsID.toString()).attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
+        var classAnchor;
+        if(response[i].clsName === "Other") {
+          classAnchor = $("<span>").attr("id", response[i].clsID.toString()).text("Other");
+        } else {
+          classAnchor = $("<a>").addClass("ssclass").attr("id", response[i].clsID.toString()).attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
+        }
         var textSpan2 = $("<span>").text(" in ");
         var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
         
@@ -513,10 +527,20 @@ function updateNewsFeedDom() {
 }
 
 function updateEventDom() {
+  $("#submit_event_error").text("");
   var currDate = new Date();
   var currDatePlusHour = new Date();
   currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
   
+  $("#class").html("");
+  for(var i = 0; i < classNames.length; i++) {
+    var option = $("<option>").attr("value", classNames[i]).text(classNames[i]);// + " (" + classes[i].num + ")");
+    $("#class").append(option);
+  }
+  var other = $("<option>").attr("value", "Other").text("Other");
+  $("#class").append(other);
+
+
   var defaultStartTime = currDate.toTimeString().split(" ")[0];
   var defaultEndTime = currDatePlusHour.toTimeString().split(" ")[0];
   $("#start_date").val(dateToString(currDate));
@@ -607,9 +631,9 @@ $(function() {
     endDate.setMinutes(timeStr[1]);
     
     if (endDate.getTime() < startDate.getTime()) {
-      alert("The end date/time must occur after the start date/time.")
+      $("#submit_event_error").text("The end date/time must occur after the start date/time.");
     } else if (endDate.getTime() < curDate.getTime()) {
-      alert("The event cannot end before the current time.");
+      $("#submit_event_error").text("The event cannot end before the current time.");
     } else {  
       $.ajax({
         type: "post",
@@ -639,6 +663,7 @@ $(function() {
         class: $("#ACclass").val(),
       },
       success: function(response) {
+        updateProfileInformation();
         if(response.alreadyInClass) {
           $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
         } else {
