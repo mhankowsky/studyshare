@@ -19,9 +19,10 @@
       <img class="profile_thumb" id="personal_picture"/>
       <ul>
         <li class="active"><a href="#home" class="contentLink">Search by:</a></li>
-          <li><a href="#home" class="contentLink">Time</a></li>
-          <li><a href="#home" class="contentLink">Building</a></li>
-          <li><a href="#home" class="contentLink">Class</a></li>
+          <li><a id="timeFilter" href="#home" class="contentLink">Time</a></li>
+          <li><a id="buildingFilter" href="#home" class="contentLink">Building</a></li>
+          <select class="building" id="buildingFilterOptions" style="display:none"></select>
+          <li><a id="classFilter" href="#home" class="contentLink">Class</a></li>
       </ul>
                      
 
@@ -52,7 +53,7 @@
       <select id="class">
       </select>
       <p>Building:</p>
-      <select id="building">
+      <select class="building" id="buildingSelect">
       </select>
       <p>Info:</p>
       <input type="text" id="info"></input>
