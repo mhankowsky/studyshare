@@ -788,16 +788,7 @@ function setupAddClassButtonFunctionalityOnLoad() {
   });
 }
 
-  $("#sidemenu_button").click(function () {
-    if($("#menu").css("display")=== "block"){
-      $("#menu").css("display", "none");
-    }
-    else{
-      $("#menu").css("display", "block");
-    }
-  });
-
-function setupSwipeGestureOnLoad() {
+ function setupSwipeGestureOnLoad() {
   var hammertime = new Hammer($(".toucharea"));
   hammertime.on("swiperight swipeleft", function(ev) {
   if (ev.type === "swiperight") {
@@ -836,6 +827,17 @@ function setupMenuOnLoad() {
   $("#classFilter").click(function() {
     $("#classFilterOptions").fadeToggle("fast");
   });
+
+  $("#sidemenu_button").click(function () {
+    if($("#menu").css("display")=== "block"){
+      $("#menu").css("display", "none");
+    }
+    else{
+      $("#menu").css("display", "block");
+    }
+  });
+
+
 }
 
 //On Load
