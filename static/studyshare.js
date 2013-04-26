@@ -9,6 +9,10 @@ var userPageState;
 var classPageState;
 var curUserDisplay;
 var curClassDisplay;
+var newsFeedState;
+var profilePageState;
+var addEventState;
+var addClassState;
 var currentLong;
 var currentLat;
 var MILLI_IN_HOUR = 60 * 60 * 1000;
@@ -54,8 +58,8 @@ function updateProfileInformation() {
             classNames = response.user.classNames;
             classNums = response.user.classNums;
             userProfilePicture = response.user.profilePicture;
+            updateYourClasses();
             $("#userName").text(response.user.fullName);
-            $("#personal_picture").attr("src", response.user.profilePicture);
         },
         failure: function () {
         }
@@ -85,7 +89,7 @@ function updateBuildings() {
         success: function (response) {
             var buildings = response;
             var i;
-            $("#building").html("");
+            $(".building").html("");
             for(i = 0; i < buildings.length; i++) {
                 var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i].name);
                 var distance;
@@ -101,56 +105,38 @@ function updateBuildings() {
                 } else {
                     option.text(buildings[i].name);
                 }
-                $("#building").append(option);
+                $(".building").append(option);
             }
         }
     });
 }
-function updateBuildingsClasses() {
-    $.ajax({
-        type: "get",
-        url: "/buildings",
-        success: function (response) {
-            var buildings = response;
-            var i;
-            $("#building").html("");
-            for(i = 0; i < buildings.length; i++) {
-                var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i].name);
-                var distance;
-                if(currentLong !== undefined) {
-                    var currentLoc = new aLocation();
-                    currentLoc.long = currentLong;
-                    currentLoc.lat = currentLat;
-                    var buildingLoc = new aLocation();
-                    buildingLoc.long = buildings[i].long;
-                    buildingLoc.lat = buildings[i].lat;
-                    distance = calculateDistance(currentLoc, buildingLoc);
-                    option.text(buildings[i].name + " (Distance: " + distance + " km)");
-                } else {
-                    option.text(buildings[i].name);
-                }
-                $("#building").append(option);
-            }
-        }
-    });
+function updateAllClasses() {
     $.ajax({
         type: "get",
         url: "/classes",
         success: function (response) {
             var classes = response;
-            var i;
-            $("#class").html("");
-            $("#ACclass").html("");
-            for(i = 0; i < classes.length; i++) {
+            $(".allClassesPlusOtherList").html("");
+            $(".allClassesList").html("");
+            console.log("1");
+            for(var i = 0; i < classes.length; i++) {
+                var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+                var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+                $(".allClassesPlusOtherList").append(option1);
                 if(classes[i].name !== "Other") {
-                    var valString = "" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name;
-                    var option = $("<option>").attr("value", classes[i].num).text(valString);
-                    $("#class").append(option);
-                    $("#ACclass").append(option);
+                    $(".allClassesList").append(option2);
                 }
             }
         }
     });
+}
+function updateYourClasses() {
+    for(var i = 0; i < classNames.length; i++) {
+        var option = $("<option>").attr("value", classNames[i]).text(classNames[i]);
+        $(".yourClassListPlusOther").append(option);
+    }
+    var other = $("<option>").attr("value", "Other").text("Other");
+    $(".yourClassListPlusOther").append(other);
 }
 function updateProfileDom() {
     updateProfileInformation();
@@ -163,7 +149,7 @@ function updateProfileDom() {
     $(".profile_page").append(nameDiv);
     var classesDiv = $("<div id='classesList'>");
     classesDiv.append("<h>Classes</h>");
-    if(classNames.length === 0) {
+    if(classNames === undefined || classNames.length === 0) {
         classesDiv.append("<p>Join Classes</p>");
     } else {
         var listClasses = $("<ul>");
@@ -420,11 +406,17 @@ function addLeaveClick(leaveEvent, _id) {
     });
 }
 function updateNewsFeedDom() {
+    var query = {
+    };
+    updateNewsFeedWithQuery(query);
+}
+function updateNewsFeedWithQuery(query) {
     $(".news_feed").html("loading...");
     var now = new Date();
+    console.log("/events/" + JSON.stringify(query));
     $.ajax({
         type: "get",
-        url: "/events",
+        url: "/events/" + JSON.stringify(query),
         success: function (response) {
             var i;
             $(".news_feed").html("");
@@ -535,8 +527,6 @@ function updateEventDom() {
         var option = $("<option>").attr("value", classNums[i]).text(valString);
         $("#class").append(option);
     }
-    var other = $("<option>").attr("value", "Other").text("Other");
-    $("#class").append(other);
     var defaultStartTime = currDate.toTimeString().split(" ")[0];
     var defaultEndTime = currDatePlusHour.toTimeString().split(" ")[0];
     $("#start_date").val(dateToString(currDate));
@@ -554,8 +544,8 @@ function updateCurrentPosition(withMap) {
             currentLat = position.coords.latitude;
             if(withMap) {
                 var loc = new aLocation();
-                loc.lat = $("#building").val().split(",")[0];
-                loc.long = $("#building").val().split(",")[1];
+                loc.lat = $("#buildingSelect").val().split(",")[0];
+                loc.long = $("#buildingSelect").val().split(",")[1];
                 updateMap(loc);
             }
             updateBuildings();
@@ -594,14 +584,17 @@ function dateToString(date) {
 function updateClassDom() {
     $("#class_feedback_message").text("");
 }
-$(function () {
+function initializeInformationOnLoad() {
     updateProfileInformation();
-    updateBuildingsClasses();
+    updateBuildings();
+    updateAllClasses();
     updateCurrentPosition(false);
-    var newsFeedState = new State($(".news_feed"), updateNewsFeedDom);
-    var profilePageState = new State($(".profile_page"), updateProfileDom);
-    var addEventState = new State($(".event_creation"), updateEventDom);
-    var addClassState = new State($(".add_class"), updateClassDom);
+}
+function setupStateTransitionsOnLoad() {
+    newsFeedState = new State($(".news_feed"), updateNewsFeedDom);
+    profilePageState = new State($(".profile_page"), updateProfileDom);
+    addEventState = new State($(".event_creation"), updateEventDom);
+    addClassState = new State($(".add_class"), updateClassDom);
     userPageState = new State($(".user_page"), updateUserPageDom);
     classPageState = new State($(".class_page"), updateClassPageDom);
     currentState = newsFeedState;
@@ -618,7 +611,9 @@ $(function () {
     $("#classes").click(function () {
         State.switchState(addClassState);
     });
-    $("#building").change(function () {
+}
+function setupAddEventButtonActionsOnLoad() {
+    $("#buildingSelect").change(function () {
         var loc = new aLocation();
         var coords = $(this).val();
         loc.lat = coords.split(",")[0];
@@ -648,7 +643,7 @@ $(function () {
                 url: "/submit_event",
                 data: {
                     class: $("#class").val(),
-                    building: $("#building").find(":selected").attr("id"),
+                    building: $("#buildingSelect").find(":selected").attr("id"),
                     info: $("#info").val(),
                     start_date: $("#start_date").val(),
                     start_time: $("#start_time").val(),
@@ -662,15 +657,19 @@ $(function () {
             });
         }
     });
+}
+function setupAddClassButtonFunctionalityOnLoad() {
     $("#add_class").click(function () {
+        console.log($("#ACclass").val());
         $.ajax({
             type: "put",
             url: "/add_class",
             data: {
-                class: $("#ACclass").val()
+                _id: $("#ACclass").val()
             },
             success: function (response) {
                 updateProfileInformation();
+                updateYourClasses();
                 if(response.alreadyInClass) {
                     $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
                 } else {
@@ -679,13 +678,15 @@ $(function () {
             }
         });
     });
-    $("#sidemenu_button").click(function () {
-        if($("#menu").css("display") === "block") {
-            $("#menu").css("display", "none");
-        } else {
-            $("#menu").css("display", "block");
-        }
-    });
+}
+$("#sidemenu_button").click(function () {
+    if($("#menu").css("display") === "block") {
+        $("#menu").css("display", "none");
+    } else {
+        $("#menu").css("display", "block");
+    }
+});
+function setupSwipeGestureOnLoad() {
     var hammertime = new Hammer($(".toucharea"));
     hammertime.on("swiperight swipeleft", function (ev) {
         if(ev.type === "swiperight") {
@@ -694,4 +695,42 @@ $(function () {
             $("#menu").hide();
         }
     });
+}
+function toggleEnabledClass(elem) {
+    if(elem.hasClass("filterEnabled")) {
+        elem.removeClass("filterEnabled");
+    } else {
+        elem.addClass("filterEnabled");
+    }
+}
+function setupMenuOnLoad() {
+    $(".filter").click(function () {
+        toggleEnabledClass($(this));
+    });
+    $("#search").click(function () {
+        var query = {
+        };
+        if($("#classFilter").hasClass("filterEnabled")) {
+            query = {
+                "class": $("#classFilterOptions").val()
+            };
+        }
+        updateNewsFeedWithQuery(query);
+    });
+    $("#timeFilter").click(function () {
+    });
+    $("#buildingFilter").click(function () {
+        $("#buildingFilterOptions").fadeToggle("fast");
+    });
+    $("#classFilter").click(function () {
+        $("#classFilterOptions").fadeToggle("fast");
+    });
+}
+$(function () {
+    initializeInformationOnLoad();
+    setupStateTransitionsOnLoad();
+    setupAddEventButtonActionsOnLoad();
+    setupAddClassButtonFunctionalityOnLoad();
+    setupSwipeGestureOnLoad();
+    setupMenuOnLoad();
 });

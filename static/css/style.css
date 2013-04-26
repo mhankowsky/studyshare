@@ -395,3 +395,7 @@ h {
   right: 0px;
   bottom: 0px;
 }
+
+.filterEnabled {
+  background-color: #716f6f;
+}
