@@ -581,8 +581,59 @@ function dateToString(date) {
     }
     return (date.getFullYear() + '-' + monthStr + '-' + dayStr);
 }
+$.fn.filterByText = function (textbox) {
+    return this.each(function () {
+        var select = this;
+        var options = [];
+        $(select).find('option').each(function () {
+            options.push({
+                value: $(this).val(),
+                text: $(this).text()
+            });
+            return null;
+        });
+        $(select).data('options', options);
+        $(textbox).bind('change keyup', function () {
+            var options = $(select).empty().data('options');
+            var search = $.trim($(this).val());
+            var regex = new RegExp(search, "gi");
+            $.each(options, function (i) {
+                var option = options[i];
+                if(option.text.match(regex) !== null) {
+                    $(select).append($('<option>').text(option.text).val(option.value));
+                }
+            });
+        });
+    });
+};
 function updateClassDom() {
     $("#class_feedback_message").text("");
+    $("#ACclass").each(function () {
+        var select = this;
+        var options = [];
+        $(select).find('option').each(function () {
+            options.push({
+                value: $(this).val(),
+                text: $(this).text()
+            });
+            return null;
+        });
+        $(select).data('options', options);
+        console.log($("#classPageFilter"));
+        $("#classPageFilter").bind('change keyup', function () {
+            console.log("SOMETHING IS HAPPENING");
+            var options = $(select).empty().data('options');
+            var search = $.trim($(this).val());
+            var regex = new RegExp(search, "gi");
+            $.each(options, function (i) {
+                var option = options[i];
+                if(option.text.match(regex) !== null) {
+                    $(select).append($('<option>').text(option.text).val(option.value));
+                }
+            });
+        });
+        return null;
+    });
 }
 function initializeInformationOnLoad() {
     updateProfileInformation();
