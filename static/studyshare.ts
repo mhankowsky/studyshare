@@ -80,7 +80,6 @@ function updateProfileInformation() {
       classNums = response.user.classNums;
       userProfilePicture = response.user.profilePicture;
       $("#userName").text(response.user.fullName);
-      $("#personal_picture").attr("src", response.user.profilePicture);
     },
     failure: function() {
 
@@ -698,7 +697,7 @@ $(function() {
   //var friendsListState : State = new State($(".friends_list"), updateFriendsListDom);
   currentState = newsFeedState;
   newsFeedState.refreshDom();
-  $("#friends").click(function() {
+  $("#userName").click(function() {
     State.switchState(profilePageState);
   });
   $("#logo").click(function() {
@@ -780,12 +779,21 @@ $(function() {
     });
   });
 
+  $("#sidemenu_button").click(function () {
+    if($("#menu").css("display")=== "block"){
+      $("#menu").css("display", "none");
+    }
+    else{
+      $("#menu").css("display", "block");
+    }
+  });
+
   var hammertime = new Hammer($(".toucharea"));
   hammertime.on("swiperight swipeleft", function(ev) {
   if (ev.type === "swiperight") {
-    $("#menu").show("slow");
+    $("#menu").show();
   } else if (ev.type === "swipeleft") {
-    $("#menu").hide("slow");
+    $("#menu").hide();
   }
   });
 });
