@@ -92,7 +92,7 @@ function updateBuildings() {
             var i;
             $(".building").html("");
             for(i = 0; i < buildings.length; i++) {
-                var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i].name);
+                var option = $("<option>").attr("value", buildings[i]._id).attr("name", "" + buildings[i].lat + ":" + buildings[i].long).attr("id", buildings[i].name);
                 var distance;
                 if(currentLong !== undefined) {
                     var currentLoc = new aLocation();
@@ -545,8 +545,8 @@ function updateCurrentPosition(withMap) {
             currentLat = position.coords.latitude;
             if(withMap) {
                 var loc = new aLocation();
-                loc.lat = $("#buildingSelect").val().split(",")[0];
-                loc.long = $("#buildingSelect").val().split(",")[1];
+                loc.lat = +($("#buildingSelect").attr("name").split(":")[0]);
+                loc.long = +($("#buildingSelect").attr("name").split(":")[1]);
                 updateMap(loc);
             }
             updateBuildings();
@@ -674,7 +674,7 @@ function setupAddClassButtonFunctionalityOnLoad() {
                 if(response.alreadyInClass) {
                     $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
                 } else {
-                    $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
+                    $("#class_feedback_message").text("Successfully joined " + $("#ACclass option:selected").text()).css("color", "green");
                 }
             }
         });
@@ -705,9 +705,10 @@ function setupMenuOnLoad() {
         var query = {
         };
         if($("#classFilter").hasClass("filterEnabled")) {
-            query = {
-                "class": $("#classFilterOptions").val()
-            };
+            query.class = $("#classFilterOptions").val();
+        }
+        if($("#buildingFilter").hasClass("filterEnabled")) {
+            query.building = $("#buildingFilterOptions").val();
         }
         updateNewsFeedWithQuery(query);
     });
