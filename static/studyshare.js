@@ -4,6 +4,7 @@ var mongoID;
 var currentState;
 var classIDs;
 var classNames;
+var classNums;
 var userPageState;
 var classPageState;
 var curUserDisplay;
@@ -55,6 +56,7 @@ function updateProfileInformation() {
             fullName = response.user.fullName;
             classIDs = response.user.classIDs;
             classNames = response.user.classNames;
+            classNums = response.user.classNums;
             userProfilePicture = response.user.profilePicture;
             updateYourClasses();
             $("#userName").text(response.user.fullName);
@@ -119,8 +121,8 @@ function updateAllClasses() {
             $(".allClassesList").html("");
             console.log("1");
             for(var i = 0; i < classes.length; i++) {
-                var option1 = $("<option>").attr("value", classes[i]._id).text(classes[i].name + " (" + classes[i].deptNum + "-" + classes[i].classNum + ")");
-                var option2 = $("<option>").attr("value", classes[i]._id).text(classes[i].name + " (" + classes[i].deptNum + "-" + classes[i].classNum + ")");
+                var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+                var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
                 $(".allClassesPlusOtherList").append(option1);
                 if(classes[i].name !== "Other") {
                     $(".allClassesList").append(option2);
@@ -390,11 +392,16 @@ function addLeaveClick(leaveEvent, _id) {
                 event_id: _id
             },
             success: function (response) {
-                leaveEvent.parent().children("ul").find("#" + mongoID).remove();
-                var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
-                joinOrLeave.unbind('click');
-                joinOrLeave.attr("id", "join").text("Join Event");
-                addJoinClick(joinOrLeave, _id);
+                leaveEvent.parent().children("ul").find("#" + mongoID).parent().remove();
+                console.log(leaveEvent.parent().children("ul").children().length);
+                if(leaveEvent.parent().children("ul").children().length == 0) {
+                    leaveEvent.parent().remove();
+                } else {
+                    var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
+                    joinOrLeave.unbind('click');
+                    joinOrLeave.attr("id", "join").text("Join Event");
+                    addJoinClick(joinOrLeave, _id);
+                }
             }
         });
     });
@@ -517,7 +524,8 @@ function updateEventDom() {
     currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
     $("#class").html("");
     for(var i = 0; i < classNames.length; i++) {
-        var option = $("<option>").attr("value", classNames[i]).text(classNames[i]);
+        var valString = "" + classNums[i].substring(0, 2) + "-" + classNums[i].substring(2, 5) + " : " + classNames[i];
+        var option = $("<option>").attr("value", classNums[i]).text(valString);
         $("#class").append(option);
     }
     var defaultStartTime = currDate.toTimeString().split(" ")[0];

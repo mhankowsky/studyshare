@@ -62,14 +62,15 @@ var UserSchema = new Schema({
           middleName : String
         },
   classNames: [String],
+  classNums: [String],
   classIDs: [ObjectId]
 }, {strict: false});
 
 var ClassSchema = new Schema({
   name: String,
-  num: Number,
-  deptNum: Number,
-  classNum: Number,
+  num: String,
+  deptNum: String,
+  classNum: String,
   ownerName: String,
   ownerID: ObjectId,
   studentNames : [String],
@@ -287,13 +288,13 @@ app.get('/logout', function(req, res){
 });
 
 app.get('/buildings', function(req, res) {
-  Building.find({}, function(err, buildings) {
+  Building.find({}).sort({name : 1}).exec(function(err, buildings) {
     res.send(buildings);
   });
 });
 
 app.get('/classes', function(req, res) {
-  Class.find({}, function(err, classes) {
+  Class.find({}).sort({num: 1}).exec(function(err, classes) {
     res.send(classes);
   });
 });
@@ -317,14 +318,9 @@ app.get('/classes/:id', function(req, res) {
   });
 });
 
-class eventQuery {
-  clsID : any;
-  buildingID : any;
-  clsNum : any;
-}
 
 app.get('/events/:query', function(req, res) {
-  var query = {};
+  var query : any = {};
   var JSONQuery = JSON.parse(req.params.query);
   //console.log("JSONQuery: " + JSON.stringify(JSONQuery));
   if(JSONQuery.class != undefined) {
@@ -349,7 +345,8 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
   Building.findOne({name : req.body.building}, function(err, theBuilding) {
     theEvent.buildingName = theBuilding.name;
     theEvent.buildingID = theBuilding._id;
-    Class.findOne({name : req.body.class}, function(err, theClass) {
+    
+    Class.findOne({num : req.body.class}, function(err, theClass) {
       theEvent.clsName = theClass.name;
       theEvent.clsNum = theClass.num;
       theEvent.clsID = theClass._id;
@@ -387,6 +384,7 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
 app.put("/add_class", ensureAuthenticated, function(req, res) {
   var newClassIDs;
   var newClassNames;
+  var newClassNums;
   var newStudentIDs;
   var newStudentNames;
 
@@ -400,9 +398,11 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
     User.findOne({facebookID : req.user.facebookID}, function(err, theUser) {
       newClassIDs = theUser.classIDs;
       newClassNames = theUser.classNames;
+      newClassNums = theUser.classNums;
       if (newClassIDs.indexOf(theClass._id) === -1) {
         newClassIDs.push(theClass._id);
         newClassNames.push(theClass.name);
+        newClassNums.push(theClass.num);
       } else {
         res.send({success: false, alreadyInClass : true});
         return;
@@ -415,7 +415,7 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
         newStudentNames.push(theUser.fullName);
       }
       
-      User.update({facebookID : req.user.facebookID}, { $set: {classIDs : newClassIDs, classNames : newClassNames}}, function(err) {
+      User.update({facebookID : req.user.facebookID}, { $set: {classIDs : newClassIDs, classNames : newClassNames, classNums : newClassNums}}, function(err) {
         if (err) {
           throw err;
         }

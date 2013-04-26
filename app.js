@@ -41,6 +41,9 @@ var UserSchema = new Schema({
     classNames: [
         String
     ],
+    classNums: [
+        String
+    ],
     classIDs: [
         ObjectId
     ]
@@ -49,9 +52,9 @@ var UserSchema = new Schema({
 });
 var ClassSchema = new Schema({
     name: String,
-    num: Number,
-    deptNum: Number,
-    classNum: Number,
+    num: String,
+    deptNum: String,
+    classNum: String,
     ownerName: String,
     ownerID: ObjectId,
     studentNames: [
@@ -249,13 +252,17 @@ app.get('/logout', function (req, res) {
 });
 app.get('/buildings', function (req, res) {
     Building.find({
-    }, function (err, buildings) {
+    }).sort({
+        name: 1
+    }).exec(function (err, buildings) {
         res.send(buildings);
     });
 });
 app.get('/classes', function (req, res) {
     Class.find({
-    }, function (err, classes) {
+    }).sort({
+        num: 1
+    }).exec(function (err, classes) {
         res.send(classes);
     });
 });
@@ -277,10 +284,6 @@ app.get('/classes/:id', function (req, res) {
         });
     });
 });
-var eventQuery = (function () {
-    function eventQuery() { }
-    return eventQuery;
-})();
 app.get('/events/:query', function (req, res) {
     var query = {
     };
@@ -312,7 +315,7 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
         theEvent.buildingName = theBuilding.name;
         theEvent.buildingID = theBuilding._id;
         Class.findOne({
-            name: req.body.class
+            num: req.body.class
         }, function (err, theClass) {
             theEvent.clsName = theClass.name;
             theEvent.clsNum = theClass.num;
@@ -353,6 +356,7 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
 app.put("/add_class", ensureAuthenticated, function (req, res) {
     var newClassIDs;
     var newClassNames;
+    var newClassNums;
     var newStudentIDs;
     var newStudentNames;
     var theObjectID = mongoose.Types.ObjectId(req.body._id);
@@ -367,9 +371,11 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
         }, function (err, theUser) {
             newClassIDs = theUser.classIDs;
             newClassNames = theUser.classNames;
+            newClassNums = theUser.classNums;
             if(newClassIDs.indexOf(theClass._id) === -1) {
                 newClassIDs.push(theClass._id);
                 newClassNames.push(theClass.name);
+                newClassNums.push(theClass.num);
             } else {
                 res.send({
                     success: false,
@@ -388,7 +394,8 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
             }, {
                 $set: {
                     classIDs: newClassIDs,
-                    classNames: newClassNames
+                    classNames: newClassNames,
+                    classNums: newClassNums
                 }
             }, function (err) {
                 if(err) {
