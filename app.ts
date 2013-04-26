@@ -288,13 +288,13 @@ app.get('/logout', function(req, res){
 });
 
 app.get('/buildings', function(req, res) {
-  Building.find({}, function(err, buildings) {
+  Building.find({}).sort({name : 1}).exec(function(err, buildings) {
     res.send(buildings);
   });
 });
 
 app.get('/classes', function(req, res) {
-  Class.find({}, {name : 1, num : 1, deptNum : 1, classNum : 1}, function(err, classes) {
+  Class.find({}, {name : 1, num : 1, deptNum : 1, classNum : 1}).sort({num : 1}).exec(function(err, classes) {
     res.send(classes);
   });
 });
@@ -333,8 +333,6 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
   var theEvent = new AnEvent();
   theEvent.name = "Placeholder name";
   Building.findOne({name : req.body.building}, function(err, theBuilding) {
-    console.log(req.body.building);
-  
     theEvent.buildingName = theBuilding.name;
     theEvent.buildingID = theBuilding._id;
     

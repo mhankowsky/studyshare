@@ -405,11 +405,16 @@ function addLeaveClick(leaveEvent, _id) {
                 event_id: _id
             },
             success: function (response) {
-                leaveEvent.parent().children("ul").find("#" + mongoID).remove();
-                var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
-                joinOrLeave.unbind('click');
-                joinOrLeave.attr("id", "join").text("Join Event");
-                addJoinClick(joinOrLeave, _id);
+                leaveEvent.parent().children("ul").find("#" + mongoID).parent().remove();
+                console.log(leaveEvent.parent().children("ul").children().length);
+                if(leaveEvent.parent().children("ul").children().length == 0) {
+                    leaveEvent.parent().remove();
+                } else {
+                    var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
+                    joinOrLeave.unbind('click');
+                    joinOrLeave.attr("id", "join").text("Join Event");
+                    addJoinClick(joinOrLeave, _id);
+                }
             }
         });
     });
@@ -633,7 +638,6 @@ $(function () {
         var timeStr = $("#end_time").val().split(":");
         endDate.setHours(timeStr[0]);
         endDate.setMinutes(timeStr[1]);
-        console.log($("#class").val());
         if(endDate.getTime() < startDate.getTime()) {
             $("#submit_event_error").text("The end date/time must occur after the start date/time.");
         } else if(endDate.getTime() < curDate.getTime()) {
