@@ -405,11 +405,16 @@ function addLeaveClick(leaveEvent, _id) {
                 event_id: _id
             },
             success: function (response) {
-                leaveEvent.parent().children("ul").find("#" + mongoID).remove();
-                var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
-                joinOrLeave.unbind('click');
-                joinOrLeave.attr("id", "join").text("Join Event");
-                addJoinClick(joinOrLeave, _id);
+                leaveEvent.parent().children("ul").find("#" + mongoID).parent().remove();
+                console.log(leaveEvent.parent().children("ul").children().length);
+                if(leaveEvent.parent().children("ul").children().length == 0) {
+                    leaveEvent.parent().remove();
+                } else {
+                    var joinOrLeave = leaveEvent.parent().find(".joinOrLeave");
+                    joinOrLeave.unbind('click');
+                    joinOrLeave.attr("id", "join").text("Join Event");
+                    addJoinClick(joinOrLeave, _id);
+                }
             }
         });
     });

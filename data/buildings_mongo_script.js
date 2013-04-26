@@ -3,13 +3,13 @@
 
 //Academic Buildings
 db.buildings.insert({name : "Gates Hillman Center", long : -79.9443716, lat : 40.4433595});
-db.buildings.insert({name : "Wean Hall", long : -79.945895‎, lat : 40.443063});
-db.buildings.insert({name : "Hamerschlag Hall", long :  -79.946807‎, lat : 40.442723});
-db.buildings.insert({name : "Scaife Hall", long : -79.947413‎, lat : 40.442111});
-db.buildings.insert({name : "Roberts Hall of Engineering", long : -79.947284‎, lat : 40.442694});
-db.buildings.insert({name : "Porter Hall", long : -79.945933‎, lat : 40.441874});
-db.buildings.insert({name : "Baker Hall", long : -79.944870‎, lat : 40.441689});
-db.buildings.insert({name : "Doherty Hall", long : -79.944500‎, lat : 40.442780});
+db.buildings.insert({name : "Wean Hall", long : -79.945895, lat : 40.443063});
+db.buildings.insert({name : "Hamerschlag Hall", long :  -79.946807, lat : 40.442723});
+db.buildings.insert({name : "Scaife Hall", long : -79.947413, lat : 40.442111});
+db.buildings.insert({name : "Roberts Hall of Engineering", long : -79.947284, lat : 40.442694});
+db.buildings.insert({name : "Porter Hall", long : -79.945933, lat : 40.441874});
+db.buildings.insert({name : "Baker Hall", long : -79.944870, lat : 40.441689});
+db.buildings.insert({name : "Doherty Hall", long : -79.944500, lat : 40.442780});
 db.buildings.insert({name : "Newell-Simon Hall", long : -79.945584, lat : 40.443554});
 db.buildings.insert({name : "Hamburg Hall", long : -79.945573, lat : 40.444461});
 db.buildings.insert({name : "Prunell Center for the Arts", long : -79.943486, lat : 40.443845});

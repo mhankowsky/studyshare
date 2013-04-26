@@ -252,7 +252,9 @@ app.get('/logout', function (req, res) {
 });
 app.get('/buildings', function (req, res) {
     Building.find({
-    }, function (err, buildings) {
+    }).sort({
+        name: 1
+    }).exec(function (err, buildings) {
         res.send(buildings);
     });
 });
@@ -263,7 +265,9 @@ app.get('/classes', function (req, res) {
         num: 1,
         deptNum: 1,
         classNum: 1
-    }, function (err, classes) {
+    }).sort({
+        num: 1
+    }).exec(function (err, classes) {
         res.send(classes);
     });
 });
