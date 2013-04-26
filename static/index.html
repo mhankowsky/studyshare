@@ -18,11 +18,12 @@
       <h3 id="userName"></h3>
       <img class="profile_thumb" id="personal_picture"/>
       <ul>
-        <li class="active"><a href="#home" class="contentLink">Search by:</a></li>
-          <li><a id="timeFilter" href="#home" class="contentLink">Time</a></li>
-          <li><a id="buildingFilter" href="#home" class="contentLink">Building</a></li>
-          <select class="building" id="buildingFilterOptions" style="display:none"></select>
-          <li><a id="classFilter" href="#home" class="contentLink">Class</a></li>
+        <li class="active"><a id="search" href="#home" class="title">Search by:</a></li>
+        <li><a id="timeFilter" href="#home" class="filter">Time</a></li>
+        <li><a id="buildingFilter" href="#home" class="filter">Building</a></li>
+        <select class="building" id="buildingFilterOptions" style="display:none"></select>
+        <li><a id="classFilter" href="#home" class="filter">Class</a></li>
+        <select class="allClassesPlusOtherList" id="classFilterOptions" style="display:none"></select>
       </ul>
                      
 
@@ -50,7 +51,7 @@
 
     <div class="event_creation" style="display:none;">
       <p>Class:</p>
-      <select id="class">
+      <select id="class" class="yourClassListPlusOther">
       </select>
       <p>Building:</p>
       <select class="building" id="buildingSelect">
@@ -74,7 +75,7 @@
     
     <div class="add_class" style="display:none;">
       <p>Class:</p>
-      <select id="ACclass">
+      <select id="ACclass" class="allClassesList">
       </select>
       <br>
       <a id="add_class">Add Class!</a>

@@ -255,9 +255,6 @@ app.get('/buildings', function (req, res) {
 });
 app.get('/classes', function (req, res) {
     Class.find({
-    }, {
-        name: 1,
-        num: 1
     }, function (err, classes) {
         res.send(classes);
     });
@@ -280,17 +277,28 @@ app.get('/classes/:id', function (req, res) {
         });
     });
 });
-app.get('/events', function (req, res) {
+var eventQuery = (function () {
+    function eventQuery() { }
+    return eventQuery;
+})();
+app.get('/events/:query', function (req, res) {
+    var query = {
+    };
+    var JSONQuery = JSON.parse(req.params.query);
+    if(JSONQuery.class != undefined) {
+        query.clsID = mongoose.Types.ObjectId(JSONQuery.class);
+    }
+    console.log("query: " + JSON.stringify(query));
     var currDate = new Date();
     AnEvent.remove({
         endTime: {
             $lt: currDate
         }
     }, function (err) {
-        AnEvent.find({
-        }).sort({
+        AnEvent.find(query).sort({
             endTime: 1
         }).exec(function (err, events) {
+            console.log(events.length);
             res.send(events);
         });
     });
@@ -347,9 +355,13 @@ app.put("/add_class", ensureAuthenticated, function (req, res) {
     var newClassNames;
     var newStudentIDs;
     var newStudentNames;
+    var theObjectID = mongoose.Types.ObjectId(req.body._id);
     Class.findOne({
-        name: req.body.class
+        _id: theObjectID
     }, function (err, theClass) {
+        if(err) {
+            throw err;
+        }
         User.findOne({
             facebookID: req.user.facebookID
         }, function (err, theUser) {
