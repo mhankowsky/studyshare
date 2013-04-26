@@ -3,6 +3,7 @@
 <html>
   <head>
     <title>StudyShare</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <link rel="stylesheet" href="css/reset.css">
     <link href='http://fonts.googleapis.com/css?family=Lato:300,400,700|Gentium+Book+Basic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/fonts.css">
@@ -16,7 +17,6 @@
   <body class="toucharea">
     <div id="menu" style="display:none;">
       <h3 id="userName"></h3>
-      <img class="profile_thumb" id="personal_picture"/>
       <ul>
         <li class="active"><a id="search" href="#home" class="title">Search by:</a></li>
         <li><a id="timeFilter" href="#home" class="filter">Time</a></li>
@@ -31,12 +31,11 @@
     
     <div class="header"> 
       <ul class="menu"> 
+        <li class="menu_item icon-map" id="sidemenu_button"> </li>
         <li class="menu_item" id="logo">
           <p id="logo_study">Study </p>
           <p id="logo_share">Share</p>
         </li>
-        <li class="menu_item icon-user" id="friends"> </li>
-        <li class="menu_item icon-books" id="classes"> </li>
         <li class="menu_item icon-plus" id="create_event"> </li>
       </ul>
     </div>

@@ -85,7 +85,6 @@ function updateProfileInformation() {
       userProfilePicture = response.user.profilePicture;
       updateYourClasses();
       $("#userName").text(response.user.fullName);
-      $("#personal_picture").attr("src", response.user.profilePicture);
     },
     failure: function() {
 
@@ -703,7 +702,7 @@ function setupStateTransitionsOnLoad() {
   //var friendsListState : State = new State($(".friends_list"), updateFriendsListDom);
   currentState = newsFeedState;
   newsFeedState.refreshDom();
-  $("#friends").click(function() {
+  $("#userName").click(function() {
     State.switchState(profilePageState);
   });
   $("#logo").click(function() {
@@ -790,13 +789,13 @@ function setupAddClassButtonFunctionalityOnLoad() {
   });
 }
 
-function setupSwipeGestureOnLoad() {
+ function setupSwipeGestureOnLoad() {
   var hammertime = new Hammer($(".toucharea"));
   hammertime.on("swiperight swipeleft", function(ev) {
   if (ev.type === "swiperight") {
-    $("#menu").show("slow");
+    $("#menu").show();
   } else if (ev.type === "swipeleft") {
-    $("#menu").hide("slow");
+    $("#menu").hide();
   }
   });
 }
@@ -832,6 +831,17 @@ function setupMenuOnLoad() {
   $("#classFilter").click(function() {
     $("#classFilterOptions").fadeToggle("fast");
   });
+
+  $("#sidemenu_button").click(function () {
+    if($("#menu").css("display")=== "block"){
+      $("#menu").css("display", "none");
+    }
+    else{
+      $("#menu").css("display", "block");
+    }
+  });
+
+
 }
 
 //On Load
