@@ -644,6 +644,41 @@ function setupStateTransitionsOnLoad() {
         State.switchState(addClassState);
     });
 }
+function errorCheckDates() {
+    $("#start_date, #start_time, #end_date, #end_time").css("background-color", "#ddd");
+    var curDate = new Date();
+    var offset = curDate.getTimezoneOffset();
+    var startDate = new Date($("#start_date").val());
+    startDate.setMinutes(offset);
+    var timeStr = $("#start_time").val().split(":");
+    startDate.setHours(timeStr[0]);
+    startDate.setMinutes(timeStr[1]);
+    var endDate = new Date($("#end_date").val());
+    endDate.setMinutes(offset);
+    var timeStr = $("#end_time").val().split(":");
+    endDate.setHours(timeStr[0]);
+    endDate.setMinutes(timeStr[1]);
+    if(startDate.toDateString() === "Invalid Date") {
+        $("#start_date").css("background-color", "red");
+        $("#submit_event_error").text("The start date is not a valid date.");
+        return true;
+    } else if(endDate.toDateString() === "Invalid Date") {
+        $("#end_date").css("background-color", "red");
+        $("#submit_event_error").text("The end date is not a valid date.");
+        return true;
+    } else if(endDate.getTime() < startDate.getTime()) {
+        $("#submit_event_error").text("The end date/time must occur after the start date/time.");
+        $("#start_date, #start_time, #end_date, #end_time").css("background-color", "red");
+        return true;
+    } else if(endDate.getTime() < curDate.getTime()) {
+        $("#submit_event_error").text("The event cannot end before the current time.");
+        $("#end_date, #end_time").css("background-color", "red");
+        return true;
+    } else {
+        $("#submit_event_error").text("");
+        return false;
+    }
+}
 function setupAddEventButtonActionsOnLoad() {
     $("#buildingSelect").change(function () {
         var loc = new aLocation();
@@ -652,24 +687,12 @@ function setupAddEventButtonActionsOnLoad() {
         loc.long = coords.split(",")[1];
         updateMap(loc);
     });
+    $("#start_date, #start_time, #end_date, #end_time").change(function () {
+        errorCheckDates();
+    });
     $("#submit_event").click(function () {
-        var curDate = new Date();
-        var offset = curDate.getTimezoneOffset();
-        var startDate = new Date($("#start_date").val());
-        startDate.setMinutes(offset);
-        var timeStr = $("#start_time").val().split(":");
-        startDate.setHours(timeStr[0]);
-        startDate.setMinutes(timeStr[1]);
-        var endDate = new Date($("#end_date").val());
-        endDate.setMinutes(offset);
-        var timeStr = $("#end_time").val().split(":");
-        endDate.setHours(timeStr[0]);
-        endDate.setMinutes(timeStr[1]);
-        if(endDate.getTime() < startDate.getTime()) {
-            $("#submit_event_error").text("The end date/time must occur after the start date/time.");
-        } else if(endDate.getTime() < curDate.getTime()) {
-            $("#submit_event_error").text("The event cannot end before the current time.");
-        } else {
+        var offset = (new Date()).getTimezoneOffset();
+        if(!(errorCheckDates())) {
             $.ajax({
                 type: "post",
                 url: "/submit_event",
