@@ -305,7 +305,7 @@ function updateClassPageDom() {
     nameDiv.append(nameTitle);
     $(".class_page").append(nameDiv);
     var studentsDiv = $("<div id='studentsList' >");
-    studentsDiv.append("<h3>Students</h3>");
+    studentsDiv.append("<h3 class='studentText'>Students</h3>");
     var i;
     var listUsers = $("<ul>");
     for(i = 0; i < curClassDisplay.studentNames.length; i++) {
