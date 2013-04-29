@@ -15,6 +15,7 @@ var addEventState;
 var addClassState;
 var currentLong;
 var currentLat;
+var classes;
 var MILLI_IN_HOUR = 60 * 60 * 1000;
 var aLocation = (function () {
     function aLocation() { }
@@ -115,20 +116,22 @@ function updateAllClasses() {
         type: "get",
         url: "/classes",
         success: function (response) {
-            var classes = response;
-            $(".allClassesPlusOtherList").html("");
-            $(".allClassesList").html("");
-            console.log("1");
-            for(var i = 0; i < classes.length; i++) {
-                var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
-                var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
-                $(".allClassesPlusOtherList").append(option1);
-                if(classes[i].name !== "Other") {
-                    $(".allClassesList").append(option2);
-                }
-            }
+            classes = response;
+            addClassesOptions();
         }
     });
+}
+function addClassesOptions() {
+    $(".allClassesPlusOtherList").html("");
+    $(".allClassesList").html("");
+    for(var i = 0; i < classes.length; i++) {
+        var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+        var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+        $(".allClassesPlusOtherList").append(option1);
+        if(classes[i].name !== "Other") {
+            $(".allClassesList").append(option2);
+        }
+    }
 }
 function updateYourClasses() {
     for(var i = 0; i < classNames.length; i++) {
@@ -159,7 +162,6 @@ function updateProfileDom() {
     classesDiv.append(listClasses);
     var addClasses_Button = $("<span>").text("Join Classes").addClass("classes_Button");
     addClasses_Button.click(function () {
-        console.log("Classes Button Presses");
         State.switchState(addClassState);
     });
     classesDiv.append(addClasses_Button);
@@ -394,7 +396,6 @@ function addLeaveClick(leaveEvent, _id) {
             },
             success: function (response) {
                 leaveEvent.parent().children("ul").find("#" + mongoID).parent().remove();
-                console.log(leaveEvent.parent().children("ul").children().length);
                 if(leaveEvent.parent().children("ul").children().length == 0) {
                     leaveEvent.parent().remove();
                 } else {
@@ -415,7 +416,6 @@ function updateNewsFeedDom() {
 function updateNewsFeedWithQuery(query) {
     $(".news_feed").html("loading...");
     var now = new Date();
-    console.log("/events/" + JSON.stringify(query));
     $.ajax({
         type: "get",
         url: "/events/" + JSON.stringify(query),
@@ -588,7 +588,33 @@ function dateToString(date) {
     return (date.getFullYear() + '-' + monthStr + '-' + dayStr);
 }
 function updateClassDom() {
+    addClassesOptions();
     $("#class_feedback_message").text("");
+    $("#classPageFilter").val("");
+    $("#ACclass").each(function () {
+        var select = this;
+        var options = [];
+        $(select).find('option').each(function () {
+            options.push({
+                value: $(this).val(),
+                text: $(this).text()
+            });
+            return null;
+        });
+        $(select).data('options', options);
+        $("#classPageFilter").bind('change keyup', function () {
+            var options = $(select).empty().data('options');
+            var search = $.trim($(this).val());
+            var regex = new RegExp(search, "gi");
+            $.each(options, function (i) {
+                var option = options[i];
+                if(option.text.match(regex) !== null) {
+                    $(select).append($('<option>').text(option.text).val(option.value));
+                }
+            });
+        });
+        return null;
+    });
 }
 function initializeInformationOnLoad() {
     updateProfileInformation();
