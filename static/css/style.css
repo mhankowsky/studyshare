@@ -156,7 +156,7 @@ a:active {
   position: relative;
   display:inline-block;
 
-  font-size:40px;
+  font-size:15px;
 }
 
 #now {
@@ -184,11 +184,11 @@ a:active {
 }
 
 .class_display{
-  font-size:30px;
+  font-size:12px;
 }
 
 .building_display{
-  font-size:30px;
+  font-size:12px;
 }
 
 .ellipsis_text{
