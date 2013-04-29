@@ -88,6 +88,7 @@ a:active {
   margin: 0 0 20px 0;
 
   background: #117AE8;
+  z-index:1;
   
   -moz-box-shadow: 10px 10px 5px #888;
   -webkit-box-shadow: 10px 10px 5px #888;
@@ -173,8 +174,8 @@ a:active {
 }
     
 .profile_thumb {
-  width: 50px;
-  height: 50px;
+  width: 25px;
+  height: 25px;
   display:inline-block;
   margin-right:10px;
 }
@@ -224,6 +225,9 @@ a:active {
 	background-color: #5a5959;
 	height: 100%;
 	width: 20%;
+
+  position:fixed;
+  z-index:1;
 
  transition: width 2s, height 2s, display 2s;
  -webkit-transition: width 2s, height 2s, display 2s;

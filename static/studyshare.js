@@ -715,9 +715,9 @@ function setupSwipeGestureOnLoad() {
     var hammertime = new Hammer($(".toucharea"));
     hammertime.on("swiperight swipeleft", function (ev) {
         if(ev.type === "swiperight") {
-            $("#menu").show();
+            $("#menu").css("display", "inline-block");
         } else if(ev.type === "swipeleft") {
-            $("#menu").hide();
+            $("#menu").css("display", "none");
         }
     });
 }
@@ -751,7 +751,7 @@ function setupMenuOnLoad() {
         $("#classFilterOptions").fadeToggle("fast");
     });
     $("#sidemenu_button").click(function () {
-        if($("#menu").css("display") === "inline-block") {
+        if($("#menu").css("display") === "block") {
             $("#menu").css("display", "none");
         } else {
             $("#menu").css("display", "inline-block");
