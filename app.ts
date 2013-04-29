@@ -322,9 +322,11 @@ app.get('/classes/:id', function(req, res) {
 app.get('/events/:query', function(req, res) {
   var query : any = {};
   var JSONQuery = JSON.parse(req.params.query);
-  //console.log("JSONQuery: " + JSON.stringify(JSONQuery));
   if(JSONQuery.class != undefined) {
     query.clsID = mongoose.Types.ObjectId(JSONQuery.class);
+  }
+  if(JSONQuery.building != undefined) {
+    query.buildingID = mongoose.Types.ObjectId(JSONQuery.building);
   }
 
   console.log("query: " + JSON.stringify(query));
@@ -332,7 +334,6 @@ app.get('/events/:query', function(req, res) {
   //oneHourAgo.setHours(oneHourAgo.getHours() - 1);
   AnEvent.remove({endTime : {$lt : currDate }}, function(err) {
     AnEvent.find(query).sort({endTime : 1}).exec(function(err, events) {
-      console.log(events.length);
       res.send(events);
     });
   }); 
