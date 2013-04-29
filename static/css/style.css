@@ -87,7 +87,7 @@ a:active {
   top: 0px;
   z-index: 1;
   
-  height:100px;
+  height:75px;
   width: 100%;
   padding: 10px 5px 20px 10px;
   margin: 0 0 20px 0;
@@ -101,7 +101,7 @@ a:active {
 
 .menu_item {
   display: inline-block;
-  height:80px;
+  height:60px;
   margin: 10px 5px 0 5px;
   font-size: 70px;
   text-align: center;
@@ -159,6 +159,7 @@ a:active {
   box-shadow: 0px 0px 8px #000000;
   
   position: relative;
+  display:inline-block;
 
   font-size:40px;
 }
@@ -226,9 +227,9 @@ a:active {
 
 #menu {
 	background-color: #5a5959;
-	float: left;
+  display:inline-block;
 	height: 100%;
-	width: 25%;
+	width: 20%;
 
   margin-right: 5%;
 

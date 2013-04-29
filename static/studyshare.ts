@@ -125,7 +125,7 @@ function updateBuildings() {
       var i;
       $(".building").html("");
       for(i = 0; i < buildings.length; i++) {
-        var option = $("<option>").attr("value", buildings[i]._id).attr("name", "" + buildings[i].lat + ":" + buildings[i].long).attr("id", buildings[i].name);
+        var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i].name);
         var distance;
         if(currentLong !== undefined) {
           var currentLoc = new aLocation();
@@ -652,9 +652,8 @@ function updateCurrentPosition(withMap) {
       currentLat = position.coords.latitude;
       if(withMap) {
         var loc = new aLocation();
-        //super hacky workaround for converting string to number in typescript
-        loc.lat = +($("#buildingSelect").attr("name").split(":")[0]);
-        loc.long = +($("#buildingSelect").attr("name").split(":")[1]);
+        loc.lat = $("#buildingSelect").val().split(",")[0];
+        loc.long = $("#buildingSelect").val().split(",")[1];
         updateMap(loc);
       }
       updateBuildings();
@@ -695,59 +694,8 @@ function dateToString(date : Date) : string {
   return (date.getFullYear() + '-'+ monthStr + '-' + dayStr);
 }
 
-$.fn.filterByText = function(textbox) {
-  return this.each(function() {
-    var select = this;
-    var options = [];
-    $(select).find('option').each(function() {
-      options.push({value: $(this).val(), text: $(this).text()});
-      return null;
-    });
-    $(select).data('options', options);
-
-    $(textbox).bind('change keyup', function() {
-      var options = $(select).empty().data('options');
-      var search = $.trim($(this).val());
-      var regex = new RegExp(search,"gi");
-
-      $.each(options, function(i) {
-        var option = options[i];
-        if(option.text.match(regex) !== null) {
-          $(select).append($('<option>').text(option.text).val(option.value));
-        }
-      });
-    });
-  });
-};
-
 function updateClassDom() {
   $("#class_feedback_message").text("");
-  
-  $("#ACclass").each(function() {
-    var select = this;
-    var options = [];
-    $(select).find('option').each(function() {
-      options.push({value: $(this).val(), text: $(this).text()});
-      return null;
-    });
-    $(select).data('options', options);
-
-    console.log($("#classPageFilter"));
-    $("#classPageFilter").bind('change keyup', function() {
-      console.log("SOMETHING IS HAPPENING");
-      var options = $(select).empty().data('options');
-      var search = $.trim($(this).val());
-      var regex = new RegExp(search,"gi");
-
-      $.each(options, function(i) {
-        var option = options[i];
-        if(option.text.match(regex) !== null) {
-          $(select).append($('<option>').text(option.text).val(option.value));
-        }
-      });
-    });
-    return null;
-  });
 }
 
 function initializeInformationOnLoad() {
@@ -847,7 +795,7 @@ function setupAddClassButtonFunctionalityOnLoad() {
         if(response.alreadyInClass) {
           $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
         } else {
-          $("#class_feedback_message").text("Successfully joined " + $("#ACclass option:selected").text()).css("color", "green");
+          $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
         }
       }
     });
@@ -878,12 +826,9 @@ function setupMenuOnLoad() {
     toggleEnabledClass($(this));
   }); 
   $("#search").click(function() {
-    var query : any = {};
+    var query = {};
     if($("#classFilter").hasClass("filterEnabled")) {
-      query.class = $("#classFilterOptions").val();
-    }
-    if($("#buildingFilter").hasClass("filterEnabled")) {
-      query.building = $("#buildingFilterOptions").val();
+      query = {"class" : $("#classFilterOptions").val()};
     }
     updateNewsFeedWithQuery(query);
   });
