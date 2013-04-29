@@ -776,8 +776,6 @@ function setupAddEventButtonActionsOnLoad() {
         var buildingString = $("#buildingSelect").find(":selected").attr("id");
         if((new Date()) > startDate && currentLong !== undefined && currentLat !== undefined) {
             if(!(errorCheckDates())) {
-                currentLat = currentLat + Math.random() * .0004 - .0002;
-                currentLong = currentLong + Math.random() * .0004 - .0002;
                 $.ajax({
                     type: "post",
                     url: "/submit_event",
@@ -812,8 +810,8 @@ function setupAddEventButtonActionsOnLoad() {
                                     info: $("#info").val(),
                                     startTime: startDate,
                                     endTime: endDate,
-                                    lat: building.lat,
-                                    long: building.long,
+                                    lat: building.lat + Math.random() * .0004 - .0002,
+                                    long: building.long + Math.random() * .0004 - .0002,
                                     offset: offset
                                 },
                                 success: function (response) {
