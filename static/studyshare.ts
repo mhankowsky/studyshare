@@ -192,18 +192,26 @@ function updateProfileDom() {
   
   var classesDiv = $("<div id='classesList'>");
   classesDiv.append("<h>Classes</h>");
-  if (classNames === undefined || classNames.length === 0) {
-    classesDiv.append("<p>Join Classes</p>");
-  } else {
-    var listClasses = $("<ul>");
-    for(var i = 0; i < classNames.length; i++) {
-      var ssclass = $("<li>");
-      var className = $("<a>").addClass("ssclass").attr("id", classIDs[i]).attr("href", "#").text(classNames[i]);
-      ssclass.append(className);
-      listClasses.append(ssclass);
-    }
-    classesDiv.append(listClasses);
+ 
+  var listClasses = $("<ul>");
+  for(var i = 0; i < classNames.length; i++) {
+    var ssclass = $("<li>");
+    var className = $("<a>").addClass("ssclass").attr("id", classIDs[i]).attr("href", "#").text(classNames[i]);
+    ssclass.append(className);
+    listClasses.append(ssclass);
   }
+  classesDiv.append(listClasses);
+
+  var addClasses_Button = $("<span>").text("Join Classes").addClass("classes_Button");
+    
+  addClasses_Button.click(function() {
+    console.log("Classes Button Presses");
+    State.switchState(addClassState);
+
+  });
+
+  classesDiv.append(addClasses_Button);
+  
   $(".profile_page").append(classesDiv);
   
   var friendsDiv = $("<div id='friendsList'>");
@@ -502,15 +510,23 @@ function updateNewsFeedWithQuery(query) {
         setPicture(pictureImg, response[i]);
         var eventDiv = $("<div>").addClass("name_class");
         var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text(response[i].ownerName);
-        var textSpan = $("<span>").text(" is studying ");
+        var classeventDiv = $("<div>").addClass("class_display ellipsis_text");
+        var textSpan = $("<span>").text("Class: ");
         var classAnchor;
         if(response[i].clsName === "Other") {
           classAnchor = $("<span>").attr("id", response[i].clsID.toString()).text("Other");
         } else {
           classAnchor = $("<a>").addClass("ssclass").attr("id", response[i].clsID.toString()).attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
         }
-        var textSpan2 = $("<span>").text(" in ");
+        classeventDiv.append(textSpan);
+        classeventDiv.append(classAnchor);
+        
+        var buildingeventDiv = $("<div>").addClass("building_display ellipsis_text");
+        var textSpan2 = $("<span>").text("At: ");
         var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
+
+        buildingeventDiv.append(textSpan2);
+        buildingeventDiv.append(buildingAnchor);
         
         var startTime = new Date(response[i].startTime);
 
@@ -548,13 +564,11 @@ function updateNewsFeedWithQuery(query) {
           listAttendees.append(attendee);
         }
 
-        containerDiv.append(pictureImg);
         containerDiv.append(eventDiv);
+        eventDiv.append(pictureImg);
         eventDiv.append(nameAnchor);
-        eventDiv.append(textSpan);
-        eventDiv.append(classAnchor);
-        eventDiv.append(textSpan2);
-        eventDiv.append(buildingAnchor);
+        eventDiv.append(classeventDiv);
+        eventDiv.append(buildingeventDiv);
         eventDiv.append(startTimeSpan);
         eventDiv.append(endTimeSpan);
         containerDiv.append(infoP);
@@ -710,7 +724,7 @@ function setupStateTransitionsOnLoad() {
   $("#create_event").click(function() {
     State.switchState(addEventState);
   });
-  $("#classes").click(function() {
+  $("#classes_Button").click(function() {
     State.switchState(addClassState);
   });
 }

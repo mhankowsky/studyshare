@@ -179,13 +179,27 @@ a:active {
 .profile_thumb {
   width: 50px;
   height: 50px;
+  display:inline-block;
+  margin-right:10px;
 }
 
 .name_class {
-  position:relative;
   display:inline-block;
-  top:-20px;
-  left:55px;
+}
+
+.class_display{
+  font-size:30px;
+}
+
+.building_display{
+  font-size:30px;
+}
+
+.ellipsis_text{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 85%;
 }
 
 .time {
