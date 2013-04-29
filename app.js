@@ -297,17 +297,32 @@ app.get('/classes/:id', function (req, res) {
         });
     });
 });
+function hackyAsFuck(duration) {
+    return function () {
+        return ((new Date(this.endTime)).getTime() - (new Date(this.startTime)).getTime()) > (duration);
+    };
+}
+function hackyAsFuck2(duration) {
+    return new Function("return ((new Date(this.endTime)).getTime() - (new Date(this.startTime)).getTime()) > (" + duration * 1000 * 60 + ");");
+}
 app.get('/events/:query', function (req, res) {
     var query = {
     };
     var JSONQuery = JSON.parse(req.params.query);
     console.log("JSONQuery: " + JSON.stringify(JSONQuery));
     if(JSONQuery.class != undefined) {
-        console.log("JSONQuery.class: " + JSONQuery.class);
         query.clsID = mongoose.Types.ObjectId(JSONQuery.class.toString());
     }
     if(JSONQuery.building != undefined) {
         query.buildingID = mongoose.Types.ObjectId(JSONQuery.building.toString());
+    }
+    if(JSONQuery.duration != undefined) {
+        query["$where"] = hackyAsFuck2(JSONQuery.duration);
+        var timeRemaining = new Date();
+        timeRemaining.setTime(timeRemaining.getTime() + JSONQuery.duration * 1000 * 60);
+        query.endTime = {
+            "$gt": timeRemaining
+        };
     }
     console.log("query: " + JSON.stringify(query));
     var currDate = new Date();

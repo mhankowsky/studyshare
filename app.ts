@@ -327,16 +327,29 @@ app.get('/classes/:id', function(req, res) {
 });
 
 
+//wow I feel bad for making this function...but I need a way to substitute the value of "duration" variable with the actual value,
+//which is them passed in to a javascript function in mongo.  Since mongo can't use the "duration" variable, this is the best solution.
+function soHacky(duration) {
+  return new Function("return ((new Date(this.endTime)).getTime() - (new Date(this.startTime)).getTime()) > (" + duration * 1000 * 60 + ");");
+}
+
 app.get('/events/:query', function(req, res) {
   var query : any = {};
   var JSONQuery = JSON.parse(req.params.query);
   console.log("JSONQuery: " + JSON.stringify(JSONQuery));
   if(JSONQuery.class != undefined) {
-    console.log("JSONQuery.class: " + JSONQuery.class);
     query.clsID = mongoose.Types.ObjectId(JSONQuery.class.toString());
   }
   if(JSONQuery.building != undefined) {
     query.buildingID = mongoose.Types.ObjectId(JSONQuery.building.toString());
+  }
+
+  //Find events of length more than "duration" and also have more than "duration" time remaining if they have already started
+  if(JSONQuery.duration != undefined) {
+    query["$where"] = soHacky(JSONQuery.duration);
+    var timeRemaining = new Date();
+    timeRemaining.setTime(timeRemaining.getTime() + JSONQuery.duration * 1000 * 60);
+    query.endTime = {"$gt" : timeRemaining};
   }
 
   console.log("query: " + JSON.stringify(query));

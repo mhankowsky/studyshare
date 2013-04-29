@@ -25,7 +25,8 @@ var currentLat : number;
 
 var classes;
 
-var MILLI_IN_HOUR = 60*60*1000;
+var MILLI_IN_MINUTE = 60 * 1000
+var MILLI_IN_HOUR = MILLI_IN_MINUTE * 60;
 
 class aLocation {
   lat : number;
@@ -554,6 +555,26 @@ function updateNewsFeedWithQuery(query) {
         
         var endTime = new Date(response[i].endTime);
         var endTimeSpan = $("<span>").addClass("time").text("End : " + endTime.toLocaleString());
+
+        var timeRemainingSpan = $("<span>").addClass("time");
+        if(startTime.getTime() < now.getTime()) {
+          var rawTimeRemaining = endTime.getTime() - now.getTime();
+          var minutesRemaining = Math.round(rawTimeRemaining / MILLI_IN_MINUTE);
+          if(minutesRemaining >= 60) {
+            var hoursRemaining = Math.round(rawTimeRemaining / MILLI_IN_HOUR);
+            if(hoursRemaining === 1) {
+              timeRemainingSpan.text(hoursRemaining + " hour remaining");
+            } else {
+              timeRemainingSpan.text(hoursRemaining + " hours remaining");
+            }
+          } else {
+            if(minutesRemaining === 1) {
+              timeRemainingSpan.text(minutesRemaining + " minute remaining");
+            } else {
+              timeRemainingSpan.text(minutesRemaining + " minutes remaining");
+            }
+          }
+        }
         
         var infoP = $("<p>").addClass("info").text(response[i].info);
         
@@ -586,6 +607,7 @@ function updateNewsFeedWithQuery(query) {
         eventDiv.append(buildingeventDiv);
         eventDiv.append(startTimeSpan);
         eventDiv.append(endTimeSpan);
+        eventDiv.append(timeRemainingSpan);
         containerDiv.append(infoP);
         containerDiv.append(textSpan3);
         containerDiv.append(listAttendees);
@@ -888,19 +910,33 @@ function toggleEnabledClass(elem) {
   }
 }
 
+function populateDurationTimes() {
+  for(var i = 0; i <= 12; i++) {
+    var option = $("<option>").attr("value", i * 10).text(i * 10 + " minutes");
+    $("#durationFilterOptions").append(option);
+  }
+}
+
 function setupMenuOnLoad() {
   $(".filter").click(function() {
     toggleEnabledClass($(this));
   }); 
   $("#search").click(function() {
-    var query = {};
+    var query : any = {};
     if($("#classFilter").hasClass("filterEnabled")) {
-      query = {"class" : $("#classFilterOptions").val()};
+      query.class = $("#classFilterOptions").val();
+    }
+    if($("#buildingFilter").hasClass("filterEnabled")) {
+      query.building = $("#buildingFilterOptions").val();
+    }
+    if($("#durationFilter").hasClass("filterEnabled")) {
+      query.duration = $("#durationFilterOptions").val();
     }
     updateNewsFeedWithQuery(query);
   });
-  $("#timeFilter").click(function() {
-
+  populateDurationTimes();
+  $("#durationFilter").click(function() {
+    $("#durationFilterOptions").fadeToggle("fast");
   });
   $("#buildingFilter").click(function() {
     $("#buildingFilterOptions").fadeToggle("fast");
@@ -917,8 +953,6 @@ function setupMenuOnLoad() {
       $("#menu").css("display", "inline-block");
     }
   });
-
-
 }
 
 //On Load
