@@ -15,6 +15,7 @@ var addEventState;
 var addClassState;
 var currentLong;
 var currentLat;
+var mapString = undefined;
 var classes;
 var MILLI_IN_MINUTE = 60 * 1000;
 var MILLI_IN_HOUR = MILLI_IN_MINUTE * 60;
@@ -566,7 +567,8 @@ function updateNewsFeedWithQuery(query) {
 }
 function updateEventDom() {
     $("#submit_event_error").text("");
-    var currDate = new Date();
+    var currDate = (new Date());
+    currDate.setSeconds(0);
     var currDatePlusHour = new Date();
     currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
     var defaultStartTime = currDate.toTimeString().split(" ")[0];
@@ -595,16 +597,45 @@ function updateCurrentPosition(withMap) {
     }
 }
 function updateMap(loc) {
-    var mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
+    mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
     mapString = mapString + currentLat + "," + currentLong;
     mapString += "&maptype=hybrid&zoom=16&size=400x400&sensor=true";
-    mapString += "&markers=size:large|color:blue|" + currentLat + "," + currentLong;
+    mapString += "&markers=size:large|color:green|" + currentLat + "," + currentLong;
     if(loc !== null) {
         mapString += "&markers=size:mid|color:red|" + loc.lat + "," + loc.long;
     }
-    $("#map").attr("src", mapString);
-    $("#map").show();
-    $("#loading_map").hide();
+    $.ajax({
+        type: "get",
+        url: "/events/{}",
+        success: function (events) {
+            for(var i = 0; i < events.length; i++) {
+                if(i === 0) {
+                    mapString += "&markers=size:small|color:blue";
+                }
+                mapString += "|" + events[i].lat + "," + events[i].long;
+            }
+            $("#map").attr("src", mapString);
+            $("#map").show();
+            $("#zoom-in").show();
+            $("#zoom-out").show();
+            $("#loading_map").hide();
+        }
+    });
+}
+function zoomMapWithoutRefresh(zoom) {
+    if(mapString !== undefined) {
+        var firstHalf = mapString.split("&zoom=")[0] + "&zoom=";
+        var zoomLevel = parseInt(mapString.split("&zoom=")[1].split("&size=")[0]);
+        var secondHalf = "&size=" + mapString.split("&zoom=")[1].split("&size=")[1];
+        if(zoom === "in" && zoomLevel < 21) {
+            zoomLevel++;
+        }
+        if(zoom === "out" && zoomLevel > 13) {
+            zoomLevel--;
+        }
+        mapString = firstHalf + zoomLevel.toString() + secondHalf;
+        $("#map").attr("src", mapString);
+    }
 }
 function dateToString(date) {
     var month = (date.getMonth() + 1);
@@ -728,22 +759,69 @@ function setupAddEventButtonActionsOnLoad() {
     });
     $("#submit_event").click(function () {
         var offset = (new Date()).getTimezoneOffset();
-        if(!(errorCheckDates())) {
+        var start_date = $("#start_date").val();
+        var start_time = $("#start_time").val();
+        var end_date = $("#end_date").val();
+        var end_time = $("#end_time").val();
+        var startDate = new Date(start_date);
+        startDate.setMinutes(offset);
+        var timeStr = start_time.split(":");
+        startDate.setHours(timeStr[0]);
+        startDate.setMinutes(timeStr[1]);
+        var endDate = new Date(end_date);
+        endDate.setMinutes(offset);
+        var timeStr = end_time.split(":");
+        endDate.setHours(timeStr[0]);
+        endDate.setMinutes(timeStr[1]);
+        var buildingString = $("#buildingSelect").find(":selected").attr("id");
+        if((new Date()) > startDate && currentLong !== undefined && currentLat !== undefined) {
+            if(!(errorCheckDates())) {
+                currentLat = currentLat + Math.random() * .0004 - .0002;
+                currentLong = currentLong + Math.random() * .0004 - .0002;
+                $.ajax({
+                    type: "post",
+                    url: "/submit_event",
+                    data: {
+                        class: $("#class").val(),
+                        building: buildingString,
+                        info: $("#info").val(),
+                        startTime: startDate,
+                        endTime: endDate,
+                        lat: currentLat,
+                        long: currentLong,
+                        offset: offset
+                    },
+                    success: function (response) {
+                        State.switchState(newsFeedState);
+                    }
+                });
+            }
+        } else {
             $.ajax({
-                type: "post",
-                url: "/submit_event",
-                data: {
-                    class: $("#class").val(),
-                    building: $("#buildingSelect").find(":selected").attr("id"),
-                    info: $("#info").val(),
-                    start_date: $("#start_date").val(),
-                    start_time: $("#start_time").val(),
-                    end_date: $("#end_date").val(),
-                    end_time: $("#end_time").val(),
-                    offset: offset
-                },
-                success: function (response) {
-                    State.switchState(newsFeedState);
+                type: "get",
+                url: "/building/" + buildingString,
+                success: function (building) {
+                    if(building !== undefined) {
+                        if(!(errorCheckDates())) {
+                            $.ajax({
+                                type: "post",
+                                url: "/submit_event",
+                                data: {
+                                    class: $("#class").val(),
+                                    building: buildingString,
+                                    info: $("#info").val(),
+                                    startTime: startDate,
+                                    endTime: endDate,
+                                    lat: building.lat,
+                                    long: building.long,
+                                    offset: offset
+                                },
+                                success: function (response) {
+                                    State.switchState(newsFeedState);
+                                }
+                            });
+                        }
+                    }
                 }
             });
         }
@@ -829,11 +907,20 @@ function setupMenuOnLoad() {
         }
     });
 }
+function setupMapZoom() {
+    $("#zoom-in").click(function () {
+        zoomMapWithoutRefresh("in");
+    });
+    $("#zoom-out").click(function () {
+        zoomMapWithoutRefresh("out");
+    });
+}
 $(function () {
     initializeInformationOnLoad();
     setupStateTransitionsOnLoad();
     setupAddEventButtonActionsOnLoad();
     setupAddClassButtonFunctionalityOnLoad();
     setupSwipeGestureOnLoad();
+    setupMapZoom();
     setupMenuOnLoad();
 });

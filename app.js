@@ -78,12 +78,13 @@ var BuildingSchema = new Schema({
     long: Number
 });
 var EventSchema = new Schema({
-    name: String,
     clsName: String,
     clsNum: Number,
     clsID: ObjectId,
     buildingName: String,
     buildingID: ObjectId,
+    lat: Number,
+    long: Number,
     startTime: {
         type: Date,
         default: Date.now
@@ -271,6 +272,17 @@ app.get('/buildings', function (req, res) {
         res.send(buildings);
     });
 });
+app.get('/building/:name', function (req, res) {
+    Building.findOne({
+        name: req.params.name
+    }, function (err, building) {
+        if(err) {
+            throw err;
+        } else {
+            res.send(building);
+        }
+    });
+});
 app.get('/classes', function (req, res) {
     Class.find({
     }).sort({
@@ -297,12 +309,7 @@ app.get('/classes/:id', function (req, res) {
         });
     });
 });
-function hackyAsFuck(duration) {
-    return function () {
-        return ((new Date(this.endTime)).getTime() - (new Date(this.startTime)).getTime()) > (duration);
-    };
-}
-function hackyAsFuck2(duration) {
+function soHacky(duration) {
     return new Function("return ((new Date(this.endTime)).getTime() - (new Date(this.startTime)).getTime()) > (" + duration * 1000 * 60 + ");");
 }
 app.get('/events/:query', function (req, res) {
@@ -317,7 +324,7 @@ app.get('/events/:query', function (req, res) {
         query.buildingID = mongoose.Types.ObjectId(JSONQuery.building.toString());
     }
     if(JSONQuery.duration != undefined) {
-        query["$where"] = hackyAsFuck2(JSONQuery.duration);
+        query["$where"] = soHacky(JSONQuery.duration);
         var timeRemaining = new Date();
         timeRemaining.setTime(timeRemaining.getTime() + JSONQuery.duration * 1000 * 60);
         query.endTime = {
@@ -340,7 +347,6 @@ app.get('/events/:query', function (req, res) {
 });
 app.post("/submit_event", ensureAuthenticated, function (req, res) {
     var theEvent = new AnEvent();
-    theEvent.name = "Placeholder name";
     Building.findOne({
         name: req.body.building
     }, function (err, theBuilding) {
@@ -361,18 +367,10 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
                 req.user._id
             ];
             theEvent.info = req.body.info;
-            var startDate = new Date(req.body.start_date);
-            startDate.setMinutes(req.body.offset);
-            var timeStr = req.body.start_time.split(":");
-            startDate.setHours(timeStr[0]);
-            startDate.setMinutes(timeStr[1]);
-            var endDate = new Date(req.body.end_date);
-            endDate.setMinutes(req.body.offset);
-            var timeStr = req.body.end_time.split(":");
-            endDate.setHours(timeStr[0]);
-            endDate.setMinutes(timeStr[1]);
-            theEvent.startTime = startDate;
-            theEvent.endTime = endDate;
+            theEvent.lat = req.body.lat;
+            theEvent.long = req.body.long;
+            theEvent.startTime = req.body.startTime;
+            theEvent.endTime = req.body.endTime;
             theEvent.save(function (err) {
                 if(err) {
                     throw err;

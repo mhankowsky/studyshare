@@ -91,12 +91,13 @@ var BuildingSchema = new Schema({
 });
 
 var EventSchema = new Schema({
-  name: String,
   clsName : String,
   clsNum : Number,
   clsID: ObjectId,
   buildingName: String,
   buildingID: ObjectId, //TODO change to location (drill down)
+  lat: Number,
+  long: Number,
   startTime: {type: Date, default: Date.now},
   endTime: {type: Date, default: Date.now},
   ownerName: String,
@@ -301,6 +302,16 @@ app.get('/buildings', function(req, res) {
   });
 });
 
+app.get('/building/:name', function(req, res) {
+  Building.findOne({name: req.params.name}, function(err, building) {
+    if(err) {
+      throw err;
+    } else {
+      res.send(building);
+    }
+  });
+});
+
 app.get('/classes', function(req, res) {
   Class.find({}).sort({num: 1}).exec(function(err, classes) {
     res.send(classes);
@@ -365,7 +376,6 @@ app.get('/events/:query', function(req, res) {
 app.post("/submit_event", ensureAuthenticated, function(req, res) {
   //TODO error checking
   var theEvent = new AnEvent();
-  theEvent.name = "Placeholder name";
   Building.findOne({name : req.body.building}, function(err, theBuilding) {
     theEvent.buildingName = theBuilding.name;
     theEvent.buildingID = theBuilding._id;
@@ -379,21 +389,11 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
       theEvent.attendeesNames = [req.user.fullName];
       theEvent.attendeesIDs = [req.user._id];
       theEvent.info = req.body.info;
+      theEvent.lat = req.body.lat;
+      theEvent.long = req.body.long;
       
-      var startDate = new Date(req.body.start_date);
-      startDate.setMinutes(req.body.offset);
-      var timeStr = req.body.start_time.split(":");
-      startDate.setHours(timeStr[0]);
-      startDate.setMinutes(timeStr[1]);
-      
-      var endDate = new Date(req.body.end_date);
-      endDate.setMinutes(req.body.offset);
-      var timeStr = req.body.end_time.split(":");
-      endDate.setHours(timeStr[0]);
-      endDate.setMinutes(timeStr[1]);
-      
-      theEvent.startTime = startDate;
-      theEvent.endTime = endDate;
+      theEvent.startTime = req.body.startTime;
+      theEvent.endTime = req.body.endTime;
       theEvent.save(function(err) {
         if(err) {
           throw err;
