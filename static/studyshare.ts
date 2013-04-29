@@ -125,6 +125,8 @@ function updateBuildings() {
     success: function(response) {
       var buildings = response;
       var i;
+      var optionButtonArray = [];
+      var optionDistancesArray = [];
       $(".building").html("");
       for(i = 0; i < buildings.length; i++) {
         var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i].name);
@@ -138,10 +140,20 @@ function updateBuildings() {
           buildingLoc.lat = buildings[i].lat;
           distance = calculateDistance(currentLoc, buildingLoc);
           option.text(buildings[i].name + " (Distance: " + precise_round(distance, 3) + " km)");
+          optionButtonArray.push(option);
+          optionDistancesArray.push([i, precise_round(distance, 3)]);
         } else {
           option.text(buildings[i].name);
+          optionButtonArray.push(option);
+          optionDistancesArray.push([i, Number.MAX_VALUE]);
         }
-        $(".building").append(option);
+      }
+
+      optionDistancesArray.sort(function(x, y) {
+        return x[1] - y[1];
+      });
+      for(i = 0; i < optionDistancesArray.length; i++) {
+        $(".building").append(optionButtonArray[optionDistancesArray[i][0]]);
       }
     }
   });
