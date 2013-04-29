@@ -134,12 +134,12 @@ function addClassesOptions() {
     }
 }
 function updateYourClasses() {
+    $(".yourClassListPlusOther").html("");
     for(var i = 0; i < classNames.length; i++) {
-        var option = $("<option>").attr("value", classNames[i]).text(classNames[i]);
+        var valString = "" + classNums[i].substring(0, 2) + "-" + classNums[i].substring(2, 5) + " : " + classNames[i];
+        var option = $("<option>").attr("value", classIDs[i]).text(valString);
         $(".yourClassListPlusOther").append(option);
     }
-    var other = $("<option>").attr("value", "Other").text("Other");
-    $(".yourClassListPlusOther").append(other);
 }
 function updateProfileDom() {
     updateProfileInformation();
@@ -154,10 +154,12 @@ function updateProfileDom() {
     classesDiv.append("<h>Classes</h>");
     var listClasses = $("<ul>");
     for(var i = 0; i < classNames.length; i++) {
-        var ssclass = $("<li>");
-        var className = $("<a>").addClass("ssclass").attr("id", classIDs[i]).attr("href", "#").text(classNames[i]);
-        ssclass.append(className);
-        listClasses.append(ssclass);
+        if(classNames[i] !== "Other") {
+            var ssclass = $("<li>");
+            var className = $("<a>").addClass("ssclass").attr("id", classIDs[i]).attr("href", "#").text(classNames[i]);
+            ssclass.append(className);
+            listClasses.append(ssclass);
+        }
     }
     classesDiv.append(listClasses);
     var addClasses_Button = $("<span>").text("Join Classes").addClass("classes_Button");
@@ -234,10 +236,12 @@ function updateUserPageDom() {
     classesDiv.append("<h>Classes</h>");
     var listClasses = $("<ul>");
     for(var i = 0; i < curUserDisplay.classNames.length; i++) {
-        var ssclass = $("<li>");
-        var className = $("<a>").addClass("ssclass").attr("id", curUserDisplay.classIDs[i]).attr("href", "#").text(curUserDisplay.classNames[i]);
-        ssclass.append(className);
-        listClasses.append(ssclass);
+        if(curUserDisplay.classNames[i] !== "Other") {
+            var ssclass = $("<li>");
+            var className = $("<a>").addClass("ssclass").attr("id", curUserDisplay.classIDs[i]).attr("href", "#").text(curUserDisplay.classNames[i]);
+            ssclass.append(className);
+            listClasses.append(ssclass);
+        }
     }
     classesDiv.append(listClasses);
     $(".user_page").append(classesDiv);
@@ -527,12 +531,6 @@ function updateEventDom() {
     var currDate = new Date();
     var currDatePlusHour = new Date();
     currDatePlusHour.setTime(currDate.getTime() + MILLI_IN_HOUR);
-    $("#class").html("");
-    for(var i = 0; i < classNames.length; i++) {
-        var valString = "" + classNums[i].substring(0, 2) + "-" + classNums[i].substring(2, 5) + " : " + classNames[i];
-        var option = $("<option>").attr("value", classNums[i]).text(valString);
-        $("#class").append(option);
-    }
     var defaultStartTime = currDate.toTimeString().split(" ")[0];
     var defaultEndTime = currDatePlusHour.toTimeString().split(" ")[0];
     $("#start_date").val(dateToString(currDate));

@@ -17,6 +17,8 @@ var fs = require("fs");
 var FACEBOOK_APP_ID : String;
 var FACEBOOK_APP_SECRET : String;
 
+var otherClassID;
+
 fs.readFile("facebook_properties.txt", function(err, data) {
   if (err) {
     console.log("Error reading facebook_properties.txt")
@@ -27,7 +29,12 @@ fs.readFile("facebook_properties.txt", function(err, data) {
     FACEBOOK_APP_ID = JSONdata.FACEBOOK_APP_ID;
     FACEBOOK_APP_SECRET = JSONdata.FACEBOOK_APP_SECRET;
   }
-  startPassport();
+  Class.findOne({"name" : "Other"}, function(err, theClass) {
+    otherClassID = theClass._id;
+    startPassport();
+  });
+
+  
 });
 
 var passport = require('passport');
@@ -155,8 +162,9 @@ function startPassport() {
           user.name = profile.name;
           user.profilePicture = profile.photos[0].value;
           user.facebookAccessToken = accessToken;
-          user.classNames = [];
-          user.classIDs = [];
+          user.classNames = ["Other"];
+          user.classNums = ["00000"];
+          user.classIDs = [otherClassID];
           user.save(function(err1) {
             if(err1) {
               throw err1; 
@@ -322,11 +330,13 @@ app.get('/classes/:id', function(req, res) {
 app.get('/events/:query', function(req, res) {
   var query : any = {};
   var JSONQuery = JSON.parse(req.params.query);
+  console.log("JSONQuery: " + JSON.stringify(JSONQuery));
   if(JSONQuery.class != undefined) {
-    query.clsID = mongoose.Types.ObjectId(JSONQuery.class);
+    console.log("JSONQuery.class: " + JSONQuery.class);
+    query.clsID = mongoose.Types.ObjectId(JSONQuery.class.toString());
   }
   if(JSONQuery.building != undefined) {
-    query.buildingID = mongoose.Types.ObjectId(JSONQuery.building);
+    query.buildingID = mongoose.Types.ObjectId(JSONQuery.building.toString());
   }
 
   console.log("query: " + JSON.stringify(query));
@@ -346,8 +356,8 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
   Building.findOne({name : req.body.building}, function(err, theBuilding) {
     theEvent.buildingName = theBuilding.name;
     theEvent.buildingID = theBuilding._id;
-    
-    Class.findOne({num : req.body.class}, function(err, theClass) {
+
+    Class.findOne({_id : mongoose.Types.ObjectId(req.body.class)}, function(err, theClass) {
       theEvent.clsName = theClass.name;
       theEvent.clsNum = theClass.num;
       theEvent.clsID = theClass._id;

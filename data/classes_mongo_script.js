@@ -1,3 +1,4 @@
+db.classes.insert({name : "Other", num: "00000", deptNum: "00", classNum: "000"});
 db.classes.insert({name : "Foundations of the United States Air Force", num: "31102", deptNum: "31", classNum: "102"});
 db.classes.insert({name : "Air Force Leadership Laboratory", num: "31105", deptNum: "31", classNum: "105"});
 db.classes.insert({name : "Air Force Leadership Laboratory", num: "31106", deptNum: "31", classNum: "106"});
