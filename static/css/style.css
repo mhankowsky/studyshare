@@ -11,7 +11,7 @@ body {
 
 .main{
   display:inline-block;
-  width:70%;
+  width:85%;
 }
 
 a {
@@ -189,6 +189,7 @@ a:active {
 
 .building_display{
   font-size:12px;
+  margin-bottom:5px;
 }
 
 .ellipsis_text{
@@ -207,7 +208,7 @@ a:active {
 }
 
 .info {
-  margin: 0 10px 10px 0;
+  margin: 5px 10px 10px 0;
 }
 
 
@@ -223,9 +224,10 @@ a:active {
 #menu {
 	background-color: #5a5959;
 	height: 100%;
-	width: 20%;
+	width: 40%;
 
   position:fixed;
+  top:60px;
   z-index:1;
 
  transition: width 2s, height 2s, display 2s;
@@ -390,12 +392,12 @@ h {
 
 .joinOrLeave {
   background-color: #DDD;
-  width:110px;
+  width:65px;
   height:25px;
   display: block;
   border: 1px solid #999;
-  font-size: 20px;
-  padding: 5px 0 0 0 ;
+  font-size: 12px;
+  padding: 5px 0 5px 0 ;
   margin: 10px;
   text-align:center;
 
