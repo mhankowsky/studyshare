@@ -10,8 +10,8 @@ body {
 }
 
 .main{
-  margin: 130px 0 0 0;
-  padding: 10px 4px 10px 4px;
+  display:inline-block;
+  width:70%;
 }
 
 a {
@@ -82,11 +82,6 @@ a:active {
 .header {
   display:block;
   
-  position: fixed;
-  left: 0px;
-  top: 0px;
-  z-index: 1;
-  
   height:75px;
   width: 100%;
   padding: 10px 5px 20px 10px;
@@ -149,7 +144,7 @@ a:active {
  * *************************/
 
 .content-box {
-  width: 87%;
+  width: 100%;
   margin: 15px 0 15px 5%;
   padding: 10px 0 10px 2%;
 
@@ -200,7 +195,7 @@ a:active {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 85%;
+  width: 65%;
 }
 
 .time {
@@ -227,11 +222,8 @@ a:active {
 
 #menu {
 	background-color: #5a5959;
-  display:inline-block;
 	height: 100%;
 	width: 20%;
-
-  margin-right: 5%;
 
  transition: width 2s, height 2s, display 2s;
  -webkit-transition: width 2s, height 2s, display 2s;

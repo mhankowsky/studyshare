@@ -843,11 +843,11 @@ function setupMenuOnLoad() {
   });
 
   $("#sidemenu_button").click(function () {
-    if($("#menu").css("display")=== "block"){
+    if($("#menu").css("display")=== "inline-block"){
       $("#menu").css("display", "none");
     }
     else{
-      $("#menu").css("display", "block");
+      $("#menu").css("display", "inline-block");
     }
   });
 
