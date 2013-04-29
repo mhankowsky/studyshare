@@ -15,6 +15,7 @@ var addEventState;
 var addClassState;
 var currentLong;
 var currentLat;
+var classes;
 var MILLI_IN_HOUR = 60 * 60 * 1000;
 var aLocation = (function () {
     function aLocation() { }
@@ -115,20 +116,22 @@ function updateAllClasses() {
         type: "get",
         url: "/classes",
         success: function (response) {
-            var classes = response;
-            $(".allClassesPlusOtherList").html("");
-            $(".allClassesList").html("");
-            console.log("1");
-            for(var i = 0; i < classes.length; i++) {
-                var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
-                var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
-                $(".allClassesPlusOtherList").append(option1);
-                if(classes[i].name !== "Other") {
-                    $(".allClassesList").append(option2);
-                }
-            }
+            classes = response;
+            addClassesOptions();
         }
     });
+}
+function addClassesOptions() {
+    $(".allClassesPlusOtherList").html("");
+    $(".allClassesList").html("");
+    for(var i = 0; i < classes.length; i++) {
+        var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+        var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+        $(".allClassesPlusOtherList").append(option1);
+        if(classes[i].name !== "Other") {
+            $(".allClassesList").append(option2);
+        }
+    }
 }
 function updateYourClasses() {
     for(var i = 0; i < classNames.length; i++) {
@@ -613,7 +616,9 @@ $.fn.filterByText = function (textbox) {
     });
 };
 function updateClassDom() {
+    addClassesOptions();
     $("#class_feedback_message").text("");
+    $("#classPageFilter").val("");
     $("#ACclass").each(function () {
         var select = this;
         var options = [];
