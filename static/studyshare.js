@@ -658,30 +658,6 @@ function updateClassDom() {
     addClassesOptions();
     $("#class_feedback_message").text("");
     $("#classPageFilter").val("");
-    $("#ACclass").each(function () {
-        var select = this;
-        var options = [];
-        $(select).find('option').each(function () {
-            options.push({
-                value: $(this).val(),
-                text: $(this).text()
-            });
-            return null;
-        });
-        $(select).data('options', options);
-        $("#classPageFilter").bind('change keyup', function () {
-            var options = $(select).empty().data('options');
-            var search = $.trim($(this).val());
-            var regex = new RegExp(search, "gi");
-            $.each(options, function (i) {
-                var option = options[i];
-                if(option.text.match(regex) !== null) {
-                    $(select).append($('<option>').text(option.text).val(option.value));
-                }
-            });
-        });
-        return null;
-    });
 }
 function initializeInformationOnLoad() {
     updateProfileInformation();
@@ -829,23 +805,26 @@ function setupAddEventButtonActionsOnLoad() {
 }
 function setupAddClassButtonFunctionalityOnLoad() {
     $("#add_class").click(function () {
-        console.log($("#ACclass").val());
-        $.ajax({
-            type: "put",
-            url: "/add_class",
-            data: {
-                _id: $("#ACclass").val()
-            },
-            success: function (response) {
-                updateProfileInformation();
-                updateYourClasses();
-                if(response.alreadyInClass) {
-                    $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
-                } else {
-                    $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
+        if($("#ACClass").text() == "") {
+            $("#class_feedback_message").text("Please add a valid class!").css("color", "red");
+        } else {
+            $.ajax({
+                type: "put",
+                url: "/add_class",
+                data: {
+                    _id: $("#ACclass").val()
+                },
+                success: function (response) {
+                    updateProfileInformation();
+                    updateYourClasses();
+                    if(response.alreadyInClass) {
+                        $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
+                    } else {
+                        $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 }
 function setupSwipeGestureOnLoad() {
@@ -915,11 +894,24 @@ function setupMapZoom() {
         zoomMapWithoutRefresh("out");
     });
 }
+function setupSearchOnLoad() {
+    $("#classsearch").click(function () {
+        var search = $.trim($("#classPageFilter").val());
+        var regex = new RegExp(search, "gi");
+        $("#ACclass").html("");
+        classes.forEach(function (opt) {
+            if(opt.name.match(regex) !== null) {
+                $("#ACclass").append($('<option>').text(opt.deptNum + "-" + opt.classNum + " : " + opt.name).val(opt._id));
+            }
+        });
+    });
+}
 $(function () {
     initializeInformationOnLoad();
     setupStateTransitionsOnLoad();
     setupAddEventButtonActionsOnLoad();
     setupAddClassButtonFunctionalityOnLoad();
+    setupSearchOnLoad();
     setupSwipeGestureOnLoad();
     setupMapZoom();
     setupMenuOnLoad();

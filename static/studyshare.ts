@@ -763,7 +763,7 @@ function updateClassDom() {
   $("#class_feedback_message").text("");
   $("#classPageFilter").val("");
   
-  $("#ACclass").each(function() {
+  /*$("#ACclass").each(function() {
     var select = this;
     var options = [];
     $(select).find('option').each(function() {
@@ -785,7 +785,7 @@ function updateClassDom() {
       });
     });
     return null;
-  });
+  });*/
 }
 
 function initializeInformationOnLoad() {
@@ -952,23 +952,26 @@ function setupAddEventButtonActionsOnLoad() {
 
 function setupAddClassButtonFunctionalityOnLoad() {
   $("#add_class").click(function() {
-    console.log($("#ACclass").val());
-    $.ajax({
-      type: "put",
-      url: "/add_class",
-      data: {
-        _id: $("#ACclass").val(),
-      },
-      success: function(response) {
-        updateProfileInformation();
-        updateYourClasses();
-        if(response.alreadyInClass) {
-          $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
-        } else {
-          $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
+    if ($("#ACClass").text() == "") {
+      $("#class_feedback_message").text("Please add a valid class!").css("color", "red");
+    } else {
+      $.ajax({
+        type: "put",
+        url: "/add_class",
+        data: {
+          _id: $("#ACclass").val(),
+        },
+        success: function(response) {
+          updateProfileInformation();
+          updateYourClasses();
+          if(response.alreadyInClass) {
+            $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
+          } else {
+            $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
+          }
         }
-      }
-    });
+      });
+    }
   });
 }
 
@@ -1045,12 +1048,27 @@ function setupMapZoom() {
   });
 }
 
+function setupSearchOnLoad() {
+  $("#classsearch").click(function() {
+    var search = $.trim($("#classPageFilter").val());
+  	var regex = new RegExp(search,"gi");
+  	$("#ACclass").html("");
+  	  
+  	classes.forEach(function(opt) {
+  	  if(opt.name.match(regex) !== null) {
+  	    $("#ACclass").append($('<option>').text(opt.deptNum + "-" + opt.classNum + " : " + opt.name).val(opt._id));
+  	  }
+  	});
+  });
+}
+
 //On Load
 $(function() {
   initializeInformationOnLoad();
   setupStateTransitionsOnLoad();
   setupAddEventButtonActionsOnLoad();
   setupAddClassButtonFunctionalityOnLoad();
+  setupSearchOnLoad();
   setupSwipeGestureOnLoad();
   setupMapZoom();
   setupMenuOnLoad();
