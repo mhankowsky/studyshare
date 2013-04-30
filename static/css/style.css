@@ -186,6 +186,7 @@ a:active {
 
 .name_class {
   display:inline-block;
+  width:100%;
 }
 
 .class_display{
