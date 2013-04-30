@@ -394,7 +394,7 @@ function updateClassPageDom() {
   nameDiv.append(nameTitle);
   $(".class_page").append(nameDiv);
   
-  var addOrRemove = $("<div>").addClass("addOrRemove");
+  var addOrRemove = $("<a>").addClass("addOrRemove button");
   if (curClassDisplay.studentIDs.indexOf(mongoID) === -1) {
     addOrRemove.attr("id", "addThisClass").text("Add Class");
     addAddClick(addOrRemove, curClassDisplay._id);

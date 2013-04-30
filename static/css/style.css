@@ -412,7 +412,7 @@ a:active {
 
 
 /*********************
- * Add classes page
+ * classes pages
  *********************/
 .add_class p{
   font-size:25px;
@@ -425,6 +425,11 @@ a:active {
 
 #add_class{
   width:75px;
+  margin-top:10px;
+}
+
+.addOrRemove{
+  width:20%;
   margin-top:10px;
 }
 
