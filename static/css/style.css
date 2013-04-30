@@ -395,6 +395,34 @@ a:active {
   box-shadow: 0px 0px 8px #000000;
 }
 
+.profileStudentButton {
+  display:inline-block;
+  margin: 5px 10px 5px 0;
+  padding: 3px 5px 5px 5px;
+
+  background-color: #ddd;
+  border: 2px solid #999999;
+  border-radius: 10px;
+  box-shadow: 0px 0px 8px #000000;
+}studentButton {
+  display:inline-block;
+  margin: 5px 10px 5px 0;
+  padding: 3px 5px 5px 5px;
+
+  background-color: #ddd;
+  border: 2px solid #999999;
+  border-radius: 10px;
+  box-shadow: 0px 0px 8px #000000;
+}tudentButton {
+  display:inline-block;
+  margin: 5px 10px 5px 0;
+  padding: 3px 5px 5px 5px;
+
+  background-color: #ddd;
+  border: 2px solid #999999;
+  border-radius: 10px;
+  box-shadow: 0px 0px 8px #000000;
+}
 
 /***************************
  * Profle Page 

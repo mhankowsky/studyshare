@@ -248,7 +248,7 @@ function updateProfileDom() {
       listFriends.text("");
       var i;
       for(i = 0; i < response.length; i++) {
-        var friend = $("<li>").addClass("studentButton");
+        var friend = $("<li>").addClass("profileStudentButton");
         var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
         var friendName = $("<a>").addClass("name").attr("id", response[i]._id.toString()).attr("href", "#").text(response[i].fullName);
         friend.append(picture);
@@ -339,7 +339,7 @@ function updateUserPageDom() {
       listFriends.text("");
       var i;
       for(i = 0; i < response.length; i++) {
-        var friend = $("<li>").addClass("studentButton");
+        var friend = $("<li>").addClass("profileStudentButton");
         var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
         var friendName = $("<a>").addClass("name").attr("id", response[i]._id.toString()).attr("href", "#").text(response[i].fullName);
         friend.append(picture);
@@ -798,6 +798,7 @@ function updateEventDom() {
   $("#start_time").val(defaultStartTime);
   $("#end_date").val(dateToString(currDatePlusHour));
   $("#end_time").val(defaultEndTime);
+  $("#info").val("");
   updateCurrentPosition(true);
 }
 
