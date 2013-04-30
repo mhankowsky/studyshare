@@ -368,13 +368,16 @@ a:active {
  ***************************/
 
 
- #nameTitle {
+ #nameTitle h {
   font-family: 'Lato', sans-serif;
-
+  font-size:40px;
+  position:relative;
+  top:-10px;
  }
 
+
  .classes_button{
-  margin-top:10px;
+  margin-left:78%;
   width:90px;
  }
 
@@ -389,6 +392,8 @@ h {
 }
 
 #classesList, #friendsList, #studentsList {
+
+font-size:15px;
 
 margin-top: 20px;
 

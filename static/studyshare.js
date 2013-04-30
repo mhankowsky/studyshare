@@ -181,7 +181,7 @@ function updateProfileDom() {
         }
     }
     classesDiv.append(listClasses);
-    var addClasses_Button = $("<span>").text("Join Classes").addClass("classes_Button");
+    var addClasses_Button = $("<span>").text("Join Classes").addClass("classes_Button button");
     addClasses_Button.click(function () {
         State.switchState(addClassState);
     });
@@ -248,7 +248,7 @@ function updateProfileDom() {
 function updateUserPageDom() {
     $(".user_page").html("");
     var nameDiv = $("<div id='nameTitle'>");
-    var nameTitle = $("<h>").text(curUserDisplay.fullName);
+    var nameTitle = $("<h>").text(curUserDisplay.fullName).addClass("profileName");
     nameDiv.append(nameTitle);
     $(".user_page").append(nameDiv);
     var classesDiv = $("<div id='classesList'>");

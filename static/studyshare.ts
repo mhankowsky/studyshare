@@ -300,7 +300,7 @@ function updateUserPageDom() {
   $(".user_page").html("");
   
   var nameDiv = $("<div id='nameTitle'>");
-  var nameTitle = $("<h>").text(curUserDisplay.fullName);
+  var nameTitle = $("<h>").text(curUserDisplay.fullName).addClass("profileName");
   nameDiv.append(nameTitle);
   $(".user_page").append(nameDiv); 
   
