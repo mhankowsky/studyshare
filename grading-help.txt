@@ -1,0 +1,26 @@
+StudyShare
+
+Daniel Deutsch - ddeutsch
+Michael Hankowsky - mhankows
+Tyler Healy - thealy
+
+1. Javascript (TypeScript) - Our project's scripts are entirely written in TypeScript (albeit much of it does not use all of TypeScripts features). This includes over 600 lines of server side code and 1000+ lines of client side code. Within this code, we make use of the object-oriented nature of Javascript by creating our own objects to group related information together and to easily perform methods on these objects. We also use TypeScript's type system to ensure that our methods take in and return the correct objects.
+
+2. HTML - Our project uses some of the special features included in HTML5 including:
+	- <select> object (adding a class, creating an event, index.html:60-61, index.html:86-87)
+	- different input objects including:
+		- text (When creating an event [Info:], Searching for a class, index.html:63,83)
+		- time (When creating an event [Start Time:, End Time:], index.html:67,71)
+		- date (When creating an event [Start Date:, End Date:], index.html:65,69)
+	
+3. CSS - Our project contains a wide array of CSS techniques including:
+	- CSS Reset (reset.css)
+	- Fixed header (style.css:83-98)
+	
+4. DOMManipulation
+5. JQuery
+6. Hammer.js
+7. AJAX Client
+8. AJAX Server
+9. node.js
+10. Server-side databases

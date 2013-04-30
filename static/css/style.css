@@ -12,6 +12,7 @@ body {
 .main{
   display:inline-block;
   width:85%;
+  margin: 70px 0 0 0;
 }
 
 a {
@@ -81,6 +82,8 @@ a:active {
 
 .header {
   display:block;
+  position: fixed;
+  width: 100%;
   
   height:30px;
   padding: 10px 5px 20px 10px;
