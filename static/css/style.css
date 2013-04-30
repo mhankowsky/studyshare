@@ -56,7 +56,7 @@ a:active {
 }
 
 .button{
-  background: #FFF;
+  background: #ddd;
   padding:8px;
   border-radius: 4px;
   border: 1px solid #CCC;
@@ -364,6 +364,21 @@ a:active {
 
 
 /***************************
+ * Profle Page 
+ ***************************/
+
+
+ #nameTitle {
+  font-family: 'Lato', sans-serif;
+
+ }
+
+ .classes_button{
+  margin-top:10px;
+  width:90px;
+ }
+
+/***************************
  * Random Styles
  * *************************/
  
@@ -373,15 +388,10 @@ h {
   padding: 4px 0 10px 0px;  
 }
 
-#nameTitle, #classesList, #friendsList, #studentsList {
-  font-family: 'Lato', sans-serif;
-  margin: 0 0 20px 0;
-  padding: 4px 0 4px 10px; 
+#classesList, #friendsList, #studentsList {
 
-  width: 20%
+margin-top: 20px;
 
-  border-style : solid;
-  border-width : 5px;
 }
 
 .error {

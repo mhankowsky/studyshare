@@ -222,7 +222,7 @@ function updateProfileDom() {
   }
   classesDiv.append(listClasses);
 
-  var addClasses_Button = $("<span>").text("Join Classes").addClass("classes_Button");
+  var addClasses_Button = $("<span>").text("Join Classes").addClass("classes_Button button");
     
   addClasses_Button.click(function() {
     State.switchState(addClassState);
