@@ -493,3 +493,7 @@ margin-bottom:10px;
   width: 95%;
 }
 
+#wrapper {
+  overflow: auto;
+}
+

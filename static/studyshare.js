@@ -250,6 +250,8 @@ function updateUserPageDom() {
     $(".user_page").html("");
     var nameDiv = $("<div id='nameTitle'>");
     var nameTitle = $("<h>").text(curUserDisplay.fullName).addClass("profileName");
+    var userProfilePic = $("<img>").addClass("userPic").attr("src", curUserDisplay.profilePicture);
+    nameDiv.append(userProfilePic);
     nameDiv.append(nameTitle);
     $(".user_page").append(nameDiv);
     var classesDiv = $("<div id='classesList'>");
@@ -294,6 +296,7 @@ function updateUserPageDom() {
                         curUserDisplay = new SSUser();
                         curUserDisplay.fullName = response.fullName;
                         curUserDisplay.facebookID = response.facebookID;
+                        curUserDisplay.profilePicture = response.profilePicture;
                         curUserDisplay.classIDs = response.classIDs;
                         curUserDisplay.classNames = response.classNames;
                         State.switchState(userPageState);
@@ -361,6 +364,7 @@ function updateClassPageDom() {
                 curUserDisplay.facebookID = response.facebookID;
                 curUserDisplay.classIDs = response.classIDs;
                 curUserDisplay.classNames = response.classNames;
+                curUserDisplay.profilePicture = response.profilePicture;
                 State.switchState(userPageState);
             }
         });
@@ -450,6 +454,7 @@ function addJoinClick(joinEvent, _id) {
                                 curUserDisplay.facebookID = response.facebookID;
                                 curUserDisplay.classIDs = response.classIDs;
                                 curUserDisplay.classNames = response.classNames;
+                                curUserDisplay.profilePicture = response.profilePicture;
                                 State.switchState(userPageState);
                             }
                         });
@@ -639,6 +644,7 @@ function updateNewsFeedWithQuery(query) {
                         curUserDisplay.facebookID = response.facebookID;
                         curUserDisplay.classIDs = response.classIDs;
                         curUserDisplay.classNames = response.classNames;
+                        curUserDisplay.profilePicture = response.profilePicture;
                         State.switchState(userPageState);
                     }
                 });
@@ -1009,41 +1015,6 @@ function setupSearchOnLoad() {
         });
     });
 }
-var pullDownEl, pullDownOffset, generatedCount = 0;
-var theScroll;
-function scroll() {
-    function pullDownAction() {
-        updateNewsFeedWithQuery({
-        });
-        theScroll.refresh();
-    }
-    pullDownEl = document.getElementById('pullDown');
-    pullDownOffset = pullDownEl.offsetHeight;
-    theScroll = new iScroll('wrapper', {
-        useTransition: true,
-        topOffset: pullDownOffset,
-        onRefresh: function () {
-            if(pullDownEl.className.match('loading')) {
-                pullDownEl.className = '';
-                pullDownEl.querySelector('.pullDownLabel').innerHTML = 'Pull down to refresh...';
-            }
-        },
-        onScrollMove: function () {
-            if(this.y > 5 && !pullDownEl.className.match('flip')) {
-                pullDownEl.className = 'flip';
-                pullDownEl.querySelector('.pullDownLabel').innerHTML = 'Release to refresh...';
-                this.minScrollY = 0;
-            }
-        },
-        onScrollEnd: function () {
-            if(pullDownEl.className.match('flip')) {
-                pullDownEl.className = 'loading';
-                pullDownEl.querySelector('.pullDownLabel').innerHTML = 'Loading...';
-                pullDownAction();
-            }
-        }
-    });
-}
 $(function () {
     initializeInformationOnLoad();
     setupStateTransitionsOnLoad();
@@ -1054,4 +1025,3 @@ $(function () {
     setupMapZoom();
     setupMenuOnLoad();
 });
-document.addEventListener('DOMContentLoaded', scroll, false);
