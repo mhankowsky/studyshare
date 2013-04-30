@@ -677,4 +677,7 @@ app.put("/leave_event", ensureAuthenticated, function (req, res) {
 app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
 });
+app.get("/", ensureAuthenticated, function (request, response) {
+    response.sendfile("static/index.html");
+});
 app.listen(8889);

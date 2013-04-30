@@ -631,5 +631,9 @@ app.get("/static/:staticFilename", ensureAuthenticated, function (request, respo
   response.sendfile("static/" + request.params.staticFilename);
 });
 
+app.get("/", ensureAuthenticated, function (request, response) {
+  response.sendfile("static/index.html");
+});
+
 // Finally, activate the server at port 8889
 app.listen(8889);
