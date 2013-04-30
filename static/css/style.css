@@ -410,6 +410,9 @@ a:active {
   width:90px;
  }
 
+#friendsList h{
+  margin-bottom:20px;
+}
 
 /*********************
  * classes pages
@@ -429,8 +432,8 @@ a:active {
 }
 
 .addOrRemove{
-  width:20%;
   margin-top:10px;
+  display:inline-block;
 }
 
 /***************************
