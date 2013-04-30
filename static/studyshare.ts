@@ -133,7 +133,7 @@ function updateBuildings() {
       var optionDistancesArray = [];
       $(".building").html("");
       for(i = 0; i < buildings.length; i++) {
-        var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i].name);
+        var option = $("<option>").attr("value", buildings[i].lat + "," + buildings[i].long).attr("id", buildings[i]._id).attr("name", buildings[i].name);
         var distance;
         if(currentLong !== undefined) {
           var currentLoc = new aLocation();
@@ -1008,7 +1008,7 @@ function setupAddEventButtonActionsOnLoad() {
     endDate.setHours(timeStr[0]);
     endDate.setMinutes(timeStr[1]);
 
-    var buildingString = $("#buildingSelect").find(":selected").attr("id");
+    var buildingString = $("#buildingSelect").find(":selected").attr("name");
 
     if((new Date()) > startDate && currentLong !== undefined && currentLat !== undefined) {
       //assume current location is correct
@@ -1126,7 +1126,7 @@ function setupMenuOnLoad() {
       query.class = $("#classFilterOptions").val();
     }
     if($("#buildingFilter").hasClass("filterEnabled")) {
-      query.building = $("#buildingFilterOptions").val();
+      query.building = $("#buildingFilterOptions").find(":selected").attr("id");
     }
     if($("#durationFilter").hasClass("filterEnabled")) {
       query.duration = $("#durationFilterOptions").val();
