@@ -9,3 +9,5 @@ Our application is designed to allow the students of Carnegie Mellon to easier c
 Our application is hosted on http://studyshare.res.cmu.edu:8889/
 
 If there are any server errors, or the application is not loading properly, please contact Michael Hankowsky by e-mailing him at mhankows@andrew.cmu.edu.
+
+For a more thorough explanation of our application, view the video at http://youtu.be/3rytzMqnXqA
