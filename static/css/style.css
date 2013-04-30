@@ -279,7 +279,7 @@ a:active {
 	text-decoration: none;
 	text-shadow: 0 1px 1px #000;
   padding-left:5px;
-	width: 50%;
+	width: 100%;
 }
 #menu ul li a:hover,
 #menu ul li a:active {
@@ -375,18 +375,18 @@ a:active {
 
 #nameTitle h1 {
   display:inline-block;
-  font-size: 35px;
+  font-size: 30px;
 
 }
 
 .studentText{
-  margin-bottom:20px;
+  margin-bottom:10px;
 }
 
 .studentButton {
   display:inline-block;
-  margin: 10px 10px 10px 0;
-  padding: 0px 5px 10px 5px;
+  margin: 5px 10px 5px 0;
+  padding: 0px 5px 5px 5px;
 
   background-color: #ddd;
   border: 2px solid #999999;
