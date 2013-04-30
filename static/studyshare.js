@@ -200,11 +200,11 @@ function updateProfileDom() {
             listFriends.text("");
             var i;
             for(i = 0; i < response.length; i++) {
-                var friend = $("<li>");
+                var friend = $("<li>").addClass("studentButton");
                 var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
                 var friendName = $("<a>").addClass("name").attr("id", response[i]._id.toString()).attr("href", "#").text(response[i].fullName);
-                friend.append(friendName);
                 friend.append(picture);
+                friend.append(friendName);
                 listFriends.append(friend);
             }
             $(".name").click(function () {
