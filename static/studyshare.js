@@ -965,6 +965,7 @@ function setupMenuOnLoad() {
         if($("#durationFilter").hasClass("filterEnabled")) {
             query.duration = $("#durationFilterOptions").val();
         }
+        $("#menu").css("display", "none");
         updateNewsFeedWithQuery(query);
     });
     populateDurationTimes();
