@@ -48,9 +48,9 @@
 
     <div class="content news_feed"></div>
 
-    <div class="profile_page" style="display:none;"></div>
-    <div class="user_page" style="display:none;"></div>
-    <div class ="class_page" style="display:none;"></div>
+    <div class="profile_page content-box" style="display:none;"></div>
+    <div class="user_page content-box" style="display:none;"></div>
+    <div class ="class_page contnet-box" style="display:none;"></div>
 
     <div class="event_creation" style="display:none;">
       <p>Class:</p>
@@ -78,15 +78,16 @@
       <a id="zoom-out" style="display:none;">Zoom out</a>
     </div>
     
-    <div class="add_class" style="display:none;">
-      <p>Class:</p>
-      <select id="ACclass" class="allClassesList">
+    <div class="add_class content-box" style="display:none;">
+      <h2>Search for a Class to Add:</h2>
+      <input type="text" id="classPageFilter" value="" size="50"/>
+      <a id="classsearch">Search!</a>
+      <br>
+      <select id="ACclass">
       </select>
       <br>
-      <input type="text" id="classPageFilter" value = "" />
-      <br>
-      <a id="add_class">Add Class!</a>
-      <p id="class_feedback_message"><p>
+      <a id="add_class" class="button">Add Class!</a>
+      <p id="class_feedback_message"></p>
     </div>
     
   </div>

@@ -334,7 +334,8 @@ app.get('/classes/:id', function(req, res) {
       ownerName : rec.ownerName,
       ownerID: rec.ownerID,
   	  studentNames : rec.studentNames,
-  	  studentIDs: rec.studentIDs
+  	  studentIDs: rec.studentIDs,
+  	  _id: rec._id
     });
   });
 });
@@ -441,7 +442,6 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
 
   var theObjectID = mongoose.Types.ObjectId(req.body._id);
 
-
   Class.findOne({_id : theObjectID}, function(err, theClass) {
     if(err) {
       throw err;
@@ -464,6 +464,57 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
       if (newStudentIDs.indexOf(theUser._id) === -1) {
         newStudentIDs.push(theUser._id);
         newStudentNames.push(theUser.fullName);
+      }
+      
+      User.update({facebookID : req.user.facebookID}, { $set: {classIDs : newClassIDs, classNames : newClassNames, classNums : newClassNums}}, function(err) {
+        if (err) {
+          throw err;
+        }
+        Class.update({_id : theClass._id}, { $set: {studentIDs : newStudentIDs, studentNames : newStudentNames}}, function(err) {
+          if (err) {
+            throw err;
+          }
+          
+          res.send({success:true});
+        });
+      });
+    });
+  });
+});
+
+app.put("/leave_class", ensureAuthenticated, function(req, res) {
+  var newClassIDs;
+  var newClassNames;
+  var newClassNums;
+  var newStudentIDs;
+  var newStudentNames;
+
+  var theObjectID = mongoose.Types.ObjectId(req.body._id);
+
+  Class.findOne({_id : theObjectID}, function(err, theClass) {
+    if(err) {
+      throw err;
+    }
+    User.findOne({facebookID : req.user.facebookID}, function(err, theUser) {
+      newClassIDs = theUser.classIDs;
+      newClassNames = theUser.classNames;
+      newClassNums = theUser.classNums;
+      var index = newClassIDs.indexOf(theClass._id);
+      if (!(index === -1)) {
+        newClassIDs.splice(index, 1);
+        newClassNames.splice(index, 1);
+        newClassNums.splice(index, 1);
+      } else {
+        res.send({success: false, alreadyInClass : true});
+        return;
+      }
+      
+      newStudentIDs = theClass.studentIDs;
+      newStudentNames = theClass.studentNames;
+      index = newStudentIDs.indexOf(theUser._id);
+      if (!(index === -1)) {
+        newStudentIDs.splice(index, 1);
+        newStudentNames.splice(index, 1);
       }
       
       User.update({facebookID : req.user.facebookID}, { $set: {classIDs : newClassIDs, classNames : newClassNames, classNums : newClassNums}}, function(err) {
