@@ -695,7 +695,7 @@ function updateCurrentPosition(withMap) {
 function updateMap(loc) {
     mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
     mapString = mapString + currentLat + "," + currentLong;
-    mapString += "&maptype=hybrid&zoom=16&size=400x400&sensor=true";
+    mapString += "&maptype=hybrid&zoom=16&size=200x200&sensor=true";
     mapString += "&markers=size:large|color:green|" + currentLat + "," + currentLong;
     if(loc !== null) {
         mapString += "&markers=size:mid|color:red|" + loc.lat + "," + loc.long;
@@ -751,7 +751,7 @@ function dateToString(date) {
     return (date.getFullYear() + '-' + monthStr + '-' + dayStr);
 }
 function updateClassDom() {
-    addClassesOptions();
+    $("#ACclass").html("");
     $("#class_feedback_message").text("");
     $("#classPageFilter").val("");
 }
@@ -994,9 +994,11 @@ function setupSearchOnLoad() {
         var regex = new RegExp(search, "gi");
         $("#ACclass").html("");
         classes.forEach(function (opt) {
-            var clsString = "" + opt.deptNum + "-" + opt.classNum + " : " + opt.name;
-            if(clsString.match(regex) !== null) {
-                $("#ACclass").append($('<option>').text(clsString).val(opt._id));
+            if(opt.name != "Other") {
+                var clsString = "" + opt.deptNum + "-" + opt.classNum + " : " + opt.name;
+                if(clsString.match(regex) !== null) {
+                    $("#ACclass").append($('<option>').text(clsString).val(opt._id));
+                }
             }
         });
     });
