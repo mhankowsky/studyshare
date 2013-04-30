@@ -389,6 +389,10 @@ function addAddClick(addEvent, _id) {
             success: function (response) {
                 updateProfileInformation();
                 updateYourClasses();
+                var attendee = $("<li>");
+                var attendeeText = $("<a>").addClass("name").addClass("studentButton").attr("id", mongoID).attr("href", "#").text(fullName);
+                attendee.append(attendeeText);
+                addEvent.parent().children("#studentsList").children("ul").eq(0).append(attendee);
                 var addOrRemove = addEvent.parent().find(".addOrRemove");
                 addOrRemove.unbind('click');
                 addOrRemove.attr("id", "remove").text("Remove Class");
@@ -408,6 +412,7 @@ function addRemoveClick(removeEvent, _id) {
             success: function (response) {
                 updateProfileInformation();
                 updateYourClasses();
+                removeEvent.parent().children("#studentsList").children("ul").find("#" + mongoID).parent().remove();
                 var addOrRemove = removeEvent.parent().find(".addOrRemove");
                 addOrRemove.unbind('click');
                 addOrRemove.attr("id", "add").text("Add Class");
