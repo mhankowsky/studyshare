@@ -16,11 +16,30 @@ Tyler Healy - thealy
 3. CSS - Our project contains a wide array of CSS techniques including:
 	- CSS Reset (reset.css)
 	- Fixed header (style.css:83-98)
+	- Shadows (style.css:95-97)
+	- Rounded Corners (style.css:149-163)
 	
-4. DOMManipulation
-5. JQuery
-6. Hammer.js
-7. AJAX Client
-8. AJAX Server
-9. node.js
-10. Server-side databases
+4. DOMManipulation - Our application uses only one page. That is, there is only one static html file the gets served and our entire application runs from this file. This requires an incredible amount of DOM Manipulation. To implement this, we developed a state machine, which keeps track of the current state the application is in. When a user switches pages (for example, goes to the newsfeed from their profile page), the state is switched. This triggers different functions that manipulate the HTML of the page to display the necessary information. This can be seen in studyshare.ts.
+	
+5. JQuery - As mentioned above, our application involves a lot of DOM manipulation. In order to update the HTML of our application, we use JQuery to 
+both pluck the necessary elements from the HTML as well as dynamically add new ones. This can be seen throughout studyshare.ts.
+
+6. Hammer.js - One interesting feature of our application is a side menu allowing users to filter the events in their newsfeed and navigate to their profile page. This menu can be opened by tapping on one of the header tabs. It also can be opened by simply swiping right on the screen (and closed by swiping left). This feature is implemented using Hammer.js and can be seen in studyshare.ts:1077-1086.
+
+7. AJAX Client - Our application relies heavily on client-server communication as all the information for our application is stored on a server-side database. The client side of the application makes multiple get (studyshare.ts:1020-1047), put (studyshare.ts:558-576), and post (studyshare.ts:1000-1016) requests.
+
+8. AJAX Server - As mentioed earlier, our application relies heavily on client-server communication. Our app.ts file, which contains our server-side code, is over 600 lines long. In addition to serving static files and handling requests, our server also handles communication with facebook using passport (app.ts:133-184, 229-299).
+
+9. node.js - Our application uses the following node modules:
+	- passport
+	- express
+	- mongodb
+	- mongoose
+	- request
+
+10. Server-side databases - Our application uses mongodb (mongoose is used for server-database communication). Our application maintains four databases:
+	- classes
+	- users
+	- events
+	- buildings
+The schema's for these databases can be seen in app.ts:61-109.
