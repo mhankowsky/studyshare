@@ -488,6 +488,7 @@ function addLeaveClick(leaveEvent, _id) {
 function updateNewsFeedDom() {
     var query = {
     };
+    $(".news_feed").html("loading...");
     updateNewsFeedWithQuery(query);
 }
 function addEventToDom(theEvent) {
@@ -575,7 +576,6 @@ function addEventToDom(theEvent) {
     $(".news_feed").append(containerDiv);
 }
 function updateNewsFeedWithQuery(query) {
-    $(".news_feed").html("loading...");
     var popular = [];
     var hasStartedAndTimeRemaining = [];
     var hasStartedEndingSoon = [];
@@ -965,6 +965,7 @@ function setupMenuOnLoad() {
         if($("#durationFilter").hasClass("filterEnabled")) {
             query.duration = $("#durationFilterOptions").val();
         }
+        $("#menu").css("display", "none");
         updateNewsFeedWithQuery(query);
     });
     populateDurationTimes();
