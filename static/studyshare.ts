@@ -1,6 +1,7 @@
 /// <reference path="./jquery.d.ts" />
 
 declare var Hammer;
+declare var iScroll;
 
 var fullName : string;
 var facebookID : string;
@@ -879,30 +880,6 @@ function updateClassDom() {
   $("#ACclass").html("");
   $("#class_feedback_message").text("");
   $("#classPageFilter").val("");
-  
-  /*$("#ACclass").each(function() {
-    var select = this;
-    var options = [];
-    $(select).find('option').each(function() {
-      options.push({value: $(this).val(), text: $(this).text()});
-      return null;
-    });
-    $(select).data('options', options);
-
-    $("#classPageFilter").bind('change keyup', function() {
-      var options = $(select).empty().data('options');
-      var search = $.trim($(this).val());
-      var regex = new RegExp(search,"gi");
-
-      $.each(options, function(i) {
-        var option = options[i];
-        if(option.text.match(regex) !== null) {
-          $(select).append($('<option>').text(option.text).val(option.value));
-        }
-      });
-    });
-    return null;
-  });*/
 }
 
 function initializeInformationOnLoad() {
@@ -1177,6 +1154,47 @@ function setupSearchOnLoad() {
   	    }
   	  }
   	});
+  });
+}
+
+//code adapted from http://mobile.tutsplus.com/tutorials/iphone/building-an-iscroll-kitchen-sink/
+var pullDownEl,
+pullDownOffset,
+generatedCount = 0;
+var theScroll;
+function scroll() {
+  function pullDownAction () {
+      var el, li, i;
+      el = document.getElementById('refreshList');
+      updateNewsFeedWithQuery({});
+      theScroll.refresh();
+  }
+  pullDownEl = document.getElementById('pullDown');
+  pullDownOffset = pullDownEl.offsetHeight;
+  theScroll = new iScroll('wrapper', {
+      useTransition: true,
+      topOffset: pullDownOffset,
+      onRefresh: function ()
+      {
+          if (pullDownEl.className.match('loading')) {
+              pullDownEl.className = '';
+              pullDownEl.querySelector('.pullDownLabel').innerHTML = 'Pull down to refresh...';
+              }
+      },
+      onScrollMove: function () {
+          if (this.y > 5 && !pullDownEl.className.match('flip')) {
+              pullDownEl.className = 'flip';
+              pullDownEl.querySelector('.pullDownLabel').innerHTML = 'Release to refresh...';
+              this.minScrollY = 0;
+              }
+      },
+      onScrollEnd: function () {
+          if (pullDownEl.className.match('flip')) {
+              pullDownEl.className = 'loading';
+              pullDownEl.querySelector('.pullDownLabel').innerHTML = 'Loading...';
+              pullDownAction();
+          }
+      }
   });
 }
 
