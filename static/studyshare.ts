@@ -869,7 +869,7 @@ function dateToString(date : Date) : string {
 }
 
 function updateClassDom() {
-  addClassesOptions();
+  $("#ACclass").html("");
   $("#class_feedback_message").text("");
   $("#classPageFilter").val("");
   
@@ -1163,9 +1163,11 @@ function setupSearchOnLoad() {
   	$("#ACclass").html("");
   	 
   	classes.forEach(function(opt) {
-  	  var clsString = "" + opt.deptNum + "-" + opt.classNum + " : " + opt.name;
-  	  if(clsString.match(regex) !== null) {
-  	    $("#ACclass").append($('<option>').text(clsString).val(opt._id));
+  	  if (opt.name != "Other") {
+  	    var clsString = "" + opt.deptNum + "-" + opt.classNum + " : " + opt.name;
+  	    if(clsString.match(regex) !== null) {
+  	      $("#ACclass").append($('<option>').text(clsString).val(opt._id));
+  	    }
   	  }
   	});
   });

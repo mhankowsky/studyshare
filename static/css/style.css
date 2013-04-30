@@ -286,6 +286,11 @@ a:active {
   display:inline;
   color: white;
 }
+
+#menu select {
+  width: 90%;
+}
+
 /*****************
  * Final Text Modifiers
  * ***************/
@@ -301,13 +306,13 @@ a:active {
  * ************************/
 
 .event_creation {
-  margin-left: 15%;
+  margin-left: 2%;
   width:100%;
 }
 
 .event_creation select {
-  width:60%;
-  height:60px;
+  width:90%;
+  height:40px;
   padding: 10px;
   font-size: 17;
   margin: 10px 0 10px 20px;
@@ -316,8 +321,8 @@ a:active {
 }
 
 .event_creation input {
-  width:60%;
-  height:60px;
+  width:90%;
+  height:40px;
   padding: 10px;
   font-size: 20;
   margin: 10px 0 10px 20px;
@@ -325,19 +330,35 @@ a:active {
 
 }
 .event_creation p {
-
   font-size: 20px;
 }
 
 .event_creation a {
   background-color: #ddd;
-  width:100px;
-  height:50px;
+  width:150px;
+  height:28px;
   display: block;
   border: 1px solid #999;
-  font-size: 25px;
+  font-size: 22px;
   padding: 5px;
-  margin: 10px;
+  margin: 10px 0px 10px 20px;
+  text-align: center;
+}
+
+.event_creation #map {
+  display: block;
+  margin: 0px 0px 0px 20px;
+  
+  width: 90%;
+  height: width;
+}
+
+.event_creation #zoom-in {
+  display: inline-block;
+}
+
+.event_creation #zoom-out {
+  display: inline-block;
 }
 
 
@@ -451,5 +472,9 @@ margin-bottom:10px;
 
 .filterEnabled {
   background-color: #716f6f;
+}
+
+.add_class select {
+  width: 95%;
 }
 
