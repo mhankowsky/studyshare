@@ -146,7 +146,7 @@ a:active {
 .content-box {
   width: 100%;
   margin: 15px 0 15px 5%;
-  padding: 5px 0 10px 2%;
+  padding: 10px 0 10px 2%;
 
   background-color: #ffffff;
   border: 2px solid #999999;
@@ -302,6 +302,7 @@ a:active {
 
 .event_creation {
   margin-left: 15%;
+  width:100%;
 }
 
 .event_creation select {
@@ -338,6 +339,7 @@ a:active {
   padding: 5px;
   margin: 10px;
 }
+
 
 /***************************
 * Class Page
@@ -383,6 +385,24 @@ a:active {
   margin-left:60%;
   width:90px;
  }
+
+
+/*********************
+ * Add classes page
+ *********************/
+.add_class p{
+  font-size:25px;
+}
+
+.allClassesList{
+  width:60%;
+  background-color:#FFF:
+}
+
+#add_class{
+  width:75px;
+  margin-top:10px;
+}
 
 /***************************
  * Random Styles
@@ -432,3 +452,4 @@ margin-bottom:10px;
 .filterEnabled {
   background-color: #716f6f;
 }
+

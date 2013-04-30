@@ -755,7 +755,7 @@ function updateCurrentPosition(withMap) {
 function updateMap(loc : aLocation) {
   mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
   mapString = mapString + currentLat + "," + currentLong;
-  mapString += "&maptype=hybrid&zoom=16&size=400x400&sensor=true";
+  mapString += "&maptype=hybrid&zoom=16&size=200x200&sensor=true";
   mapString += "&markers=size:large|color:green|" + currentLat + "," + currentLong;
   if(loc !== null) {
     mapString += "&markers=size:mid|color:red|" + loc.lat + "," + loc.long;
