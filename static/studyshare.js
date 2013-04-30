@@ -238,6 +238,7 @@ function updateProfileDom() {
                         curClassDisplay.ownerID = response.ownerID;
                         curClassDisplay.studentNames = response.studentNames;
                         curClassDisplay.studentIDs = response.studentIDs;
+                        curClassDisplay._id = response._id;
                         State.switchState(classPageState);
                     }
                 });
@@ -314,6 +315,7 @@ function updateUserPageDom() {
                         curClassDisplay.ownerID = response.ownerID;
                         curClassDisplay.studentNames = response.studentNames;
                         curClassDisplay.studentIDs = response.studentIDs;
+                        curClassDisplay._id = response._id;
                         State.switchState(classPageState);
                     }
                 });
@@ -327,6 +329,15 @@ function updateClassPageDom() {
     var nameTitle = $("<h1>").text(curClassDisplay.name);
     nameDiv.append(nameTitle);
     $(".class_page").append(nameDiv);
+    var addOrRemove = $("<div>").addClass("addOrRemove");
+    if(curClassDisplay.studentIDs.indexOf(mongoID) === -1) {
+        addOrRemove.attr("id", "addThisClass").text("Add Class");
+        addAddClick(addOrRemove, curClassDisplay._id);
+    } else {
+        addOrRemove.attr("id", "removeThisClass").text("Remove Class");
+        addRemoveClick(addOrRemove, curClassDisplay._id);
+    }
+    $(".class_page").append(addOrRemove);
     var studentsDiv = $("<div id='studentsList' >");
     studentsDiv.append("<h3 class='studentText'>Students</h3>");
     var i;
@@ -365,6 +376,44 @@ function setPicture(pictureElement, theEvent) {
             pictureElement.attr("src") , response.profilePicture;
             $(".profile_thumb." + theEvent.ownerID.toString()).attr("src", response.profilePicture);
         }
+    });
+}
+function addAddClick(addEvent, _id) {
+    addEvent.click(function () {
+        $.ajax({
+            type: "put",
+            url: "/add_class",
+            data: {
+                _id: _id
+            },
+            success: function (response) {
+                updateProfileInformation();
+                updateYourClasses();
+                var addOrRemove = addEvent.parent().find(".addOrRemove");
+                addOrRemove.unbind('click');
+                addOrRemove.attr("id", "remove").text("Remove Class");
+                addRemoveClick(addOrRemove, _id);
+            }
+        });
+    });
+}
+function addRemoveClick(removeEvent, _id) {
+    removeEvent.click(function () {
+        $.ajax({
+            type: "put",
+            url: "/leave_class",
+            data: {
+                _id: _id
+            },
+            success: function (response) {
+                updateProfileInformation();
+                updateYourClasses();
+                var addOrRemove = removeEvent.parent().find(".addOrRemove");
+                addOrRemove.unbind('click');
+                addOrRemove.attr("id", "add").text("Add Class");
+                addAddClick(addOrRemove, _id);
+            }
+        });
     });
 }
 function addJoinClick(joinEvent, _id) {
@@ -558,6 +607,7 @@ function updateNewsFeedWithQuery(query) {
                         curClassDisplay.ownerID = response.ownerID;
                         curClassDisplay.studentNames = response.studentNames;
                         curClassDisplay.studentIDs = response.studentIDs;
+                        curClassDisplay._id = response._id;
                         State.switchState(classPageState);
                     }
                 });
@@ -805,7 +855,7 @@ function setupAddEventButtonActionsOnLoad() {
 }
 function setupAddClassButtonFunctionalityOnLoad() {
     $("#add_class").click(function () {
-        if($("#ACClass").text() == "") {
+        if($("#ACClass").val() == "") {
             $("#class_feedback_message").text("Please add a valid class!").css("color", "red");
         } else {
             $.ajax({
@@ -820,7 +870,7 @@ function setupAddClassButtonFunctionalityOnLoad() {
                     if(response.alreadyInClass) {
                         $("#class_feedback_message").text("You have already joined that class!").css("color", "red");
                     } else {
-                        $("#class_feedback_message").text("Successfully joined " + $("#ACclass").val()).css("color", "green");
+                        $("#class_feedback_message").text("Successfully joined " + $("#ACclass option:selected").text()).css("color", "green");
                     }
                 }
             });
@@ -900,8 +950,9 @@ function setupSearchOnLoad() {
         var regex = new RegExp(search, "gi");
         $("#ACclass").html("");
         classes.forEach(function (opt) {
-            if(opt.name.match(regex) !== null) {
-                $("#ACclass").append($('<option>').text(opt.deptNum + "-" + opt.classNum + " : " + opt.name).val(opt._id));
+            var clsString = "" + opt.deptNum + "-" + opt.classNum + " : " + opt.name;
+            if(clsString.match(regex) !== null) {
+                $("#ACclass").append($('<option>').text(clsString).val(opt._id));
             }
         });
     });
