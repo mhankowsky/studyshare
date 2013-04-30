@@ -250,6 +250,8 @@ function updateUserPageDom() {
     $(".user_page").html("");
     var nameDiv = $("<div id='nameTitle'>");
     var nameTitle = $("<h>").text(curUserDisplay.fullName).addClass("profileName");
+    var userProfilePic = $("<img>").addClass("userPic").attr("src", curUserDisplay.profilePicture);
+    nameDiv.append(userProfilePic);
     nameDiv.append(nameTitle);
     $(".user_page").append(nameDiv);
     var classesDiv = $("<div id='classesList'>");
@@ -294,6 +296,7 @@ function updateUserPageDom() {
                         curUserDisplay = new SSUser();
                         curUserDisplay.fullName = response.fullName;
                         curUserDisplay.facebookID = response.facebookID;
+                        curUserDisplay.profilePicture = response.profilePicture;
                         curUserDisplay.classIDs = response.classIDs;
                         curUserDisplay.classNames = response.classNames;
                         State.switchState(userPageState);
@@ -361,6 +364,7 @@ function updateClassPageDom() {
                 curUserDisplay.facebookID = response.facebookID;
                 curUserDisplay.classIDs = response.classIDs;
                 curUserDisplay.classNames = response.classNames;
+                curUserDisplay.profilePicture = response.profilePicture;
                 State.switchState(userPageState);
             }
         });
@@ -450,6 +454,7 @@ function addJoinClick(joinEvent, _id) {
                                 curUserDisplay.facebookID = response.facebookID;
                                 curUserDisplay.classIDs = response.classIDs;
                                 curUserDisplay.classNames = response.classNames;
+                                curUserDisplay.profilePicture = response.profilePicture;
                                 State.switchState(userPageState);
                             }
                         });
@@ -639,6 +644,7 @@ function updateNewsFeedWithQuery(query) {
                         curUserDisplay.facebookID = response.facebookID;
                         curUserDisplay.classIDs = response.classIDs;
                         curUserDisplay.classNames = response.classNames;
+                        curUserDisplay.profilePicture = response.profilePicture;
                         State.switchState(userPageState);
                     }
                 });
