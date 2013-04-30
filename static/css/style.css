@@ -146,7 +146,7 @@ a:active {
 .content-box {
   width: 100%;
   margin: 15px 0 15px 5%;
-  padding: 10px 0 10px 2%;
+  padding: 5px 0 10px 2%;
 
   background-color: #ffffff;
   border: 2px solid #999999;
@@ -177,6 +177,8 @@ a:active {
   height: 25px;
   display:inline-block;
   margin-right:10px;
+  position:relative;
+  top:8px;
 }
 
 .name_class {
@@ -185,6 +187,7 @@ a:active {
 
 .class_display{
   font-size:12px;
+  margin-top:10px;
 }
 
 .building_display{
