@@ -712,19 +712,19 @@ function updateNewsFeedWithQuery(query) {
         }
       }
 
-      var popularDiv = $("<div>").text("Popular events with more than 5 people:");
+      var popularDiv = $("<div>").text("Popular events:");
       $(".news_feed").append(popularDiv);
       for(i = 0; i < popular.length; i++) {
         addEventToDom(popular[i]);
       }
 
-      var hasStartedAndTimeRemainingDiv = $("<div>").text("Current events with more than half an hour remaining:");
+      var hasStartedAndTimeRemainingDiv = $("<div>").text("Current events:");
       $(".news_feed").append(hasStartedAndTimeRemainingDiv);
       for(i = 0; i < hasStartedAndTimeRemaining.length; i++) {
         addEventToDom(hasStartedAndTimeRemaining[i]);
       }
 
-      var hasStartedEndingSoonDiv = $("<div>").text("Events endings soon:");
+      var hasStartedEndingSoonDiv = $("<div>").text("Ending soon:");
       $(".news_feed").append(hasStartedEndingSoonDiv);
       for(i = 0; i < hasStartedEndingSoon.length; i++) {
         addEventToDom(hasStartedEndingSoon[i]);

@@ -11,7 +11,7 @@ body {
 
 .main{
   display:inline-block;
-  width:85%;
+  width:100%;
   margin: 70px 0 0 0;
 }
 
@@ -147,7 +147,7 @@ a:active {
  * *************************/
 
 .content-box {
-  width: 100%;
+  width: 80%;
   margin: 15px 0 15px 5%;
   padding: 10px 0 10px 2%;
 
@@ -360,7 +360,7 @@ a:active {
 .event_creation #zoom-in {
   display: inline-block;
   font-size: 20;
-  width: 1000px;}
+  width: 100px;}
 
 .event_creation #zoom-out {
   display: inline-block;
