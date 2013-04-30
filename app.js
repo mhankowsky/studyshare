@@ -52,6 +52,9 @@ var UserSchema = new Schema({
     ],
     classIDs: [
         ObjectId
+    ],
+    activeEvents: [
+        ObjectId
     ]
 }, {
     strict: false
@@ -160,6 +163,7 @@ function startPassport() {
                 user.classIDs = [
                     otherClassID
                 ];
+                user.activeEvents = [];
                 user.save(function (err1) {
                     if(err1) {
                         throw err1;
@@ -312,37 +316,61 @@ app.get('/classes/:id', function (req, res) {
 function soHacky(duration) {
     return new Function("return ((new Date(this.endTime)).getTime() - (new Date(this.startTime)).getTime()) > (" + duration * 1000 * 60 + ");");
 }
-app.get('/events/:query', function (req, res) {
-    var query = {
+app.get('/events/:query', ensureAuthenticated, function (req, res) {
+    var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
+    var friends;
+    var classes = req.user.classIDs;
+    var events = {
     };
-    var JSONQuery = JSON.parse(req.params.query);
-    console.log("JSONQuery: " + JSON.stringify(JSONQuery));
-    if(JSONQuery.class != undefined) {
-        query.clsID = mongoose.Types.ObjectId(JSONQuery.class.toString());
-    }
-    if(JSONQuery.building != undefined) {
-        query.buildingID = mongoose.Types.ObjectId(JSONQuery.building.toString());
-    }
-    if(JSONQuery.duration != undefined) {
-        query["$where"] = soHacky(JSONQuery.duration);
-        var timeRemaining = new Date();
-        timeRemaining.setTime(timeRemaining.getTime() + JSONQuery.duration * 1000 * 60);
-        query.endTime = {
-            "$gt": timeRemaining
-        };
-    }
-    console.log("query: " + JSON.stringify(query));
-    var currDate = new Date();
-    AnEvent.remove({
-        endTime: {
-            $lt: currDate
+    request.get({
+        url: theUrl
+    }, function (e, r, response) {
+        response = JSON.parse(response);
+        if(e != null) {
+            r.send(response);
+        } else {
+            var idArray = response.data.map(function (val, i) {
+                return val.id;
+            });
+            User.find({
+            }, {
+                facebookAccessToken: 0
+            }).where("facebookID").in(idArray).exec(function (err, records) {
+                friends = records;
+                for(var i = 0; i < friends.length; i++) {
+                    for(var j = 0; j < friends[i].activeEvents; j++) {
+                        events[friends[i].activeEvents[j]] = friends[i].activeEvents[j];
+                        ;
+                    }
+                }
+                AnEvent.remove({
+                    endTime: {
+                        $lt: new Date()
+                    }
+                }, function (err) {
+                    if(err) {
+                        throw err;
+                    }
+                    AnEvent.find({
+                        clsID: {
+                            $in: classes
+                        }
+                    }, function (err, moreEvents) {
+                        if(err) {
+                            throw err;
+                        }
+                        for(var i = 0; i < moreEvents.length; i++) {
+                            events[moreEvents[i]] = moreEvents[i];
+                        }
+                        var eventsArray = [];
+                        for(var key in events) {
+                            eventsArray.push(events[key]);
+                        }
+                        res.send(eventsArray);
+                    });
+                });
+            });
         }
-    }, function (err) {
-        AnEvent.find(query).sort({
-            endTime: 1
-        }).exec(function (err, events) {
-            res.send(events);
-        });
     });
 });
 app.post("/submit_event", ensureAuthenticated, function (req, res) {
@@ -371,6 +399,17 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
             theEvent.long = req.body.long;
             theEvent.startTime = req.body.startTime;
             theEvent.endTime = req.body.endTime;
+            User.update({
+                _id: req.user._id
+            }, {
+                $addToSet: {
+                    activeEvents: theEvent._id
+                }
+            }, function (err) {
+                if(err) {
+                    throw err;
+                }
+            });
             theEvent.save(function (err) {
                 if(err) {
                     throw err;
@@ -470,6 +509,17 @@ app.post("/join_event", ensureAuthenticated, function (req, res) {
         } else {
             newAttendeeIDs.push(theObjectID);
             newAttendeeNames.push(req.user.fullName);
+            User.update({
+                _id: req.user._id
+            }, {
+                $addToSet: {
+                    activeEvents: theEvent._id
+                }
+            }, function (err) {
+                if(err) {
+                    throw err;
+                }
+            });
             AnEvent.update({
                 _id: req.body.event_id
             }, {
@@ -500,6 +550,17 @@ app.put("/leave_event", ensureAuthenticated, function (req, res) {
             newAttendeeIDs.splice(index, 1);
             newAttendeeNames.splice(index, 1);
         }
+        User.update({
+            _id: req.user._id
+        }, {
+            $pull: {
+                activeEvents: theEvent._id
+            }
+        }, function (err) {
+            if(err) {
+                throw err;
+            }
+        });
         if(newAttendeeIDs.length === 0) {
             AnEvent.remove({
                 _id: theEvent.id

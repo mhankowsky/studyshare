@@ -512,111 +512,164 @@ function updateNewsFeedDom() {
   updateNewsFeedWithQuery(query);
 }
 
+function addEventToDom(theEvent) {
+  var containerDiv = $("<div>").addClass("content-box");
+  var pictureImg = $("<img>").addClass("profile_thumb").addClass(theEvent.ownerID.toString());
+  setPicture(pictureImg, theEvent);
+  var eventDiv = $("<div>").addClass("name_class");
+  var nameAnchor = $("<a>").addClass("name").attr("id", theEvent.ownerID.toString()).attr("href", "#").text(theEvent.ownerName);
+  var classeventDiv = $("<div>").addClass("class_display ellipsis_text");
+  var textSpan = $("<span>").text("Class: ");
+  var classAnchor;
+  if(theEvent.clsName === "Other") {
+    classAnchor = $("<span>").attr("id", theEvent.clsID.toString()).text("Other");
+  } else {
+    classAnchor = $("<a>").addClass("ssclass").attr("id", theEvent.clsID.toString()).attr("href", "#").text(theEvent.clsName + " (" + theEvent.clsNum + ")");
+  }
+  classeventDiv.append(textSpan);
+  classeventDiv.append(classAnchor);
+  
+  var buildingeventDiv = $("<div>").addClass("building_display ellipsis_text");
+  var textSpan2 = $("<span>").text("At: ");
+  var buildingAnchor = $("<a>").attr("href", "#").text(theEvent.buildingName);
+
+  buildingeventDiv.append(textSpan2);
+  buildingeventDiv.append(buildingAnchor);
+  
+  var startTime = new Date(theEvent.startTime);
+  var now = new Date();
+
+  if (startTime.getTime() < now.getTime()) {
+    containerDiv.attr("id", "now");
+    var current_event = $("<span>").addClass("currMarker");
+    containerDiv.append(current_event);
+  }
+  var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime.toLocaleString());
+  
+  var endTime = new Date(theEvent.endTime);
+  var endTimeSpan = $("<span>").addClass("time").text("End : " + endTime.toLocaleString());
+
+  var timeRemainingSpan = $("<span>").addClass("time");
+  if(startTime.getTime() < now.getTime()) {
+    var rawTimeRemaining = endTime.getTime() - now.getTime();
+    var minutesRemaining = Math.round(rawTimeRemaining / MILLI_IN_MINUTE);
+    if(minutesRemaining >= 60) {
+      var hoursRemaining = Math.round(rawTimeRemaining / MILLI_IN_HOUR);
+      if(hoursRemaining === 1) {
+        timeRemainingSpan.text(hoursRemaining + " hour remaining");
+      } else {
+        timeRemainingSpan.text(hoursRemaining + " hours remaining");
+      }
+    } else {
+      if(minutesRemaining === 1) {
+        timeRemainingSpan.text(minutesRemaining + " minute remaining");
+      } else {
+        timeRemainingSpan.text(minutesRemaining + " minutes remaining");
+      }
+    }
+  }
+  
+  var infoP = $("<p>").addClass("info").text(theEvent.info);
+  
+  var joinOrLeave = $("<div>").addClass("joinOrLeave");
+  if (theEvent.attendeesIDs.indexOf(mongoID) === -1) {
+    joinOrLeave.attr("id", "join").text("Join Event");
+    addJoinClick(joinOrLeave, theEvent._id);
+  } else {
+    joinOrLeave.attr("id", "leave").text("Leave Event");
+    addLeaveClick(joinOrLeave, theEvent._id);
+  }
+
+  var textSpan3 = $("<span>").text("List of attendees: ");
+  var listAttendees = $("<ul>").addClass("event_attendees");
+
+  var errorMessage = $("<p>").addClass("error").text("").addClass("event_attendees");
+
+  var j;
+  for(j = 0; j < theEvent.attendeesNames.length; j++) {
+    var attendee = $("<li>");
+    var attendeeText = $("<a>").addClass("name").attr("id", theEvent.attendeesIDs[j]).attr("href", "#").text(theEvent.attendeesNames[j]);
+    attendee.append(attendeeText);
+    listAttendees.append(attendee);
+  }
+
+  containerDiv.append(eventDiv);
+  eventDiv.append(pictureImg);
+  eventDiv.append(nameAnchor);
+  eventDiv.append(classeventDiv);
+  eventDiv.append(buildingeventDiv);
+  eventDiv.append(startTimeSpan);
+  eventDiv.append(endTimeSpan);
+  eventDiv.append(timeRemainingSpan);
+  containerDiv.append(infoP);
+  containerDiv.append(textSpan3);
+  containerDiv.append(listAttendees);
+  containerDiv.append(joinOrLeave);
+  containerDiv.append(errorMessage);
+
+  $(".news_feed").append(containerDiv);
+}
+
 function updateNewsFeedWithQuery(query) {
   $(".news_feed").html("loading...");
-  var now = new Date();
+  var popular = [];
+  var hasStartedAndTimeRemaining = [];
+  var hasStartedEndingSoon = [];
+  var remaining = [];
+
+  var POPULAR = 5;  //number of attendees needed at an event to be deemed "popular"
 
   $.ajax({
     type: "get",
     url: "/events/" + JSON.stringify(query),
     success: function(response) {
       var i;
+      var now = new Date().getTime();
       $(".news_feed").html("");
-      for(i = 0; i < response.length; i++) {
-        var containerDiv = $("<div>").addClass("content-box");
-        var pictureImg = $("<img>").addClass("profile_thumb").addClass(response[i].ownerID.toString());
-        setPicture(pictureImg, response[i]);
-        var eventDiv = $("<div>").addClass("name_class");
-        var nameAnchor = $("<a>").addClass("name").attr("id", response[i].ownerID.toString()).attr("href", "#").text(response[i].ownerName);
-        var classeventDiv = $("<div>").addClass("class_display ellipsis_text");
-        var textSpan = $("<span>").text("Class: ");
-        var classAnchor;
-        if(response[i].clsName === "Other") {
-          classAnchor = $("<span>").attr("id", response[i].clsID.toString()).text("Other");
+      response.sort(function(event1, event2) {
+        return new Date(event1.endTime).getTime() - new Date(event2.endTime).getTime();
+      });
+
+      for(i = response.length - 1; i >= 0; i--) {
+        var start = new Date(response[i].startTime).getTime();
+        var end = new Date(response[i].endTime).getTime();
+        if(response[i].attendeesIDs.length >= POPULAR) {
+          popular.unshift(response[i]);
+          response.splice(i, 1);
+        } else if(start < now && now + MILLI_IN_MINUTE * 30 < end) {
+          hasStartedAndTimeRemaining.unshift(response[i]);
+          response.splice(i, 1);
+        } else if(start < now) {
+          hasStartedEndingSoon.unshift(response[i]);
+          response.splice(i, 1);
         } else {
-          classAnchor = $("<a>").addClass("ssclass").attr("id", response[i].clsID.toString()).attr("href", "#").text(response[i].clsName + " (" + response[i].clsNum + ")");
+          remaining.unshift(response[i]);
+          response.splice(i, 1);
         }
-        classeventDiv.append(textSpan);
-        classeventDiv.append(classAnchor);
-        
-        var buildingeventDiv = $("<div>").addClass("building_display ellipsis_text");
-        var textSpan2 = $("<span>").text("At: ");
-        var buildingAnchor = $("<a>").attr("href", "#").text(response[i].buildingName);
+      }
 
-        buildingeventDiv.append(textSpan2);
-        buildingeventDiv.append(buildingAnchor);
-        
-        var startTime = new Date(response[i].startTime);
+      var popularDiv = $("<div>").text("Popular events with more than 5 people:");
+      $(".news_feed").append(popularDiv);
+      for(i = 0; i < popular.length; i++) {
+        addEventToDom(popular[i]);
+      }
 
-        if (startTime.getTime() < now.getTime()) {
-          containerDiv.attr("id", "now");
-          var current_event = $("<span>").addClass("currMarker");
-          containerDiv.append(current_event);
-        }
-        var startTimeSpan = $("<span>").addClass("time").text("Start: " + startTime.toLocaleString());
-        
-        var endTime = new Date(response[i].endTime);
-        var endTimeSpan = $("<span>").addClass("time").text("End : " + endTime.toLocaleString());
+      var hasStartedAndTimeRemainingDiv = $("<div>").text("Current events with more than half an hour remaining:");
+      $(".news_feed").append(hasStartedAndTimeRemainingDiv);
+      for(i = 0; i < hasStartedAndTimeRemaining.length; i++) {
+        addEventToDom(hasStartedAndTimeRemaining[i]);
+      }
 
-        var timeRemainingSpan = $("<span>").addClass("time");
-        if(startTime.getTime() < now.getTime()) {
-          var rawTimeRemaining = endTime.getTime() - now.getTime();
-          var minutesRemaining = Math.round(rawTimeRemaining / MILLI_IN_MINUTE);
-          if(minutesRemaining >= 60) {
-            var hoursRemaining = Math.round(rawTimeRemaining / MILLI_IN_HOUR);
-            if(hoursRemaining === 1) {
-              timeRemainingSpan.text(hoursRemaining + " hour remaining");
-            } else {
-              timeRemainingSpan.text(hoursRemaining + " hours remaining");
-            }
-          } else {
-            if(minutesRemaining === 1) {
-              timeRemainingSpan.text(minutesRemaining + " minute remaining");
-            } else {
-              timeRemainingSpan.text(minutesRemaining + " minutes remaining");
-            }
-          }
-        }
-        
-        var infoP = $("<p>").addClass("info").text(response[i].info);
-        
-        var joinOrLeave = $("<div>").addClass("joinOrLeave");
-        if (response[i].attendeesIDs.indexOf(mongoID) === -1) {
-          joinOrLeave.attr("id", "join").text("Join Event");
-          addJoinClick(joinOrLeave, response[i]._id);
-        } else {
-          joinOrLeave.attr("id", "leave").text("Leave Event");
-          addLeaveClick(joinOrLeave, response[i]._id);
-        }
+      var hasStartedEndingSoonDiv = $("<div>").text("Events endings soon:");
+      $(".news_feed").append(hasStartedEndingSoonDiv);
+      for(i = 0; i < hasStartedEndingSoon.length; i++) {
+        addEventToDom(hasStartedEndingSoon[i]);
+      }
 
-        var textSpan3 = $("<span>").text("List of attendees: ");
-        var listAttendees = $("<ul>").addClass("event_attendees");
-
-        var errorMessage = $("<p>").addClass("error").text("").addClass("event_attendees");
-
-        var j;
-        for(j = 0; j < response[i].attendeesNames.length; j++) {
-          var attendee = $("<li>");
-          var attendeeText = $("<a>").addClass("name").attr("id", response[i].attendeesIDs[j]).attr("href", "#").text(response[i].attendeesNames[j]);
-          attendee.append(attendeeText);
-          listAttendees.append(attendee);
-        }
-
-        containerDiv.append(eventDiv);
-        eventDiv.append(pictureImg);
-        eventDiv.append(nameAnchor);
-        eventDiv.append(classeventDiv);
-        eventDiv.append(buildingeventDiv);
-        eventDiv.append(startTimeSpan);
-        eventDiv.append(endTimeSpan);
-        eventDiv.append(timeRemainingSpan);
-        containerDiv.append(infoP);
-        containerDiv.append(textSpan3);
-        containerDiv.append(listAttendees);
-        containerDiv.append(joinOrLeave);
-        containerDiv.append(errorMessage);
-
-        $(".news_feed").append(containerDiv);
+      var remainingDiv = $("<div>").text("Future events:");
+      $(".news_feed").append(remainingDiv);
+      for(i = 0; i < remaining.length; i++) {
+        addEventToDom(remaining[i]);
       }
       
       $(".name").click(function() {
