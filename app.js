@@ -323,6 +323,26 @@ app.get('/events/:query', ensureAuthenticated, function (req, res) {
     var classes = req.user.classIDs;
     var events = {
     };
+    var query = {
+    };
+    var JSONQuery = JSON.parse(req.params.query);
+    if(JSONQuery.class != undefined) {
+        query.clsID = mongoose.Types.ObjectId(JSONQuery.class.toString());
+    }
+    if(JSONQuery.building != undefined) {
+        query.buildingID = mongoose.Types.ObjectId(JSONQuery.building.toString());
+    }
+    query.clsID = {
+        $in: classes
+    };
+    if(JSONQuery.duration != undefined) {
+        query["$where"] = soHacky(JSONQuery.duration);
+        var timeRemaining = new Date();
+        timeRemaining.setTime(timeRemaining.getTime() + JSONQuery.duration * 1000 * 60);
+        query.endTime = {
+            "$gt": timeRemaining
+        };
+    }
     request.get({
         url: theUrl
     }, function (e, r, response) {
@@ -352,11 +372,7 @@ app.get('/events/:query', ensureAuthenticated, function (req, res) {
                     if(err) {
                         throw err;
                     }
-                    AnEvent.find({
-                        clsID: {
-                            $in: classes
-                        }
-                    }, function (err, moreEvents) {
+                    AnEvent.find(query, function (err, moreEvents) {
                         if(err) {
                             throw err;
                         }
@@ -660,5 +676,8 @@ app.put("/leave_event", ensureAuthenticated, function (req, res) {
 });
 app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {
     response.sendfile("static/" + request.params.staticFilename);
+});
+app.get("/", ensureAuthenticated, function (request, response) {
+    response.sendfile("static/index.html");
 });
 app.listen(8889);
