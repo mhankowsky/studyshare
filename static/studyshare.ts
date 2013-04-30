@@ -1164,8 +1164,6 @@ generatedCount = 0;
 var theScroll;
 function scroll() {
   function pullDownAction () {
-      var el, li, i;
-      el = document.getElementById('refreshList');
       updateNewsFeedWithQuery({});
       theScroll.refresh();
   }
@@ -1209,3 +1207,4 @@ $(function() {
   setupMapZoom();
   setupMenuOnLoad();
 });
+document.addEventListener('DOMContentLoaded', scroll, false);
