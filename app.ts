@@ -40,13 +40,6 @@ fs.readFile("facebook_properties.txt", function(err, data) {
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 
-
-//TODO switch to using mongoose
-// imports the database module
-var mongo = require('mongodb');
-var host = 'localhost';
-var port = mongo.Connection.DEFAULT_PORT;
-
 // allows database writes
 var optionsWithEnableWriteAccess = { w: 1 };
 var dbName = 'studyshareDb';
@@ -96,7 +89,7 @@ var EventSchema = new Schema({
   clsNum : Number,
   clsID: ObjectId,
   buildingName: String,
-  buildingID: ObjectId, //TODO change to location (drill down)
+  buildingID: ObjectId,
   lat: Number,
   long: Number,
   startTime: {type: Date, default: Date.now},
@@ -155,7 +148,7 @@ function startPassport() {
     function(req, accessToken, refreshToken, profile, done) {
       User.findOne({facebookID : profile.id}, function(err, user) {
         if(err) {
-          //TODO do something useful here...
+          throw err;
         }
         if(user === null) {
           var user = new User();
@@ -190,7 +183,7 @@ app.get('/account', ensureAuthenticated, function(req, res){
 app.get('/user/:id', ensureAuthenticated, function(req, res) {
   User.findOne({ _id: req.params.id}, function(err, rec) {
     if (err) {
-     //TODO do something useful here...
+     throw err;
     }
     
     res.send({
@@ -231,7 +224,7 @@ app.get('/facebook_friends/:id', ensureAuthenticated, function(req, res) {
   
   User.findOne({facebookID: req.params.id}, function(err, rec) {
     if (err) {
-      //TODO do something useful here
+      throw err;
     }
     
     fbAccessToken = rec.facebookAccessToken;
@@ -323,7 +316,7 @@ app.get('/classes', function(req, res) {
 app.get('/classes/:id', function(req, res) {
   Class.findOne({ _id: req.params.id}, function(err, rec) {
     if (err) {
-     //TODO do something useful here...
+     throw err;
     }
     
     res.send({
@@ -417,7 +410,6 @@ app.get('/events/:query', ensureAuthenticated, function(req, res) {
 });
 
 app.post("/submit_event", ensureAuthenticated, function(req, res) {
-  //TODO error checking
   var theEvent = new AnEvent();
   Building.findOne({name : req.body.building}, function(err, theBuilding) {
     theEvent.buildingName = theBuilding.name;

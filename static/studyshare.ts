@@ -121,8 +121,6 @@ function precise_round(num,decimals) {
   return Math.round(num*Math.pow(10,decimals))/Math.pow(10,decimals);
 }
 
-
-//TODO fix with function below but AHH DEADLINE SHITTY CODE
 function updateBuildings() {
   $.ajax({
     type: "get",
