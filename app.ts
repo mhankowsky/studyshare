@@ -14,42 +14,24 @@ var request = require("request");
 // imports the fs module (reading and writing to a text file)
 var fs = require("fs");
 
+/*******************************************************************************************/
+//Global variables
 var FACEBOOK_APP_ID : String;
 var FACEBOOK_APP_SECRET : String;
 
 var otherClassID;
 
-fs.readFile("facebook_properties.txt", function(err, data) {
-  if (err) {
-    console.log("Error reading facebook_properties.txt")
-    FACEBOOK_APP_ID = "585448871465575";
-    FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
-  } else {
-    var JSONdata = JSON.parse(data);
-    FACEBOOK_APP_ID = JSONdata.FACEBOOK_APP_ID;
-    FACEBOOK_APP_SECRET = JSONdata.FACEBOOK_APP_SECRET;
-  }
-  Class.findOne({"name" : "Other"}, function(err, theClass) {
-    otherClassID = theClass._id;
-    startPassport();
-  });
-
-  
-});
-
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
 
-// allows database writes
-var optionsWithEnableWriteAccess = { w: 1 };
-var dbName = 'studyshareDb';
-
-var mongoose = require('mongoose/'),
-    db = mongoose.connect('mongodb://localhost/studyshareDb');
-    //userCollection = mongoose.noSchema('users',db); // collection name
+var mongoose = require('mongoose/');
+var db = mongoose.connect('mongodb://localhost/studyshareDb');
 
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
+
+/*******************************************************************************************/
+//Mongoose Schemas
 
 var UserSchema = new Schema({
   facebookID: String,
@@ -101,6 +83,7 @@ var EventSchema = new Schema({
   attendeesIDs: [ObjectId]
 });
 
+//Mongoose collections
 var User = mongoose.model('User', UserSchema, 'users');
 var Building = mongoose.model('Building', BuildingSchema, 'buildings');
 var AnEvent = mongoose.model('Event', EventSchema, 'events');
@@ -116,13 +99,9 @@ app.use(passport.session());
 app.use(app.router);
 app.use(express.static(__dirname));
 
-// Passport session setup.
-//   To support persistent login sessions, Passport needs to be able to
-//   serialize users into and deserialize users out of the session.  Typically,
-//   this will be as simple as storing the user ID when serializing, and finding
-//   the user by ID when deserializing.  However, since this example does not
-//   have a database of user records, the complete Facebook profile is serialized
-//   and deserialized.
+/*******************************************************************************************/
+//Passport setup
+
 passport.serializeUser(function(user, done) {
   done(null, user);
 });
@@ -133,10 +112,8 @@ passport.deserializeUser(function(user, done) {
   });
 });
 
-// Use the FacebookStrategy within Passport.
-//   Strategies in Passport require a `verify` function, which accept
-//   credentials (in this case, an accessToken, refreshToken, and Facebook
-//   profile), and invoke a callback with a user object.
+// Facebook strategy setup, wrapped in a function so that we do not start
+//    before we read facebook app ID / secret from file.
 function startPassport() {
   passport.use(new FacebookStrategy({
       clientID: FACEBOOK_APP_ID,
@@ -151,12 +128,14 @@ function startPassport() {
           throw err;
         }
         if(user === null) {
+          //User not found.  Register a new user with default values
           var user = new User();
           user.facebookID = profile.id;
           user.fullName = profile.displayName;
           user.name = profile.name;
           user.profilePicture = profile.photos[0].value;
           user.facebookAccessToken = accessToken;
+          //Every user starts with "other" class
           user.classNames = ["Other"];
           user.classNums = ["00000"];
           user.classIDs = [otherClassID];
@@ -168,6 +147,7 @@ function startPassport() {
             done(null, user);
           });
         } else {
+          //reset access token in case it changed
           user.facebookAccessToken = accessToken;
           done(null, user);
         }
@@ -176,10 +156,15 @@ function startPassport() {
   ));
 }
 
+/*******************************************************************************************/
+//RESTful stuff
+
+//send user own account info
 app.get('/account', ensureAuthenticated, function(req, res){
   res.send({user : req.user});
 });
 
+//If a user requests someone else's account info, send non-private information (DON'T SEND FACEBOOK TOKEN)
 app.get('/user/:id', ensureAuthenticated, function(req, res) {
   User.findOne({ _id: req.params.id}, function(err, rec) {
     if (err) {
@@ -197,27 +182,7 @@ app.get('/user/:id', ensureAuthenticated, function(req, res) {
   });
 });
 
-app.get('/facebook_friends', ensureAuthenticated, function(req, res) {
-  var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-  request.get(
-    {url: theUrl},
-    function(e, r, response) {
-      response = JSON.parse(response);
-      if(e != null) {
-        console.log("error :(?");
-        r.send(response);
-      } else {
-        var idArray = response.data.map(function(val, i) {
-          return val.id;
-        });
-
-        User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
-          res.send(records);
-        });
-      }
-    }
-  );
-});
+//Returns all facebook friends of calling user
 
 app.get('/facebook_friends/:id', ensureAuthenticated, function(req, res) {
   var fbAccessToken;
@@ -629,3 +594,24 @@ app.get("/", ensureAuthenticated, function (request, response) {
 
 // Finally, activate the server at port 8889
 app.listen(8889);
+
+//Read properties file containing app secret / ID.  Then start passport.
+fs.readFile("facebook_properties.txt", function(err, data) {
+  //use default values if file doesn't exist
+  if (err) {
+    console.log("Error reading facebook_properties.txt")
+    FACEBOOK_APP_ID = "585448871465575";
+    FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
+  } else {
+    var JSONdata = JSON.parse(data);
+    FACEBOOK_APP_ID = JSONdata.FACEBOOK_APP_ID;
+    FACEBOOK_APP_SECRET = JSONdata.FACEBOOK_APP_SECRET;
+  }
+  Class.findOne({"name" : "Other"}, function(err, theClass) {
+    if(err) {
+      throw err;
+    }
+    otherClassID = theClass._id;
+    startPassport();
+  });  
+});

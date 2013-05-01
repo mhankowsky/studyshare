@@ -5,33 +5,10 @@ var fs = require("fs");
 var FACEBOOK_APP_ID;
 var FACEBOOK_APP_SECRET;
 var otherClassID;
-fs.readFile("facebook_properties.txt", function (err, data) {
-    if(err) {
-        console.log("Error reading facebook_properties.txt");
-        FACEBOOK_APP_ID = "585448871465575";
-        FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
-    } else {
-        var JSONdata = JSON.parse(data);
-        FACEBOOK_APP_ID = JSONdata.FACEBOOK_APP_ID;
-        FACEBOOK_APP_SECRET = JSONdata.FACEBOOK_APP_SECRET;
-    }
-    Class.findOne({
-        "name": "Other"
-    }, function (err, theClass) {
-        otherClassID = theClass._id;
-        startPassport();
-    });
-});
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
-var mongo = require('mongodb');
-var host = 'localhost';
-var port = mongo.Connection.DEFAULT_PORT;
-var optionsWithEnableWriteAccess = {
-    w: 1
-};
-var dbName = 'studyshareDb';
-var mongoose = require('mongoose/'), db = mongoose.connect('mongodb://localhost/studyshareDb');
+var mongoose = require('mongoose/');
+var db = mongoose.connect('mongodb://localhost/studyshareDb');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 var UserSchema = new Schema({
@@ -146,6 +123,7 @@ function startPassport() {
             facebookID: profile.id
         }, function (err, user) {
             if(err) {
+                throw err;
             }
             if(user === null) {
                 var user = new User();
@@ -187,6 +165,7 @@ app.get('/user/:id', ensureAuthenticated, function (req, res) {
         _id: req.params.id
     }, function (err, rec) {
         if(err) {
+            throw err;
         }
         res.send({
             fullName: rec.fullName,
@@ -198,34 +177,13 @@ app.get('/user/:id', ensureAuthenticated, function (req, res) {
         });
     });
 });
-app.get('/facebook_friends', ensureAuthenticated, function (req, res) {
-    var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
-    request.get({
-        url: theUrl
-    }, function (e, r, response) {
-        response = JSON.parse(response);
-        if(e != null) {
-            console.log("error :(?");
-            r.send(response);
-        } else {
-            var idArray = response.data.map(function (val, i) {
-                return val.id;
-            });
-            User.find({
-            }, {
-                facebookAccessToken: 0
-            }).where("facebookID").in(idArray).exec(function (err, records) {
-                res.send(records);
-            });
-        }
-    });
-});
 app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
     var fbAccessToken;
     User.findOne({
         facebookID: req.params.id
     }, function (err, rec) {
         if(err) {
+            throw err;
         }
         fbAccessToken = rec.facebookAccessToken;
         var theUrl = "https://graph.facebook.com/" + req.params.id + "/friends" + "?access_token=" + fbAccessToken;
@@ -300,6 +258,7 @@ app.get('/classes/:id', function (req, res) {
         _id: req.params.id
     }, function (err, rec) {
         if(err) {
+            throw err;
         }
         res.send({
             name: rec.name,
@@ -681,3 +640,23 @@ app.get("/", ensureAuthenticated, function (request, response) {
     response.sendfile("static/index.html");
 });
 app.listen(8889);
+fs.readFile("facebook_properties.txt", function (err, data) {
+    if(err) {
+        console.log("Error reading facebook_properties.txt");
+        FACEBOOK_APP_ID = "585448871465575";
+        FACEBOOK_APP_SECRET = "b7653eeff6e478fbacc8f46fb4a422e7";
+    } else {
+        var JSONdata = JSON.parse(data);
+        FACEBOOK_APP_ID = JSONdata.FACEBOOK_APP_ID;
+        FACEBOOK_APP_SECRET = JSONdata.FACEBOOK_APP_SECRET;
+    }
+    Class.findOne({
+        "name": "Other"
+    }, function (err, theClass) {
+        if(err) {
+            throw err;
+        }
+        otherClassID = theClass._id;
+        startPassport();
+    });
+});

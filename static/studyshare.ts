@@ -72,6 +72,11 @@ class State {
     currentState = newState;
   }
 
+  static switchStateWithoutRefresh(newState : State) : void {
+    currentState.domObject.hide("fast");
+    newState.domObject.show("fast");
+    currentState = newState;
+  }
 };
 
 function getCurrentState() : State {
@@ -241,7 +246,7 @@ function updateProfileDom() {
   $(".profile_page").append(friendsDiv);
   $.ajax({
     type: "get",
-    url: "/facebook_friends",
+    url: "/facebook_friends/" + facebookID,
     success: function(response) {
       listFriends.text("");
       var i;
@@ -905,6 +910,7 @@ function setupStateTransitionsOnLoad() {
   currentState = newsFeedState;
   newsFeedState.refreshDom();
   $("#userName").click(function() {
+    $("#menu").css("display", "none");
     State.switchState(profilePageState);
   });
   $("#logo").click(function() {
@@ -1114,6 +1120,7 @@ function setupMenuOnLoad() {
       query.duration = $("#durationFilterOptions").val();
     }
     $("#menu").css("display", "none");
+    State.switchStateWithoutRefresh(newsFeedState);
     updateNewsFeedWithQuery(query);
   });
   populateDurationTimes();
