@@ -204,7 +204,7 @@ a:active {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 80%;
-  display:inline-block;
+  display:block;
 }
 
 .time {
