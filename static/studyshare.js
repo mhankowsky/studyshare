@@ -68,8 +68,6 @@ function updateProfileInformation() {
             userProfilePicture = response.user.profilePicture;
             updateYourClasses();
             $("#userName").text(response.user.fullName);
-        },
-        failure: function () {
         }
     });
 }
@@ -141,21 +139,18 @@ function updateAllClasses() {
         url: "/classes",
         success: function (response) {
             classes = response;
-            addClassesOptions();
+            $(".allClassesPlusOtherList").html("");
+            $(".allClassesList").html("");
+            for(var i = 0; i < classes.length; i++) {
+                var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+                var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+                $(".allClassesPlusOtherList").append(option1);
+                if(classes[i].name !== "Other") {
+                    $(".allClassesList").append(option2);
+                }
+            }
         }
     });
-}
-function addClassesOptions() {
-    $(".allClassesPlusOtherList").html("");
-    $(".allClassesList").html("");
-    for(var i = 0; i < classes.length; i++) {
-        var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
-        var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
-        $(".allClassesPlusOtherList").append(option1);
-        if(classes[i].name !== "Other") {
-            $(".allClassesList").append(option2);
-        }
-    }
 }
 function updateYourClasses() {
     $(".yourClassListPlusOther").html("");
@@ -374,8 +369,6 @@ function updateClassPageDom() {
             }
         });
     });
-}
-function queryNewsFeed() {
 }
 function setPicture(pictureElement, theEvent) {
     $.ajax({

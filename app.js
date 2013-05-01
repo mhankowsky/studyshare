@@ -155,6 +155,24 @@ function startPassport() {
         });
     }));
 }
+app.get('/auth/facebook', passport.authorize('facebook', {
+    scope: []
+}));
+app.get('/auth/facebook/callback', passport.authenticate('facebook', {
+    failureRedirect: '/static/login.html'
+}), function (request, response) {
+    response.redirect('/static/index.html');
+});
+function ensureAuthenticated(req, res, next) {
+    if(req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/auth/facebook');
+}
+app.get('/logout', function (req, res) {
+    req.logout();
+    res.redirect('/static/login.html');
+});
 app.get('/account', ensureAuthenticated, function (req, res) {
     res.send({
         user: req.user
@@ -207,24 +225,6 @@ app.get('/facebook_friends/:id', ensureAuthenticated, function (req, res) {
             }
         });
     });
-});
-app.get('/auth/facebook', passport.authorize('facebook', {
-    scope: []
-}));
-app.get('/auth/facebook/callback', passport.authenticate('facebook', {
-    failureRedirect: '/static/login.html'
-}), function (request, response) {
-    response.redirect('/static/index.html');
-});
-function ensureAuthenticated(req, res, next) {
-    if(req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect('/auth/facebook');
-}
-app.get('/logout', function (req, res) {
-    req.logout();
-    res.redirect('/static/login.html');
 });
 app.get('/buildings', function (req, res) {
     Building.find({
@@ -398,6 +398,105 @@ app.post("/submit_event", ensureAuthenticated, function (req, res) {
         });
     });
 });
+app.post("/join_event", ensureAuthenticated, function (req, res) {
+    AnEvent.findOne({
+        _id: req.body.event_id
+    }, function (err, theEvent) {
+        var newAttendeeIDs = theEvent.attendeesIDs;
+        var newAttendeeNames = theEvent.attendeesNames;
+        var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
+        if(theEvent.endTime < new Date()) {
+            res.send({
+                success: false,
+                alreadyEnded: true
+            });
+        } else if(newAttendeeIDs.indexOf(theObjectID) != -1) {
+            res.send({
+                success: false,
+                alreadyJoined: true
+            });
+        } else {
+            newAttendeeIDs.push(theObjectID);
+            newAttendeeNames.push(req.user.fullName);
+            User.update({
+                _id: req.user._id
+            }, {
+                $addToSet: {
+                    activeEvents: theEvent._id
+                }
+            }, function (err) {
+                if(err) {
+                    throw err;
+                }
+            });
+            AnEvent.update({
+                _id: req.body.event_id
+            }, {
+                $set: {
+                    attendeesIDs: newAttendeeIDs,
+                    attendeesNames: newAttendeeNames
+                }
+            }, function (err) {
+                if(err) {
+                    throw err;
+                }
+                res.send({
+                    success: true
+                });
+            });
+        }
+    });
+});
+app.put("/leave_event", ensureAuthenticated, function (req, res) {
+    AnEvent.findOne({
+        _id: req.body.event_id
+    }, function (err, theEvent) {
+        var newAttendeeIDs = theEvent.attendeesIDs;
+        var newAttendeeNames = theEvent.attendeesNames;
+        var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
+        var index = newAttendeeIDs.indexOf(theObjectID);
+        if(index !== -1) {
+            newAttendeeIDs.splice(index, 1);
+            newAttendeeNames.splice(index, 1);
+        }
+        User.update({
+            _id: req.user._id
+        }, {
+            $pull: {
+                activeEvents: theEvent._id
+            }
+        }, function (err) {
+            if(err) {
+                throw err;
+            }
+        });
+        if(newAttendeeIDs.length === 0) {
+            AnEvent.remove({
+                _id: theEvent.id
+            }, function (err) {
+                res.send({
+                    success: true
+                });
+            });
+        } else {
+            AnEvent.update({
+                _id: req.body.event_id
+            }, {
+                $set: {
+                    attendeesIDs: newAttendeeIDs,
+                    attendeesNames: newAttendeeNames
+                }
+            }, function (err) {
+                if(err) {
+                    throw err;
+                }
+                res.send({
+                    success: true
+                });
+            });
+        }
+    });
+});
 app.put("/add_class", ensureAuthenticated, function (req, res) {
     var newClassIDs;
     var newClassNames;
@@ -532,105 +631,6 @@ app.put("/leave_class", ensureAuthenticated, function (req, res) {
                 });
             });
         });
-    });
-});
-app.post("/join_event", ensureAuthenticated, function (req, res) {
-    AnEvent.findOne({
-        _id: req.body.event_id
-    }, function (err, theEvent) {
-        var newAttendeeIDs = theEvent.attendeesIDs;
-        var newAttendeeNames = theEvent.attendeesNames;
-        var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
-        if(theEvent.endTime < new Date()) {
-            res.send({
-                success: false,
-                alreadyEnded: true
-            });
-        } else if(newAttendeeIDs.indexOf(theObjectID) != -1) {
-            res.send({
-                success: false,
-                alreadyJoined: true
-            });
-        } else {
-            newAttendeeIDs.push(theObjectID);
-            newAttendeeNames.push(req.user.fullName);
-            User.update({
-                _id: req.user._id
-            }, {
-                $addToSet: {
-                    activeEvents: theEvent._id
-                }
-            }, function (err) {
-                if(err) {
-                    throw err;
-                }
-            });
-            AnEvent.update({
-                _id: req.body.event_id
-            }, {
-                $set: {
-                    attendeesIDs: newAttendeeIDs,
-                    attendeesNames: newAttendeeNames
-                }
-            }, function (err) {
-                if(err) {
-                    throw err;
-                }
-                res.send({
-                    success: true
-                });
-            });
-        }
-    });
-});
-app.put("/leave_event", ensureAuthenticated, function (req, res) {
-    AnEvent.findOne({
-        _id: req.body.event_id
-    }, function (err, theEvent) {
-        var newAttendeeIDs = theEvent.attendeesIDs;
-        var newAttendeeNames = theEvent.attendeesNames;
-        var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
-        var index = newAttendeeIDs.indexOf(theObjectID);
-        if(index !== -1) {
-            newAttendeeIDs.splice(index, 1);
-            newAttendeeNames.splice(index, 1);
-        }
-        User.update({
-            _id: req.user._id
-        }, {
-            $pull: {
-                activeEvents: theEvent._id
-            }
-        }, function (err) {
-            if(err) {
-                throw err;
-            }
-        });
-        if(newAttendeeIDs.length === 0) {
-            AnEvent.remove({
-                _id: theEvent.id
-            }, function (err) {
-                res.send({
-                    success: true
-                });
-            });
-        } else {
-            AnEvent.update({
-                _id: req.body.event_id
-            }, {
-                $set: {
-                    attendeesIDs: newAttendeeIDs,
-                    attendeesNames: newAttendeeNames
-                }
-            }, function (err) {
-                if(err) {
-                    throw err;
-                }
-                res.send({
-                    success: true
-                });
-            });
-        }
     });
 });
 app.get("/static/:staticFilename", ensureAuthenticated, function (request, response) {

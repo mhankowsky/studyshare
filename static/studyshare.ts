@@ -1,5 +1,8 @@
 /// <reference path="./jquery.d.ts" />
 
+/*******************************************************************************************/
+//Global variables
+
 declare var Hammer;
 
 var fullName : string;
@@ -29,6 +32,9 @@ var classes;
 
 var MILLI_IN_MINUTE = 60 * 1000
 var MILLI_IN_HOUR = MILLI_IN_MINUTE * 60;
+
+/*******************************************************************************************/
+//typescript classes
 
 class aLocation {
   lat : number;
@@ -83,6 +89,9 @@ function getCurrentState() : State {
   return currentState;
 }
 
+/*******************************************************************************************/
+
+//Fills out global variable clientside with info from serverside database
 function updateProfileInformation() {
   $.ajax({
     type: "get",
@@ -98,12 +107,10 @@ function updateProfileInformation() {
       updateYourClasses();
       $("#userName").text(response.user.fullName);
     },
-    failure: function() {
-
-    }
   });
 }
 
+//GPS code
 //code adapted from http://www.movable-type.co.uk/scripts/latlong.html
 function calculateDistance(loc1, loc2) {
   var lon1 = loc1.long;
@@ -126,6 +133,7 @@ function precise_round(num,decimals) {
   return Math.round(num*Math.pow(10,decimals))/Math.pow(10,decimals);
 }
 
+//Fills out two HTML option lists with all buildings
 function updateBuildings() {
   $.ajax({
     type: "get",
@@ -156,7 +164,6 @@ function updateBuildings() {
           optionDistancesArray.push([i, Number.MAX_VALUE]);
         }
       }
-
       optionDistancesArray.sort(function(x, y) {
         return x[1] - y[1];
       });
@@ -167,32 +174,30 @@ function updateBuildings() {
   });
 }
 
+//Updates classes lists with all classes from database
 function updateAllClasses() {
   $.ajax({
     type: "get",
     url: "/classes",
     success: function(response) {
       classes = response;
-      addClassesOptions();
+      $(".allClassesPlusOtherList").html("");
+      $(".allClassesList").html("");
+
+      for(var i = 0; i < classes.length; i++) {
+        var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+        //wow wtf if you try to append a jQuery object to two things it removes it from the first.  Duplicate of other option button.
+        var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
+        $(".allClassesPlusOtherList").append(option1);
+        if(classes[i].name !== "Other") {
+          $(".allClassesList").append(option2);
+        }
+      }
     }
   });
 }
 
-function addClassesOptions() {
-  $(".allClassesPlusOtherList").html("");
-  $(".allClassesList").html("");
-
-  for(var i = 0; i < classes.length; i++) {
-    var option1 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
-    //wow wtf if you try to append a jQuery object to two things it removes it from the first.
-    var option2 = $("<option>").attr("value", classes[i]._id).text("" + classes[i].deptNum + "-" + classes[i].classNum + " : " + classes[i].name);
-    $(".allClassesPlusOtherList").append(option1);
-    if(classes[i].name !== "Other") {
-      $(".allClassesList").append(option2);
-    }
-  }
-}
-
+//grabs your specific classes that you have added from the database adn appends to appropriate lists.
 function updateYourClasses() {
   $(".yourClassListPlusOther").html("");
   for(var i = 0; i < classNames.length; i++) {
@@ -201,6 +206,9 @@ function updateYourClasses() {
     $(".yourClassListPlusOther").append(option);
   }
 }
+
+/*******************************************************************************************/
+//Main updateDom functions, one for each "page" in the app.
 
 function updateProfileDom() {
   updateProfileInformation();
@@ -417,10 +425,8 @@ function updateClassPageDom() {
   var listUsers = $("<ul>");
   for(i = 0; i < curClassDisplay.studentNames.length; i++) {
     var user = $("<li>").addClass("studentButton");
-    //var picture = $("<img>").addClass("profile_thumb").attr("src", response[i].profilePicture);
     var userName = $("<a>").addClass("name").attr("id", curClassDisplay.studentIDs[i].toString()).attr("href", "#").text(curClassDisplay.studentNames[i]);
     user.append(userName);
-    //friend.append(picture);
     listUsers.append(user);
   }
       
@@ -446,10 +452,7 @@ function updateClassPageDom() {
   });
 }
 
-function queryNewsFeed() {
-
-}
-
+//sets all profile pictures
 function setPicture(pictureElement, theEvent) {
   $.ajax({
     type: "get",
@@ -461,6 +464,7 @@ function setPicture(pictureElement, theEvent) {
   });
 }
 
+//add-class button
 function addAddClick(addEvent, _id) {
   addEvent.click(function() {
     $.ajax({
@@ -487,6 +491,7 @@ function addAddClick(addEvent, _id) {
   });
 }
 
+//leave-class button
 function addRemoveClick(removeEvent, _id) {
   removeEvent.click(function() {
     $.ajax({
@@ -510,6 +515,7 @@ function addRemoveClick(removeEvent, _id) {
   });
 }
 
+//join-event button
 function addJoinClick(joinEvent, _id) {
   joinEvent.click(function() {
     $.ajax({
@@ -556,6 +562,7 @@ function addJoinClick(joinEvent, _id) {
   });
 }
 
+//leave-event button
 function addLeaveClick(leaveEvent, _id) {
   leaveEvent.click(function() {
     $.ajax({
@@ -579,12 +586,14 @@ function addLeaveClick(leaveEvent, _id) {
   });
 }
 
+//updates news feed with loading text while request is sent
 function updateNewsFeedDom() {
   var query = {};
   $(".news_feed").html("loading...");
   updateNewsFeedWithQuery(query);
 }
 
+//adds single event to news feed
 function addEventToDom(theEvent) {
   var containerDiv = $("<div>").addClass("content-box");
   var pictureImg = $("<img>").addClass("profile_thumb").addClass(theEvent.ownerID.toString());
@@ -683,6 +692,7 @@ function addEventToDom(theEvent) {
   $(".news_feed").append(containerDiv);
 }
 
+//updates news feed with specific query specifying which events to filter out
 function updateNewsFeedWithQuery(query) {
   var popular = [];
   var hasStartedAndTimeRemaining = [];
@@ -787,6 +797,7 @@ function updateNewsFeedWithQuery(query) {
   });
 }
 
+//resets add-event page to default values
 function updateEventDom() {
   $("#submit_event_error").text("");
   var currDate = (new Date());
@@ -805,6 +816,7 @@ function updateEventDom() {
   updateCurrentPosition(true);
 }
 
+//gets GPS coordinates
 function updateCurrentPosition(withMap) {
   if(!navigator.geolocation) {
     return;
@@ -823,6 +835,7 @@ function updateCurrentPosition(withMap) {
   }
 }
 
+//updates static Google Map with your location along with building you have selected and all events nearby
 function updateMap(loc : aLocation) {
   mapString = "http://maps.googleapis.com/maps/api/staticmap?center=";
   mapString = mapString + currentLat + "," + currentLong;
@@ -899,6 +912,7 @@ function initializeInformationOnLoad() {
   updateCurrentPosition(false);
 }
 
+//sets state transitions when clicking buttons
 function setupStateTransitionsOnLoad() {
   newsFeedState = new State($(".news_feed"), updateNewsFeedDom);
   profilePageState = new State($(".profile_page"), updateProfileDom);
@@ -963,7 +977,7 @@ function errorCheckDates() : bool {
   }
 }
 
-
+//adds actions to adding-event page
 function setupAddEventButtonActionsOnLoad() {
   $("#buildingSelect").change(function() {
     var loc = new aLocation();
@@ -1053,6 +1067,7 @@ function setupAddEventButtonActionsOnLoad() {
   });
 }
 
+//add-class button initialization
 function setupAddClassButtonFunctionalityOnLoad() {
   $("#add_class").click(function() {
     if ($("#ACClass").val() == "") {
@@ -1078,6 +1093,7 @@ function setupAddClassButtonFunctionalityOnLoad() {
   });
 }
 
+//hammer.js swipe initialization
  function setupSwipeGestureOnLoad() {
   var hammertime = new Hammer($(".toucharea"));
   hammertime.on("swiperight swipeleft", function(ev) {
@@ -1097,6 +1113,7 @@ function toggleEnabledClass(elem) {
   }
 }
 
+//initialize option list for "duration" filter with values from 0 minutes to 120 minutes
 function populateDurationTimes() {
   for(var i = 0; i <= 12; i++) {
     var option = $("<option>").attr("value", i * 10).text(i * 10 + " minutes");
@@ -1104,6 +1121,7 @@ function populateDurationTimes() {
   }
 }
 
+//initialize button clicks for the sidebar menu
 function setupMenuOnLoad() {
   $(".filter").click(function() {
     toggleEnabledClass($(this));

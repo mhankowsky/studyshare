@@ -159,6 +159,47 @@ function startPassport() {
 /*******************************************************************************************/
 //RESTful stuff
 
+
+//boring Passport stuff.
+
+// GET /auth/facebook
+//   Use passport.authenticate() as route middleware to authenticate the
+//   request.  The first step in Facebook authentication will involve
+//   redirecting the user to facebook.com.  After authorization, Facebook will
+//   redirect the user back to this application at /auth/facebook/callback
+app.get('/auth/facebook', passport.authorize('facebook', { scope: [] }));
+
+// GET /auth/facebook/callback
+//   Use passport.authenticate() as route middleware to authenticate the
+//   request.  If authentication fails, the user will be redirected back to the
+//   login page.  Otherwise, the primary route function function will be called,
+//   which, in this example, will redirect the user to the home page.
+app.get('/auth/facebook/callback', 
+  passport.authenticate('facebook', { 
+    failureRedirect: '/static/login.html',
+  }),
+  function(request, response) {
+    response.redirect('/static/index.html');
+  }
+);
+
+// Simple route middleware to ensure user is authenticated.
+//   Use this route middleware on any resource that needs to be protected.  If
+//   the request is authenticated (typically via a persistent login session),
+//   the request will proceed.  Otherwise, the user will be redirected to the
+//   login page.
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { 
+    return next();
+  }
+  res.redirect('/auth/facebook');
+}
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/static/login.html');
+});
+
 //send user own account info
 app.get('/account', ensureAuthenticated, function(req, res){
   res.send({user : req.user});
@@ -182,8 +223,7 @@ app.get('/user/:id', ensureAuthenticated, function(req, res) {
   });
 });
 
-//Returns all facebook friends of calling user
-
+//Returns all facebook friends of certain user
 app.get('/facebook_friends/:id', ensureAuthenticated, function(req, res) {
   var fbAccessToken;
   
@@ -207,6 +247,7 @@ app.get('/facebook_friends/:id', ensureAuthenticated, function(req, res) {
             return val.id;
           });
 
+          //finds intersection of all facebook friends of user, and all users who have registered with our application.
           User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
             res.send(records);
           });
@@ -216,52 +257,14 @@ app.get('/facebook_friends/:id', ensureAuthenticated, function(req, res) {
   });
 });
 
-// GET /auth/facebook
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  The first step in Facebook authentication will involve
-//   redirecting the user to facebook.com.  After authorization, Facebook will
-//   redirect the user back to this application at /auth/facebook/callback
-app.get('/auth/facebook', passport.authorize('facebook', { scope: [] }));
-
-
-// GET /auth/facebook/callback
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  If authentication fails, the user will be redirected back to the
-//   login page.  Otherwise, the primary route function function will be called,
-//   which, in this example, will redirect the user to the home page.
-app.get('/auth/facebook/callback', 
-  passport.authenticate('facebook', { 
-    failureRedirect: '/static/login.html',
-  }),
-  function(request, response) {
-    response.redirect('/static/index.html');
-  }
-);
-
-
-// Simple route middleware to ensure user is authenticated.
-//   Use this route middleware on any resource that needs to be protected.  If
-//   the request is authenticated (typically via a persistent login session),
-//   the request will proceed.  Otherwise, the user will be redirected to the
-//   login page.
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { 
-    return next();
-  }
-  res.redirect('/auth/facebook');
-}
-
-app.get('/logout', function(req, res){
-  req.logout();
-  res.redirect('/static/login.html');
-});
-
+//simply returns all buildings in database
 app.get('/buildings', function(req, res) {
   Building.find({}).sort({name : 1}).exec(function(err, buildings) {
     res.send(buildings);
   });
 });
 
+//returns specific building from database
 app.get('/building/:name', function(req, res) {
   Building.findOne({name: req.params.name}, function(err, building) {
     if(err) {
@@ -272,18 +275,19 @@ app.get('/building/:name', function(req, res) {
   });
 });
 
+//returns all classes in database
 app.get('/classes', function(req, res) {
   Class.find({}).sort({num: 1}).exec(function(err, classes) {
     res.send(classes);
   });
 });
 
+//returns specific class from database
 app.get('/classes/:id', function(req, res) {
   Class.findOne({ _id: req.params.id}, function(err, rec) {
     if (err) {
      throw err;
     }
-    
     res.send({
       name : rec.name,
       num : rec.num,
@@ -305,13 +309,13 @@ function soHacky(duration) {
   return new Function("return ((new Date(this.endTime)).getTime() - (new Date(this.startTime)).getTime()) > (" + duration * 1000 * 60 + ");");
 }
 
+//Returns all events that match the given query.
+//Events involving facebook friends and classes you are in are automatically added to the query for privacy reasons
 app.get('/events/:query', ensureAuthenticated, function(req, res) {
   var theUrl = "https://graph.facebook.com/" + req.user.facebookID + "/friends" + "?access_token=" + req.user.facebookAccessToken;
   var friends;
   var classes = req.user.classIDs;
   var events : any = {};
-
-
   var query : any = {};
   var JSONQuery = JSON.parse(req.params.query);
   if(JSONQuery.class != undefined) {
@@ -331,6 +335,7 @@ app.get('/events/:query', ensureAuthenticated, function(req, res) {
     query.endTime = {"$gt" : timeRemaining};
   }
 
+  //First, get facebook friends of user
   request.get(
     {url: theUrl},
     function(e, r, response) {
@@ -345,15 +350,19 @@ app.get('/events/:query', ensureAuthenticated, function(req, res) {
         User.find({}, {facebookAccessToken : 0}).where("facebookID").in(idArray).exec(function(err, records) {
           friends = records;
           for(var i = 0; i < friends.length; i++) {
+            //Add events from facebook friends
             for(var j = 0; j < friends[i].activeEvents; j++) {
               events[friends[i].activeEvents[j]] = friends[i].activeEvents[j];;
             }
           }
+
+          //Delete old events that have already ended
           AnEvent.remove({endTime : {$lt : new Date()}}, function(err) {
             if(err) {
               throw err;
             }
 
+            //Add events that match query
             AnEvent.find(query, function(err, moreEvents) {
               if(err) {
                 throw err;
@@ -374,6 +383,7 @@ app.get('/events/:query', ensureAuthenticated, function(req, res) {
   );
 });
 
+//Addint a new event
 app.post("/submit_event", ensureAuthenticated, function(req, res) {
   var theEvent = new AnEvent();
   Building.findOne({name : req.body.building}, function(err, theBuilding) {
@@ -412,6 +422,82 @@ app.post("/submit_event", ensureAuthenticated, function(req, res) {
   });
 });
 
+//Join an event
+app.post("/join_event", ensureAuthenticated, function(req, res) {
+  AnEvent.findOne({_id : req.body.event_id}, function(err, theEvent) {
+    var newAttendeeIDs = theEvent.attendeesIDs;
+    var newAttendeeNames = theEvent.attendeesNames;
+    var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
+    //cannot join an event that has already ended
+    if(theEvent.endTime < new Date()) {
+      res.send({
+        success: false,
+        alreadyEnded: true
+      });
+    //Cannot join an event that you have previously joined
+    } else if(newAttendeeIDs.indexOf(theObjectID) != -1) {
+      res.send({
+        success: false,
+        alreadyJoined: true
+      });
+    } else {
+      //update mongo and send success
+      newAttendeeIDs.push(theObjectID);
+      newAttendeeNames.push(req.user.fullName);
+
+      User.update({_id : req.user._id}, {$addToSet : {activeEvents : theEvent._id}}, function(err) {
+        if(err) {
+          throw err;
+        }
+      });
+
+      AnEvent.update({_id : req.body.event_id}, {$set : {attendeesIDs : newAttendeeIDs, attendeesNames : newAttendeeNames}}, function(err) {
+        if(err) {
+          throw err;
+        }
+        res.send({success : true});
+      });
+    }
+  });
+});
+
+//Leave an event
+app.put("/leave_event", ensureAuthenticated, function(req, res) {
+  AnEvent.findOne({_id : req.body.event_id}, function(err, theEvent) {
+    var newAttendeeIDs = theEvent.attendeesIDs;
+    var newAttendeeNames = theEvent.attendeesNames;
+    var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
+    
+    var index = newAttendeeIDs.indexOf(theObjectID);
+    
+    if (index !== -1) {
+      newAttendeeIDs.splice(index, 1);
+      newAttendeeNames.splice(index, 1);
+    }
+
+    User.update({_id : req.user._id}, {$pull : {activeEvents : theEvent._id}}, function(err) {
+      if(err) {
+        throw err;
+      }
+    });
+    
+    if (newAttendeeIDs.length === 0) {
+      AnEvent.remove({_id : theEvent.id}, function(err) {
+        res.send({success : true});
+      });
+    } else {
+      AnEvent.update({_id : req.body.event_id}, {$set : {attendeesIDs : newAttendeeIDs, attendeesNames : newAttendeeNames}}, function(err) {
+        if(err) {
+          throw err;
+        }
+        res.send({success : true});
+      });
+    }
+  });
+});
+
+
+//Add a class
 app.put("/add_class", ensureAuthenticated, function(req, res) {
   var newClassIDs;
   var newClassNames;
@@ -461,6 +547,7 @@ app.put("/add_class", ensureAuthenticated, function(req, res) {
   });
 });
 
+//Remove a class
 app.put("/leave_class", ensureAuthenticated, function(req, res) {
   var newClassIDs;
   var newClassNames;
@@ -504,80 +591,10 @@ app.put("/leave_class", ensureAuthenticated, function(req, res) {
           if (err) {
             throw err;
           }
-          
           res.send({success:true});
         });
       });
     });
-  });
-});
-
-app.post("/join_event", ensureAuthenticated, function(req, res) {
-  AnEvent.findOne({_id : req.body.event_id}, function(err, theEvent) {
-    var newAttendeeIDs = theEvent.attendeesIDs;
-    var newAttendeeNames = theEvent.attendeesNames;
-    var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
-    if(theEvent.endTime < new Date()) {
-      res.send({
-        success: false,
-        alreadyEnded: true
-      });
-    } else if(newAttendeeIDs.indexOf(theObjectID) != -1) {
-      res.send({
-        success: false,
-        alreadyJoined: true
-      });
-    } else {
-      newAttendeeIDs.push(theObjectID);
-      newAttendeeNames.push(req.user.fullName);
-
-      User.update({_id : req.user._id}, {$addToSet : {activeEvents : theEvent._id}}, function(err) {
-        if(err) {
-          throw err;
-        }
-      });
-
-      AnEvent.update({_id : req.body.event_id}, {$set : {attendeesIDs : newAttendeeIDs, attendeesNames : newAttendeeNames}}, function(err) {
-        if(err) {
-          throw err;
-        }
-        res.send({success : true});
-      });
-    }
-  });
-});
-
-app.put("/leave_event", ensureAuthenticated, function(req, res) {
-  AnEvent.findOne({_id : req.body.event_id}, function(err, theEvent) {
-    var newAttendeeIDs = theEvent.attendeesIDs;
-    var newAttendeeNames = theEvent.attendeesNames;
-    var theObjectID = mongoose.Types.ObjectId(req.user._id.toString());
-    
-    var index = newAttendeeIDs.indexOf(theObjectID);
-    
-    if (index !== -1) {
-      newAttendeeIDs.splice(index, 1);
-      newAttendeeNames.splice(index, 1);
-    }
-
-    User.update({_id : req.user._id}, {$pull : {activeEvents : theEvent._id}}, function(err) {
-      if(err) {
-        throw err;
-      }
-    });
-    
-    if (newAttendeeIDs.length === 0) {
-      AnEvent.remove({_id : theEvent.id}, function(err) {
-        res.send({success : true});
-      });
-    } else {
-      AnEvent.update({_id : req.body.event_id}, {$set : {attendeesIDs : newAttendeeIDs, attendeesNames : newAttendeeNames}}, function(err) {
-        if(err) {
-          throw err;
-        }
-        res.send({success : true});
-      });
-    }
   });
 });
 
@@ -588,6 +605,7 @@ app.get("/static/:staticFilename", ensureAuthenticated, function (request, respo
   response.sendfile("static/" + request.params.staticFilename);
 });
 
+//redirect / to homepage
 app.get("/", ensureAuthenticated, function (request, response) {
   response.sendfile("static/index.html");
 });
